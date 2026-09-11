@@ -10,16 +10,21 @@ from .schemas import RESOURCES
 
 RELATIONS = {"contact_id": "contacts", "company_id": "companies", "deal_id": "deals",
              "project_id": "projects", "conversation_id": "conversations"}
-PRIVILEGED = {"agents", "approvals", "automations", "invoices"}
+# Configuration parents are read by every deal write, so they are guarded without an exclusive row lock.
+SHARED_RELATIONS = {"pipeline_id": "pipelines"}
+PRIVILEGED = {"agents", "approvals", "automations", "invoices", "pipelines"}
 
 
 def scoped(tenant_id: str, kind: str):
     return select(Record).where(Record.tenant_id == tenant_id, Record.kind == kind, Record.deleted.is_(False))
 
 
-def get_record(db: Session, tenant_id: str, kind: str, record_id: str, *, lock=False):
+def get_record(db: Session, tenant_id: str, kind: str, record_id: str, *, lock=False, share=False):
     statement = scoped(tenant_id, kind).where(Record.id == record_id)
-    record = db.scalar(statement.with_for_update() if lock else statement)
+    if lock or share:
+        # FOR SHARE lets concurrent deals read the same pipeline while still blocking its removal.
+        statement = statement.with_for_update(read=share and not lock)
+    record = db.scalar(statement)
     if record is None:
         raise HTTPException(404, "Registro não encontrado")
     return record
@@ -82,16 +87,70 @@ def validate_flow(data):
         visit(node)
 
 
+def default_pipeline(db, tenant_id):
+    active = [record for record in db.scalars(scoped(tenant_id, "pipelines").order_by(Record.created_at))
+              if record.data.get("status") == "active"]
+    return next((record for record in active if record.data.get("is_default")), active[0] if active else None)
+
+
+def promote_default_pipeline(db, tenant_id, record_id):
+    """One default funnel per tenant; demoting the previous one keeps its version and audit trail honest."""
+    for other in db.scalars(scoped(tenant_id, "pipelines").where(Record.id != record_id).with_for_update()):
+        if other.data.get("is_default"):
+            db.execute(update(Record).where(Record.id == other.id, Record.tenant_id == tenant_id)
+                       .values(data={**other.data, "is_default": False}, version=other.version + 1, updated_at=now()))
+
+
+def guard_stage_removal(db, tenant_id, pipeline_id, before, after):
+    """A stage still holding deals cannot be renamed away or dropped without orphaning them."""
+    remaining = {stage["key"] for stage in after}
+    for stage in before:
+        if stage["key"] in remaining:
+            continue
+        occupied = db.scalar(select(Record.id).where(Record.tenant_id == tenant_id, Record.kind == "deals",
+            Record.deleted.is_(False), Record.data["pipeline_id"].as_string() == pipeline_id,
+            Record.data["stage"].as_string() == stage["key"]).limit(1))
+        if occupied:
+            raise HTTPException(409, f"A etapa {stage['label']} possui oportunidades ativas; mova-as antes de removê-la")
+
+
+def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None):
+    """Stage vocabulary is tenant configuration, so it is resolved here rather than by a static schema literal."""
+    if data.get("pipeline_id"):
+        pipeline = get_record(db, tenant_id, "pipelines", data["pipeline_id"], share=True)
+        # An archived funnel stops receiving deals but must not strand the ones already in it.
+        if pipeline.data.get("status") != "active" and data["pipeline_id"] != previous:
+            raise HTTPException(422, "Funil inativo; escolha um funil ativo")
+    else:
+        pipeline = default_pipeline(db, tenant_id)
+        if pipeline is None:
+            raise HTTPException(409, "Cadastre um funil ativo antes de registrar oportunidades")
+        data["pipeline_id"] = pipeline.id
+    stage = next((item for item in pipeline.data["stages"] if item["key"] == data["stage"]), None)
+    if stage is None:
+        raise HTTPException(422, "Etapa desconhecida neste funil")
+    if stage["outcome"] == "lost" and not data.get("lost_reason", "").strip():
+        raise HTTPException(422, "Informe o motivo da perda para encerrar a oportunidade")
+    if stage["outcome"] != "lost":
+        data["lost_reason"] = ""
+    if not keep_probability:
+        data["probability"] = stage["probability"]
+
+
 def create_record(db, tenant_id, actor_id, kind, payload):
     data = validate(kind, payload)
     validate_relations(db, tenant_id, data)
     if kind == "automations":
         validate_flow(data)
+    if kind == "deals":
+        apply_deal_rules(db, tenant_id, data, bool(payload.get("probability")))
     if kind == "approvals":
         data.update(requested_by=actor_id, expires_at=(now() + timedelta(hours=24)).isoformat())
     record = Record(tenant_id=tenant_id, kind=kind, data=data)
     db.add(record)
     db.flush()
+    if kind == "pipelines" and data["is_default"]:
+        promote_default_pipeline(db, tenant_id, record.id)
     audit_event(db, tenant_id, actor_id, f"{kind}.created", record.id, {"version": 1})
     return record
 
@@ -110,11 +169,17 @@ def update_record(db, principal, kind, record_id, payload):
     validate_relations(db, principal.tenant_id, data)
     if kind == "automations":
         validate_flow(data)
+    if kind == "deals":
+        apply_deal_rules(db, principal.tenant_id, data, "probability" in changes, record.data.get("pipeline_id"))
+    if kind == "pipelines":
+        guard_stage_removal(db, principal.tenant_id, record_id, record.data["stages"], data["stages"])
     result = db.execute(update(Record).where(Record.id == record_id, Record.tenant_id == principal.tenant_id,
                                            Record.version == version, Record.deleted.is_(False))
                         .values(data=data, version=version + 1, updated_at=now()))
     if result.rowcount != 1:
         raise HTTPException(409, "O registro foi alterado por outra pessoa. Atualize e tente novamente.")
+    if kind == "pipelines" and data["is_default"]:
+        promote_default_pipeline(db, principal.tenant_id, record_id)
     audit_event(db, principal.tenant_id, principal.actor_id, f"{kind}.updated", record_id,
                 {"version": version + 1, "fields": sorted(changes)})
     db.flush()
@@ -125,7 +190,7 @@ def update_record(db, principal, kind, record_id, payload):
 def delete_record(db, principal, kind, record_id, version):
     get_record(db, principal.tenant_id, kind, record_id, lock=True)
     # Prevent dangling relationships rather than silently hiding parent records.
-    for field, related_kind in RELATIONS.items():
+    for field, related_kind in {**RELATIONS, **SHARED_RELATIONS}.items():
         if related_kind == kind:
             exists = db.scalar(select(Record.id).where(Record.tenant_id == principal.tenant_id,
                                 Record.deleted.is_(False), Record.data[field].as_string() == record_id).limit(1))
@@ -141,7 +206,7 @@ def delete_record(db, principal, kind, record_id, version):
 
 def list_records(db, tenant_id, kind, filters):
     statement = scoped(tenant_id, kind)
-    for field in ("status", "stage", "contact_id", "conversation_id", "project_id", "owner_id"):
+    for field in ("status", "stage", "contact_id", "conversation_id", "project_id", "owner_id", "pipeline_id"):
         if filters.get(field):
             statement = statement.where(Record.data[field].as_string() == filters[field])
     if filters.get("q"):

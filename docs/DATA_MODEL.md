@@ -36,13 +36,13 @@ erDiagram
 | `idempotency_keys` | `id`, `tenant_id`, `key`, `body_hash`, `response`, `created_at` | FK tenant; unicidade `(tenant_id,key)` |
 | `api_keys` | `id`, `tenant_id`, `created_by`, `name`, `key_hash`, `prefix`, `scopes`, `revoked`, `expires_at`, `created_at` | FK tenant/usuário; hash único; índice tenant |
 | `rate_limits` | `bucket`, `window`, `count` | PK bucket SHA-256; incremento atômico por janela |
-| `schema_migrations` | `version`, `applied_at` | Criada pelo migrador, fora do ORM; PK versão; marca inicial `0001` |
+| `schema_migrations` | `version`, `applied_at` | Criada pelo migrador, fora do ORM; PK versão; marcas `0001` (schema e RLS) e `0002` (funis configuráveis) |
 
 `rate_limits` é global para controlar IP/login/chave antes e depois da autenticação. O bucket não armazena o IP ou e-mail em texto. Sessões e chaves guardam hash do segredo; o token de API bruto só é devolvido na criação.
 
 ### Consequências da tabela `records`
 
-Os 14 domínios usam uma tabela com discriminador `kind` e objeto JSON `data`. Não existem 14 tabelas comerciais normalizadas. O ORM declara `JSON`; não presumir índices GIN/JSONB nem chaves estrangeiras dentro desse objeto. Tipos e relacionamentos de negócio são validados pelos serviços, enquanto tenant, unicidade técnica e concorrência usam o banco.
+Os 15 domínios usam uma tabela com discriminador `kind` e objeto JSON `data`. Não existem 15 tabelas comerciais normalizadas. O ORM declara `JSON`; não presumir índices GIN/JSONB nem chaves estrangeiras dentro desse objeto. Tipos e relacionamentos de negócio são validados pelos serviços, enquanto tenant, unicidade técnica e concorrência usam o banco.
 
 Isso permite uma implementação inicial uniforme, mas tem limites: SQL externo pode burlar validações de payload; relação armazenada em JSON não tem FK física; verificar relações antes de commit não impede sozinho uma corrida com exclusão do pai; busca parcial percorre campos JSON sem índice dedicado. Domínios que exigirem fortes invariantes concorrentes, consultas extensas ou relacionamento fiscal devem receber tabelas/constraints/indexação próprios em migrations novas. Não chamar o modelo genérico de ERP completo.
 
@@ -54,7 +54,8 @@ Na resposta HTTP, o serializador expande os campos de `data` no objeto raiz e ac
 |---|---|---|
 | `contacts` | nome, e-mail, telefone, empresa textual e `company_id`, origem, tags, score, consentimento, notas, `owner_id` | `new`, `qualified`, `active`, `customer`, `inactive`, `lead` |
 | `companies` | nome, site, segmento, e-mail, telefone, documento, notas | `active`, `inactive`, `prospect` |
-| `deals` | título, `contact_id`, `company_id`, etapa, `value_cents`, probabilidade, previsão, responsável, notas | `lead`, `qualified`, `proposal`, `negotiation`, `won`, `lost` |
+| `pipelines` | nome, descrição, `is_default`, lista ordenada de etapas com `key`, `label`, `probability` e `outcome` | `active`, `inactive`; escrita restrita a proprietário/administrador |
+| `deals` | título, `contact_id`, `company_id`, `pipeline_id`, etapa, `value_cents`, probabilidade, previsão, responsável, `lost_reason`, notas | Etapas declaradas pelo funil do registro; `outcome` da etapa distingue aberto, ganho e perdido |
 | `tasks` | título, descrição, prioridade, prazo, contato/oportunidade/projeto, responsável | `todo`, `in_progress`, `done`; prioridade `low`, `medium`, `high`, `urgent` |
 | `conversations` | título, contato, canal, responsável, última mensagem, `last_inbound_at` | `open`, `pending`, `closed`; canais `internal`, `whatsapp`, `instagram`, `email` |
 | `messages` | `conversation_id`, corpo, direção e estado | Criação manual somente `outbound` + `draft` |
@@ -71,7 +72,7 @@ Na resposta HTTP, o serializador expande os campos de `data` no objeto raiz e ac
 
 ## Relações e acesso
 
-`services.RELATIONS` resolve `contact_id→contacts`, `company_id→companies`, `deal_id→deals`, `project_id→projects` e `conversation_id→conversations`. Criação/alteração procura o destino ativo no mesmo tenant e tipo. `owner_id` procura usuário ativo do mesmo tenant. Referência alheia ou ausente não é aceita como vínculo válido. Exclusão verifica vínculos ativos e recusa pai referenciado com 409.
+`services.RELATIONS` resolve `contact_id→contacts`, `company_id→companies`, `deal_id→deals`, `project_id→projects` e `conversation_id→conversations`. Criação/alteração procura o destino ativo no mesmo tenant e tipo. `services.SHARED_RELATIONS` resolve `pipeline_id→pipelines` separadamente: toda escrita de oportunidade lê o mesmo funil, então a leitura usa `FOR SHARE` em vez de `FOR UPDATE`, permitindo escritas concorrentes sem abrir mão do bloqueio contra exclusão do funil. A verificação de vínculos na exclusão cobre os dois conjuntos. `owner_id` procura usuário ativo do mesmo tenant. Referência alheia ou ausente não é aceita como vínculo válido. Exclusão verifica vínculos ativos e recusa pai referenciado com 409.
 
 As FKs físicas não incluem tenant composto em cada relação e o modelo de identidade ainda não possui memberships. O escopo confiável é resolvido a partir da sessão/chave e aplicado em query e contexto RLS de transação. A migration força RLS em `records`, `audit_log`, `event_outbox` e `idempotency_keys`; policies usam `tenant_id = NULLIF(current_setting('fattech.tenant_id', true), '')` em leitura e escrita. Runtime não é superusuário/BYPASSRLS, não escreve em `tenants` e não altera/apaga `audit_log`. Isso precisa de prova direta com papel runtime sem privilégios de owner.
 
@@ -86,7 +87,14 @@ O `actor_id` da auditoria não é FK física: permite preservar o identificador 
 3. **Idempotência de webhook:** hash SHA-256 do corpo bruto e resposta original ficam em chave única por tenant. HMAC/timestamp são validados antes do replay. Colisão concorrente usa a restrição única e relê a resposta após rollback.
 4. **Aprovação:** intenção é imutável por PATCH, expira após 24 horas, não aceita autoaprovação e exige versão na decisão. Aprovação registra `not_executed`, sem executar a intenção.
 5. **Sem envio fictício:** mensagem manual permanece rascunho; endpoint de envio verifica consentimento/janela e retorna indisponível sem adaptador. `last_inbound_at` precisa ser protegido e produzido por integração antes de habilitar envio real.
-6. **Sem custo fictício:** cadastro de orçamento não é uma reserva financeira. Execução IA permanece indisponível até existir ledger/reserva/reconciliação compartilhados.
+6. **Etapa e perda:** a etapa da oportunidade é validada contra o funil do próprio registro, não contra um enum do schema. Etapa de `outcome=lost` exige `lost_reason` não vazio; sair dela limpa o motivo. Remover ou renomear uma etapa que ainda possui oportunidades ativas retorna 409, assim como excluir um funil com oportunidades. Um funil `inactive` recusa novas oportunidades, mas continua aceitando edição das que já estão nele. `is_default` é exclusivo por tenant: promover um funil rebaixa o anterior na mesma transação, com versão e auditoria próprias.
+7. **Sem custo fictício:** cadastro de orçamento não é uma reserva financeira. Execução IA permanece indisponível até existir ledger/reserva/reconciliação compartilhados.
+
+## Migração 0002
+
+`0002` substitui as seis etapas fixas de oportunidade por um funil configurável. Ela roda na mesma transação de `0001`, sob o mesmo advisory lock, e é aplicada uma única vez por banco. Para cada tenant sem funil, cria o funil padrão com as seis etapas históricas e os rótulos que a interface já usava; em seguida grava `pipeline_id` nas oportunidades que não o possuem. `version` e `updated_at` das oportunidades não são tocados: um backfill de schema não é edição de usuário e não deve invalidar a concorrência otimista de um cliente aberto. Oportunidades já encerradas em etapa de perda recebem um `lost_reason` que declara a ausência do dado em vez de inventar um motivo.
+
+O migrador define `fattech.tenant_id` por tenant antes de escrever, porque `records` tem `FORCE ROW LEVEL SECURITY` e o proprietário do banco só escapa da política enquanto for superusuário. A API de produção passa a exigir a marca `0002` na inicialização: sem o backfill, toda escrita de oportunidade falharia por ausência de funil.
 
 ## Outbox e ciclo de processamento
 
@@ -107,7 +115,7 @@ Na versão auditada faltam deduplicação transacional por identificador normali
 | Ampliação | Modelo a acrescentar quando implementada |
 |---|---|
 | Multiempresas completo | Memberships, unidades, permissão de consolidação, papéis por organização |
-| Comercial completo | Pipelines/etapas configuráveis, identificadores únicos normalizados, merge, motivos de perda, propostas e itens |
+| Comercial completo | Identificadores únicos normalizados, merge, propostas e itens; pipelines/etapas configuráveis e motivo de perda já existem em `pipelines` |
 | Entrega/agenda | Marcos, responsáveis, disponibilidade, reservas com restrição contra conflito, sincronizações externas |
 | Atendimento real | Identidade por canal, contas, receipts, mídia privada, opt-out/blocklist e ledger de entrega |
 | Jornadas reais | Versão publicada imutável, execuções e passos, espera durável, gatilhos e cooldown |

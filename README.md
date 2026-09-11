@@ -26,6 +26,13 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
 - PostgreSQL com políticas de isolamento, serviços Docker separados, TLS e backup diário
   com restauração inicial verificada em banco descartável.
 
+## Alterações no repositório ainda não publicadas
+
+Funis configuráveis por etapa, com motivo de perda obrigatório, probabilidade por etapa e previsão
+ponderada no dashboard, estão implementados e cobertos por testes de API, migração e navegador.
+**Ainda não foram publicados na Oracle**: exigem a migração `0002` e um novo deploy, descritos em
+[Operação](docs/OPERATIONS.md). O endereço em produção continua servindo as seis etapas fixas anteriores.
+
 ## Escopo que continua em desenvolvimento
 
 Esta publicação é a base operacional; não representa conclusão das 72 famílias de recursos

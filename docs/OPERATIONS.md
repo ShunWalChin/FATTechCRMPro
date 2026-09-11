@@ -36,6 +36,10 @@ Em Linux, o contrato equivalente é `PYTHONPATH=apps/api`, ambiente development,
 ## Migrações e atualização
 
 As migrações são explícitas, não ocorrem implicitamente no início da API em produção.
+Esta versão acrescenta a migração `0002`, que cria o funil padrão de cada organização e grava
+`pipeline_id` nas oportunidades existentes, sem alterar a versão nem o `updated_at` desses registros.
+Rode `python -m fattech.migrate` com o usuário proprietário antes de liberar tráfego: a API de
+produção recusa iniciar sem a marca `0002`, porque toda escrita de oportunidade depende de um funil.
 Antes de atualizar, execute `infra/backup.sh`, registre commit e imagens anteriores,
 construa as novas imagens e valide antes da troca de tráfego. Não execute `down -v`.
 

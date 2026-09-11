@@ -8,10 +8,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
 from fattech.config import Settings
-from fattech.db import make_engine, session_factory
+from fattech.db import Base, make_engine, session_factory
 from fattech.main import create_app
-from fattech.migrate import migrate
-from fattech.models import Audit, Outbox, Record, User
+from fattech.migrate import UNRECORDED_LOSS, migrate
+from fattech.schemas import DEFAULT_PIPELINE, Pipeline
+from fattech.services import default_pipeline
+from fattech.models import Audit, Outbox, Record, Tenant, User, now
 from fattech.seed import bootstrap
 
 PASSWORD = "Development-Test-Only-2026!"
@@ -69,7 +71,7 @@ def test_crud_version_relations_and_tenant_isolation(system):
     deal = post(client, "deals", {"title": "Venda", "contact_id": contact["id"], "value_cents": 10001})
     changed = client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "won"})
     assert changed.status_code == 200 and changed.json()["version"] == 2
-    assert client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "lost"}).status_code == 409
+    assert client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "qualified"}).status_code == 409
     assert client.delete(f"/api/v1/contacts/{contact['id']}?version=1").status_code == 409
     with TestClient(app) as foreign:
         login = foreign.post("/api/v1/auth/login", json={"email": "other@example.com", "password": PASSWORD})
@@ -79,7 +81,8 @@ def test_crud_version_relations_and_tenant_isolation(system):
         assert foreign.patch(f"/api/v1/contacts/{contact['id']}", json={"version": 1, "name": "Hijack"}).status_code == 404
         assert foreign.post("/api/v1/deals", json={"title": "Bad link", "contact_id": contact["id"]}).status_code == 404
     with factory() as db:
-        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == second)) == 0
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == second,
+                                                                       Record.kind != "pipelines")) == 0
         assert db.scalar(select(func.count()).select_from(Audit).where(Audit.tenant_id == first, Audit.action == "deals.updated")) == 1
     assert client.delete(f"/api/v1/deals/{deal['id']}?version=2").status_code == 200
     assert client.delete(f"/api/v1/contacts/{contact['id']}?version=1").status_code == 200
@@ -207,7 +210,7 @@ def test_rate_limit_and_seed_repeatability(system):
         before = db.get(User, owner_id).password_hash
         bootstrap(db, slug="fattech", email="owner@example.com", password="Different-Test-Password!", demo=True)
         assert db.get(User, owner_id).password_hash == before
-        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 10
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 11
 
 
 def test_production_config_fails_closed():
@@ -218,3 +221,101 @@ def test_production_config_fails_closed():
     with pytest.raises(ValueError, match="WEBHOOK_SECRET"):
         Settings(_env_file=None, env="production", database_url="postgresql+psycopg://ignored",
                  allowed_origins="https://example.com", webhook_secret="short")
+
+
+def test_configurable_pipeline_stages_and_loss_reason(system):
+    client, app, _, _, _, _, _ = system
+    default = client.get("/api/v1/pipelines").json()
+    assert default["total"] == 1 and default["items"][0]["is_default"] is True
+    assert [stage["key"] for stage in default["items"][0]["stages"]][:2] == ["lead", "qualified"]
+
+    custom = post(client, "pipelines", {"name": "Consultoria", "is_default": True, "stages": [
+        {"key": "diagnostico", "label": "Diagnóstico", "probability": 25, "outcome": "open"},
+        {"key": "contrato", "label": "Contrato", "probability": 100, "outcome": "won"},
+        {"key": "arquivado", "label": "Arquivado", "probability": 0, "outcome": "lost"}]})
+    assert client.get(f"/api/v1/pipelines/{default['items'][0]['id']}").json()["is_default"] is False
+
+    # A new deal adopts the tenant default and the probability declared by its stage.
+    deal = post(client, "deals", {"title": "Consultoria A", "stage": "diagnostico", "value_cents": 400000})
+    assert deal["pipeline_id"] == custom["id"] and deal["probability"] == 25
+    assert client.post("/api/v1/deals", json={"title": "Etapa alheia", "stage": "negotiation"}).status_code == 422
+    assert post(client, "deals", {"title": "Explícita", "stage": "diagnostico", "probability": 90})["probability"] == 90
+
+    lost = client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "arquivado"})
+    assert lost.status_code == 422
+    closed = client.patch(f"/api/v1/deals/{deal['id']}",
+                          json={"version": 1, "stage": "arquivado", "lost_reason": "Orçamento adiado"})
+    assert closed.status_code == 200 and closed.json()["lost_reason"] == "Orçamento adiado"
+    reopened = client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 2, "stage": "diagnostico"})
+    assert reopened.json()["lost_reason"] == "" and reopened.json()["probability"] == 25
+
+    assert client.delete(f"/api/v1/pipelines/{custom['id']}?version=1").status_code == 409
+    dashboard = client.get("/api/v1/dashboard").json()
+    assert dashboard["pipeline_id"] == custom["id"] and dashboard["pipeline_name"] == "Consultoria"
+    assert [stage["label"] for stage in dashboard["pipeline"]] == ["Diagnóstico", "Contrato", "Arquivado"]
+    # 400000 * 25% + 0 * 90% opened elsewhere; the forecast is exact integer cents.
+    assert dashboard["pipeline_value_cents"] == 400000 and dashboard["weighted_pipeline_cents"] == 100000
+    assert dashboard["open_deals"] == 2 and dashboard["conversion_rate"] == 0
+
+
+def test_pipeline_configuration_requires_administration(system):
+    client, app, _, _, _, _, _ = system
+    post(client, "team", {"name": "Member", "email": "member@example.com", "password": PASSWORD, "role": "member"})
+    with TestClient(app) as member:
+        login = member.post("/api/v1/auth/login", json={"email": "member@example.com", "password": PASSWORD})
+        member.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+        assert member.get("/api/v1/pipelines").status_code == 200
+        assert member.post("/api/v1/pipelines", json={"name": "Sombra", "stages": [
+            {"key": "unico", "label": "Único"}]}).status_code == 403
+        assert member.post("/api/v1/deals", json={"title": "Permitido", "stage": "lead"}).status_code == 201
+
+
+def test_migration_0002_backfills_legacy_deals(tmp_path):
+    """The Oracle database already holds deals written before funnels existed."""
+    engine = make_engine(f"sqlite:///{tmp_path / 'legacy.db'}")
+    Base.metadata.create_all(engine)
+    records = Record.__table__
+    with engine.begin() as connection:
+        connection.execute(Tenant.__table__.insert().values(id="t1", name="Legado", slug="legado", created_at=now()))
+        for index, stage in enumerate(("lead", "won", "lost")):
+            connection.execute(records.insert().values(id=f"d{index}", tenant_id="t1", kind="deals", version=3,
+                deleted=False, created_at=now(), updated_at=now(),
+                data={"title": f"Legado {stage}", "stage": stage, "value_cents": 50000, "probability": 0}))
+    migrate(engine)
+    with engine.begin() as connection:
+        funnels = connection.execute(select(records.c.id, records.c.data).where(records.c.kind == "pipelines")).all()
+        assert len(funnels) == 1 and funnels[0][1]["is_default"] is True
+        deals = connection.execute(select(records.c.data, records.c.version).where(records.c.kind == "deals")).all()
+        assert all(data["pipeline_id"] == funnels[0][0] and version == 3 for data, version in deals)
+        stored = {data["stage"]: data["lost_reason"] for data, _ in deals}
+        assert stored == {"lead": "", "won": "", "lost": UNRECORDED_LOSS}
+    migrate(engine)
+    with engine.begin() as connection:
+        assert connection.scalar(select(func.count()).select_from(records).where(records.c.kind == "pipelines")) == 1
+    # The migration writes the funnel literally, so the running application must be able to resolve it.
+    with session_factory(engine)() as db:
+        resolved = default_pipeline(db, "t1")
+        assert resolved is not None and resolved.data["is_default"] is True
+    engine.dispose()
+
+
+def test_default_pipeline_literal_matches_the_schema():
+    """Migration 0002 persists this dict unvalidated; a new schema field must not silently go missing."""
+    assert Pipeline.model_validate(DEFAULT_PIPELINE).model_dump(mode="json") == DEFAULT_PIPELINE
+
+
+def test_stage_removal_and_archived_funnel_protect_existing_deals(system):
+    client, _, _, _, _, _, _ = system
+    funnel = client.get("/api/v1/pipelines").json()["items"][0]
+    deal = post(client, "deals", {"title": "Em negociação", "stage": "negotiation"})
+    without = [stage for stage in funnel["stages"] if stage["key"] != "negotiation"]
+    blocked = client.patch(f"/api/v1/pipelines/{funnel['id']}", json={"version": funnel["version"], "stages": without})
+    assert blocked.status_code == 409 and "Negociação" in blocked.json()["detail"]
+
+    archived = client.patch(f"/api/v1/pipelines/{funnel['id']}",
+                            json={"version": funnel["version"], "status": "inactive"})
+    assert archived.status_code == 200
+    # The archived funnel refuses new deals but still lets the ones inside it move.
+    assert client.post("/api/v1/deals", json={"title": "Novo", "stage": "lead"}).status_code == 409
+    moved = client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "won"})
+    assert moved.status_code == 200 and moved.json()["probability"] == 100

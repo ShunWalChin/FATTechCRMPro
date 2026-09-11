@@ -80,14 +80,17 @@ test('pipeline moves an opportunity with persisted version', async ({page}) => {
   await dialog.getByRole('button', {name: 'Salvar oportunidade'}).click();
   await expect(dialog).not.toBeVisible();
   await page.getByLabel(`Mover ${title} para etapa`).selectOption('qualified');
-  await expect(page.locator('.stage-qualified').getByRole('heading', {name: title})).toBeVisible();
+  const column = page.locator('.kanban-column').filter({has: page.getByRole('heading', {name: 'Qualificação', level: 2})});
+  await expect(column.getByRole('heading', {name: title})).toBeVisible();
   const records = await (await page.request.get(`/api/v1/deals?q=${encodeURIComponent(title)}`)).json();
-  expect(records.items[0]).toMatchObject({stage: 'qualified', value_cents: 125050, version: 2});
+  expect(records.items[0]).toMatchObject({stage: 'qualified', value_cents: 125050, probability: 30, version: 2});
 });
 
 test('all workspace modules load without backend error', async ({page}) => {
+  // Sixteen routes, each compiled on first visit by the dev server this suite starts.
+  test.slow();
   await login(page);
-  for (const route of ['empresas','tarefas','projetos','campanhas','automacoes','ia','conhecimento','financeiro','produtos','aprovacoes','conversas','integracoes','equipe','configuracoes']) {
+  for (const route of ['empresas','tarefas','projetos','campanhas','automacoes','ia','conhecimento','financeiro','produtos','aprovacoes','conversas','funis','integracoes','equipe','configuracoes']) {
     await page.goto(`/crm/${route}`);
     await expect(page.getByRole('heading', {level: 1})).toBeVisible();
     await expect(page.locator('.data-loading')).toHaveCount(0);
@@ -104,4 +107,40 @@ test('public pages render on mobile without overflow', async ({page}) => {
     expect(overflow, `${path} horizontal overflow`).toBeFalsy();
   }
   await page.screenshot({path: '.local/qa-mobile.png', fullPage: true});
+});
+
+test('a configured funnel drives the board and a loss requires its reason', async ({page}) => {
+  const stamp = Date.now();
+  const funnel = `Funil E2E ${stamp}`;
+  const title = `Perda E2E ${stamp}`;
+  await login(page);
+  await page.goto('/crm/funis');
+  await page.getByRole('button', {name: 'Novo funil'}).click();
+  const editor = page.getByRole('dialog');
+  await editor.getByLabel('Nome do funil').fill(funnel);
+  await editor.getByRole('textbox', {name: /^Etapa 1/}).fill('Descoberta');
+  await editor.getByRole('button', {name: 'Adicionar etapa'}).click();
+  await editor.getByRole('textbox', {name: /^Etapa 2/}).fill('Arquivado');
+  await editor.getByLabel('Resultado').nth(1).selectOption('lost');
+  await editor.getByRole('button', {name: 'Salvar funil'}).click();
+  await expect(editor).not.toBeVisible();
+  await expect(page.getByRole('heading', {name: funnel})).toBeVisible();
+
+  await page.goto('/crm/pipeline');
+  await page.getByLabel('Escolher funil').selectOption({label: funnel});
+  await expect(page.getByRole('heading', {name: 'Descoberta', level: 2})).toBeVisible();
+  await page.getByRole('button', {name: 'Novo oportunidade', exact: true}).click();
+  const form = page.getByRole('dialog');
+  await form.getByLabel('Nome da oportunidade').fill(title);
+  await form.getByRole('button', {name: 'Salvar oportunidade'}).click();
+  await expect(form).not.toBeVisible();
+
+  await page.getByLabel(`Mover ${title} para etapa`).selectOption('arquivado');
+  const loss = page.getByRole('dialog');
+  await expect(loss.getByRole('heading', {name: new RegExp(`${title} foi perdida`)})).toBeVisible();
+  await loss.getByLabel('Motivo da perda').fill('Cliente adiou o projeto para o próximo ciclo.');
+  await loss.getByRole('button', {name: 'Registrar perda'}).click();
+  await expect(loss).not.toBeVisible();
+  const records = await (await page.request.get(`/api/v1/deals?q=${encodeURIComponent(title)}`)).json();
+  expect(records.items[0]).toMatchObject({stage: 'arquivado', lost_reason: 'Cliente adiou o projeto para o próximo ciclo.'});
 });

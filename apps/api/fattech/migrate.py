@@ -1,12 +1,15 @@
 """Versioned, transactional initial schema. Run using the database owner, never the API role."""
 import os
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 
 from .config import get_settings
 from .db import Base, make_engine
+from .models import Record, Tenant, now, uid
+from .schemas import DEFAULT_PIPELINE
 from . import models  # noqa: F401 - register metadata
 
+UNRECORDED_LOSS = "Motivo não registrado antes da migração 0002."
 TENANT_TABLES = ("records", "audit_log", "event_outbox", "idempotency_keys")
 RUNTIME_TABLES = tuple(Base.metadata.tables)
 
@@ -49,6 +52,37 @@ def migrate(engine, app_password: str = ""):
             connection.execute(text("REVOKE INSERT, UPDATE, DELETE ON tenants FROM fattech_app"))
             connection.execute(text("GRANT SELECT ON schema_migrations TO fattech_app"))
         connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0001') ON CONFLICT DO NOTHING"))
+        if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'")).scalar():
+            backfill_pipelines(connection, postgres)
+            connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0002')"))
+
+
+def backfill_pipelines(connection, postgres):
+    """0002: replace the six hard-coded deal stages with one configurable funnel per tenant."""
+    records = Record.__table__
+    for tenant_id in connection.scalars(select(Tenant.__table__.c.id)):
+        if postgres:
+            # The migration owner is still subject to FORCE ROW LEVEL SECURITY on records.
+            connection.execute(text("SELECT set_config('fattech.tenant_id', :tenant, true)"), {"tenant": tenant_id})
+        existing = connection.execute(select(records.c.id, records.c.data).where(records.c.tenant_id == tenant_id,
+                                       records.c.kind == "pipelines", records.c.deleted.is_(False)).limit(1)).first()
+        if existing is None:
+            pipeline_id, stages, instant = uid(), DEFAULT_PIPELINE["stages"], now()
+            connection.execute(records.insert().values(id=pipeline_id, tenant_id=tenant_id, kind="pipelines",
+                data=DEFAULT_PIPELINE, version=1, deleted=False, created_at=instant, updated_at=instant))
+        else:
+            pipeline_id, stages = existing[0], existing[1]["stages"]
+        outcomes = {stage["key"]: stage["outcome"] for stage in stages}
+        deals = connection.execute(select(records.c.id, records.c.data)
+                                   .where(records.c.tenant_id == tenant_id, records.c.kind == "deals")).all()
+        for deal_id, data in deals:
+            if data.get("pipeline_id"):
+                continue
+            # Closing reasons were never captured before this migration; say so instead of inventing one.
+            reason = data.get("lost_reason") or (UNRECORDED_LOSS if outcomes.get(data.get("stage")) == "lost" else "")
+            # Version and updated_at stay untouched: a schema backfill is not a user edit.
+            connection.execute(records.update().where(records.c.id == deal_id).values(
+                data={**data, "pipeline_id": pipeline_id, "lost_reason": reason}))
 
 
 def main():
@@ -56,7 +90,7 @@ def main():
     engine = make_engine(settings.database_url)
     try:
         migrate(engine, os.environ.get("FATTECH_DB_APP_PASSWORD", ""))
-        print("Schema 0001 ready; tenant RLS enforced on PostgreSQL.")
+        print("Schema 0002 ready; tenant RLS enforced and every tenant has a configurable funnel.")
     finally:
         engine.dispose()
 

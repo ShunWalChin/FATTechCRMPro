@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
-from sqlalchemy import BigInteger, cast, func, select, text, update
+from sqlalchemy import BigInteger, and_, cast, func, select, text, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .config import Settings, get_settings
@@ -20,8 +20,8 @@ from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChang
                       TeamUpdate, Version, Webhook)
 from .security import (DUMMY_HASH, digest, hasher, rate_limit, require_auth, user_dict, utc,
                        verify_password)
-from .services import (PRIVILEGED, audit_event, create_record, delete_record, get_record, list_records,
-                       serialize, simulate, update_record)
+from .services import (PRIVILEGED, audit_event, create_record, default_pipeline, delete_record, get_record,
+                       list_records, serialize, simulate, update_record)
 
 CAPABILITIES = {
     "crm": "available", "public_leads": "available", "flow_simulator": "available",
@@ -52,7 +52,7 @@ def create_app(settings: Settings | None = None, engine=None):
                     "('records','audit_log','event_outbox','idempotency_keys') AND c.relrowsecurity AND c.relforcerowsecurity")).scalar_one()
                 if secured != 4:
                     raise RuntimeError("Tenant tables require ENABLE and FORCE ROW LEVEL SECURITY")
-                connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0001'" )).scalar_one()
+                connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'" )).scalar_one()
         yield
 
     app = FastAPI(title="FAT Tech CRM API", version="0.1.0", lifespan=lifespan,
@@ -209,7 +209,7 @@ def create_app(settings: Settings | None = None, engine=None):
         return {"id": lead.id, "status": "accepted"}
 
     @app.get("/api/v1/dashboard")
-    def dashboard(principal=Depends(require_auth), db=Depends(get_db)):
+    def dashboard(principal=Depends(require_auth), db=Depends(get_db), pipeline_id: str | None = None):
         principal.require("dashboard:read")
         # SQL aggregate operations avoid loading customer/message bodies into the dashboard.
         def count(kind, predicate=None):
@@ -224,21 +224,39 @@ def create_app(settings: Settings | None = None, engine=None):
             if predicate is not None:
                 query = query.where(predicate)
             return int(db.scalar(query) or 0)
-        stages = ["lead", "qualified", "proposal", "negotiation", "won", "lost"]
-        pipeline = [{"stage": stage, "count": count("deals", Record.data["stage"].as_string() == stage),
-                     "value_cents": money("deals", "value_cents", Record.data["stage"].as_string() == stage)}
-                    for stage in stages]
+        def weighted(predicate):
+            # Sum the products first and divide once, so the forecast never accumulates per-row rounding.
+            amount = cast(Record.data["value_cents"].as_string(), BigInteger)
+            chance = cast(Record.data["probability"].as_string(), BigInteger)
+            return int(db.scalar(select(func.coalesce(func.sum(amount * chance), 0)).where(
+                Record.tenant_id == principal.tenant_id, Record.kind == "deals",
+                Record.deleted.is_(False), predicate)) or 0) // 100
+        funnel = (get_record(db, principal.tenant_id, "pipelines", pipeline_id) if pipeline_id
+                  else default_pipeline(db, principal.tenant_id))
+        def at(stage):
+            return and_(Record.data["stage"].as_string() == stage,
+                        Record.data["pipeline_id"].as_string() == funnel.id)
+        pipeline = [{"stage": stage["key"], "label": stage["label"], "outcome": stage["outcome"],
+                     "count": count("deals", at(stage["key"])),
+                     "value_cents": money("deals", "value_cents", at(stage["key"])),
+                     "weighted_cents": weighted(at(stage["key"]))}
+                    for stage in (funnel.data["stages"] if funnel else [])]
+        opened = [stage for stage in pipeline if stage["outcome"] == "open"]
+        closed_won = sum(stage["count"] for stage in pipeline if stage["outcome"] == "won")
         total = sum(stage["count"] for stage in pipeline)
         activity = db.scalars(select(Audit).where(Audit.tenant_id == principal.tenant_id)
                               .order_by(Audit.created_at.desc()).limit(10))
-        return {"contacts": count("contacts"), "open_deals": sum(x["count"] for x in pipeline[:4]),
-                "pipeline_value_cents": sum(x["value_cents"] for x in pipeline[:4]),
+        return {"contacts": count("contacts"), "open_deals": sum(x["count"] for x in opened),
+                "pipeline_value_cents": sum(x["value_cents"] for x in opened),
+                "weighted_pipeline_cents": sum(x["weighted_cents"] for x in opened),
                 "revenue_cents": money("invoices", "amount_cents", Record.data["status"].as_string() == "paid"),
                 "open_tasks": count("tasks", Record.data["status"].as_string() != "done"),
                 "open_conversations": count("conversations", Record.data["status"].as_string() != "closed"),
                 "pending_approvals": count("approvals", Record.data["status"].as_string() == "pending"),
-                "active_automations": 0, "conversion_rate": round(pipeline[4]["count"] / total * 100, 1) if total else 0,
-                "pipeline": pipeline, "recent_activity": [audit_dict(item) for item in activity],
+                "active_automations": 0, "conversion_rate": round(closed_won / total * 100, 1) if total else 0,
+                "pipeline": pipeline, "pipeline_id": funnel.id if funnel else None,
+                "pipeline_name": funnel.data["name"] if funnel else "",
+                "recent_activity": [audit_dict(item) for item in activity],
                 "capabilities": CAPABILITIES}
 
     @app.get("/api/v1/integrations")
@@ -499,6 +517,7 @@ def register_resource(app, kind, schema):
     def listing(principal=Depends(require_auth), db=Depends(get_db), q: str = Query("", max_length=200),
                 status: str | None = None, stage: str | None = None, contact_id: str | None = None,
                 conversation_id: str | None = None, project_id: str | None = None, owner_id: str | None = None,
+                pipeline_id: str | None = None,
                 limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
         principal.require(f"{kind}:read")
         return list_records(db, principal.tenant_id, kind, locals())

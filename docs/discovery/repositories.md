@@ -100,8 +100,8 @@ Estado da coluna final: **Pendente** significa “mapeado para reescrita e valid
 | UNI-03 | Contatos 360, empresas de origem, telefones, tags e deduplicação | F `src/schema.mjs`; W `contacts-crm.server.ts`; D `lib/contacts/` | CRM / P0 | Pendente |
 | UNI-04 | Campos personalizados por entidade/empresa e validação do registro | F `src/propriedades.mjs`; W `automation-graph.ts`, migrations DAG | CRM / P1 | Pendente |
 | UNI-05 | Busca global normalizada e navegação até ficha com estado na URL | F `web/app.js`, README; D `app/app/contacts/[id]/page.tsx` | Experiência / P1 | Pendente |
-| UNI-06 | Funis, vocabulário por nicho, etapas, oportunidade e responsáveis | F `src/api.mjs`; W `crm-pipeline.server.ts`; D `lib/pipelines/` | Vendas / P0 | Pendente |
-| UNI-07 | Kanban concorrente, valores exatos, ganho/perda e motivo obrigatório | G `api/crm.py`; W `crm-pipeline-contract.ts`; F `src/dinheiro.mjs` | Vendas / P0 | Pendente |
+| UNI-06 | Funis, vocabulário por nicho, etapas, oportunidade e responsáveis | F `src/api.mjs`; W `crm-pipeline.server.ts`; D `lib/pipelines/` | Vendas / P0 | Parcial: `pipelines` com etapas/rótulos configuráveis, funil padrão e migração `0002`; vocabulário por nicho e responsáveis por etapa pendentes |
+| UNI-07 | Kanban concorrente, valores exatos, ganho/perda e motivo obrigatório | G `api/crm.py`; W `crm-pipeline-contract.ts`; F `src/dinheiro.mjs` | Vendas / P0 | Implementado: `apply_deal_rules` exige motivo em etapa de perda, kanban usa concorrência por versão e a previsão ponderada soma centavos inteiros; coberto por `test_configurable_pipeline_stages_and_loss_reason` e pelo teste de navegador do funil |
 | UNI-08 | Radar de risco/inatividade, snooze por assunto e próxima ação | W `src/routes/api/crm/radar.ts`; D `app/app/radar/`; F `adiamentos` | Operação / P1 | Pendente |
 | UNI-09 | Atividades, notas fixadas, ações em lote e histórico auditado | W `contacts-crm.server.ts`; D `app/app/activities/`, `lib/leads/` | CRM / P1 | Pendente |
 | UNI-10 | Workspaces, listas hierárquicas, itens, campos e item→oportunidade | G `api/workspaces.py`, `workers/router.py` | Projetos / P1 | Pendente |

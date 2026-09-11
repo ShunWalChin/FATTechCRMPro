@@ -6,9 +6,9 @@ Authentication: `POST /auth/login {email,password}` and `GET /auth/me` return `{
 
 `POST /auth/password {current_password,new_password}` requires 12–200 characters in the new password and returns `{ok:true,other_sessions_revoked:true}`. `GET /auth/sessions` returns `{items:[{id,expires_at,current}],total}` for the current user's active sessions; `DELETE /auth/sessions/{id}` revokes one of their sessions. These endpoints require a browser session, never an API key. Password whitespace is significant; errors never echo passwords.
 
-CRUD resources: `contacts`, `companies`, `deals`, `tasks`, `conversations`, `messages`, `campaigns`, `automations`, `knowledge`, `approvals`, `agents`, `projects`, `invoices`, `products`.
+CRUD resources: `contacts`, `companies`, `pipelines`, `deals`, `tasks`, `conversations`, `messages`, `campaigns`, `automations`, `knowledge`, `approvals`, `agents`, `projects`, `invoices`, `products`.
 
-`GET /{resource}?q=&status=&stage=&contact_id=&conversation_id=&limit=50&offset=0` returns `{items:[],total}`. `GET /{resource}/{id}` returns one record. `POST /{resource}` creates. `PATCH /{resource}/{id}` takes changed fields plus required `version`. `DELETE /{resource}/{id}?version=1` soft deletes. Version mismatch returns 409, missing or foreign tenant record 404. Fields `id,tenant_id,version,created_at,updated_at` are server-owned. Mutations return complete record; deletion returns `{deleted:true}`.
+`GET /{resource}?q=&status=&stage=&pipeline_id=&contact_id=&conversation_id=&limit=50&offset=0` returns `{items:[],total}`. `GET /{resource}/{id}` returns one record. `POST /{resource}` creates. `PATCH /{resource}/{id}` takes changed fields plus required `version`. `DELETE /{resource}/{id}?version=1` soft deletes. Version mismatch returns 409, missing or foreign tenant record 404. Fields `id,tenant_id,version,created_at,updated_at` are server-owned. Mutations return complete record; deletion returns `{deleted:true}`.
 
 Fields (defaults omitted in examples are supplied by the server):
 
@@ -16,7 +16,8 @@ Fields (defaults omitted in examples are supplied by the server):
 |---|---|
 | contacts | name (required), email, phone, company, company_id, status=new, source=manual, tags:[], score=0, consent=false, notes, owner_id |
 | companies | name (required), website, industry, email, phone, document, status=active, notes |
-| deals | title (required), contact_id, company_id, stage=lead (lead/qualified/proposal/negotiation/won/lost), value_cents=0, probability=0, expected_close, owner_id, notes |
+| pipelines | name (required), description, status=active (active/inactive), is_default=false, stages (required, 1-40 of {key,label,probability=0,outcome=open\|won\|lost}); owner/admin only |
+| deals | title (required), contact_id, company_id, pipeline_id, stage, value_cents=0, probability, expected_close, owner_id, lost_reason, notes |
 | tasks | title (required), description, status=todo (todo/in_progress/done), priority=medium (low/medium/high/urgent), due_date, contact_id, deal_id, project_id, owner_id |
 | conversations | title (required), contact_id, channel=internal (internal/whatsapp/instagram/email), status=open (open/pending/closed), owner_id, last_message; last_inbound_at is server-controlled and must be null on user writes |
 | messages | conversation_id (required), body (required), direction=outbound, status=draft; incoming/status delivery are controlled by integration endpoints |
@@ -29,7 +30,17 @@ Fields (defaults omitted in examples are supplied by the server):
 | invoices | title (required), company_id, contact_id, status=draft, amount_cents=0, due_date, notes; internal records only, no fiscal issuance/payment |
 | products | name (required), description, sku, price_cents=0, category=service, status=active |
 
-`GET /dashboard` returns `{contacts,open_deals,pipeline_value_cents,revenue_cents,open_tasks,open_conversations,pending_approvals,active_automations,conversion_rate,pipeline:[{stage,count,value_cents}],recent_activity:[],capabilities:{...}}`.
+`GET /dashboard?pipeline_id=` returns `{contacts,open_deals,pipeline_value_cents,weighted_pipeline_cents,revenue_cents,open_tasks,open_conversations,pending_approvals,active_automations,conversion_rate,pipeline_id,pipeline_name,pipeline:[{stage,label,outcome,count,value_cents,weighted_cents}],recent_activity:[],capabilities:{...}}`. Without `pipeline_id` the tenant default funnel is used; counts are scoped to that funnel. `open_deals` and `pipeline_value_cents` cover stages whose outcome is `open`; `weighted_pipeline_cents` sums `value_cents * probability` across those stages and divides once, so the forecast is exact integer cents. `conversion_rate` is won deals over every deal in the funnel.
+
+## Funnels and deal stages
+
+Stage vocabulary is tenant configuration, not a fixed enum. Each tenant is provisioned with one default funnel (`lead`, `qualified`, `proposal`, `negotiation`, `won`, `lost`) by migration `0002` and by owner bootstrap.
+
+A deal without `pipeline_id` adopts the tenant default funnel and stores that id, so a later default change does not move existing deals. `stage` must be a key declared by the deal's funnel; an unknown key returns 422. When the request omits `probability`, the deal adopts the probability declared by its stage; an explicit value is kept.
+
+Moving a deal to a stage whose `outcome` is `lost` requires a non-empty `lost_reason` (422 otherwise). Moving it back to any other stage clears the reason. Stage keys match `^[a-z][a-z0-9_-]{0,39}$` and are unique per funnel.
+
+Removing or renaming a stage that still holds active deals returns 409, as does deleting a funnel with active deals. An `inactive` funnel refuses new deals and reassignments but keeps the deals already inside it editable, so a funnel can be archived without stranding history. Setting `is_default` demotes the previous default in the same transaction.
 
 `GET /integrations` returns `{items:[{id,name,status,description}],total}`. External providers are explicitly `not_configured`; no simulated delivery. `GET /team` returns members; owner/admin can `POST /team {name,email,password,role}`.
 

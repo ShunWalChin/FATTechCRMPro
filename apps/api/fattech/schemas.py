@@ -7,6 +7,8 @@ Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max
 Text = Annotated[str, StringConstraints(max_length=20000)]
 Cents = Annotated[int, Field(strict=True, ge=0, le=100_000_000_000)]
 Identifier = Annotated[str, StringConstraints(max_length=36)]
+StageKey = Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=40,
+                                            pattern=r"^[a-z][a-z0-9_-]{0,39}$")]
 Password = Annotated[str, StringConstraints(strip_whitespace=False, min_length=1, max_length=200)]
 NewPassword = Annotated[str, StringConstraints(strip_whitespace=False, min_length=12, max_length=200)]
 
@@ -51,15 +53,43 @@ class Company(StrictModel):
     notes: Text = ""
 
 
+class PipelineStage(StrictModel):
+    key: StageKey
+    label: Name
+    probability: int = Field(default=0, ge=0, le=100)
+    outcome: Literal["open", "won", "lost"] = "open"
+
+
+class Pipeline(StrictModel):
+    name: Name
+    description: Text = ""
+    status: Literal["active", "inactive"] = "active"
+    is_default: bool = False
+    stages: list[PipelineStage] = Field(min_length=1, max_length=40)
+
+
+# Migration 0002 stores this literal without validation, so every field the schema reads must be present.
+DEFAULT_PIPELINE = {"name": "Funil comercial", "status": "active", "is_default": True,
+                    "description": "Etapas iniciais do processo comercial. Ajuste conforme a sua operação.",
+                    "stages": [{"key": "lead", "label": "Entrada", "probability": 10, "outcome": "open"},
+                               {"key": "qualified", "label": "Qualificação", "probability": 30, "outcome": "open"},
+                               {"key": "proposal", "label": "Proposta", "probability": 60, "outcome": "open"},
+                               {"key": "negotiation", "label": "Negociação", "probability": 80, "outcome": "open"},
+                               {"key": "won", "label": "Ganho", "probability": 100, "outcome": "won"},
+                               {"key": "lost", "label": "Perdido", "probability": 0, "outcome": "lost"}]}
+
+
 class Deal(StrictModel):
     title: Name
     contact_id: Identifier | None = None
     company_id: Identifier | None = None
-    stage: Literal["lead", "qualified", "proposal", "negotiation", "won", "lost"] = "lead"
+    pipeline_id: Identifier | None = None
+    stage: StageKey = "lead"
     value_cents: Cents = 0
     probability: int = Field(default=0, ge=0, le=100)
     expected_close: DateText | None = None
     owner_id: Identifier | None = None
+    lost_reason: str = Field(default="", max_length=500)
     notes: Text = ""
 
 
@@ -181,7 +211,7 @@ class Product(StrictModel):
     status: Literal["active", "inactive"] = "active"
 
 
-RESOURCES = {"contacts": Contact, "companies": Company, "deals": Deal, "tasks": Task,
+RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "deals": Deal, "tasks": Task,
              "conversations": Conversation, "messages": Message, "campaigns": Campaign,
              "automations": Automation, "knowledge": Knowledge, "approvals": Approval,
              "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product}

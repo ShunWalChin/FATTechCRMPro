@@ -8,8 +8,9 @@ from sqlalchemy import select
 from .config import get_settings
 from .db import make_engine, session_factory, set_tenant
 from .models import Record, Tenant, User, now
+from .schemas import DEFAULT_PIPELINE
 from .security import hasher
-from .services import create_record
+from .services import create_record, default_pipeline
 
 
 def bootstrap(db, *, slug: str, email: str, password: str, name="FAT Tech", demo=False):
@@ -31,8 +32,12 @@ def bootstrap(db, *, slug: str, email: str, password: str, name="FAT Tech", demo
                     password_hash=hasher.hash(password), role="owner")
         db.add(user)
         db.flush()
+    # Every tenant needs a stage vocabulary before the first deal can be recorded.
+    if default_pipeline(db, tenant.id) is None:
+        create_record(db, tenant.id, user.id, "pipelines", DEFAULT_PIPELINE)
     # Re-running bootstrap never changes an existing owner's password or customer records.
-    if demo and not db.scalar(select(Record.id).where(Record.tenant_id == tenant.id).limit(1)):
+    if demo and not db.scalar(select(Record.id).where(Record.tenant_id == tenant.id,
+                                                      Record.kind != "pipelines").limit(1)):
         demo_records(db, tenant.id, user.id)
     db.commit()
     return tenant, user

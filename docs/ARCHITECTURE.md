@@ -41,7 +41,7 @@ O desenho mostra fronteiras; a saída tracejada do worker só é usada quando h�
 | `apps/api/fattech/security.py` | Argon2, sessões, chaves com escopo, papéis, CSRF e rate limit |
 | `apps/api/fattech/db.py` | Engine, sessões SQLAlchemy e contexto Postgres por transação |
 | `apps/api/fattech/models.py` | Modelo físico persistente, índices e unicidade |
-| `apps/api/fattech/migrate.py` | Schema inicial 0001, papel runtime, grants e RLS PostgreSQL |
+| `apps/api/fattech/migrate.py` | Schema 0001 com papel runtime, grants e RLS PostgreSQL; migração 0002 dos funis configuráveis |
 | `apps/api/fattech/seed.py` | Bootstrap explícito do proprietário e exemplos somente em desenvolvimento com `--demo` |
 | `apps/api/fattech/worker.py` | Claim da outbox, entrega n8n assinada, leases, retries e fila de falhas |
 | `infra/` | Imagens, Compose isolado, provisionamento, deploy, ingresso e backup |
@@ -86,7 +86,7 @@ No snapshot auditado, esse caminho **não** cria automaticamente oportunidade/ta
 
 ### Operação interna
 
-Quatorze recursos têm rotas concretas de listagem, detalhe, criação, alteração e exclusão lógica. Schemas rejeitam campos desconhecidos. Referências para contato, empresa, oportunidade, projeto, conversa e responsável são validadas no tenant. Alterações e exclusões exigem `version`; escrita concorrente obsoleta retorna 409. Cada mutação gera auditoria e outbox na mesma sessão/commit.
+Quinze recursos têm rotas concretas de listagem, detalhe, criação, alteração e exclusão lógica. Schemas rejeitam campos desconhecidos. Referências para contato, empresa, oportunidade, projeto, conversa e responsável são validadas no tenant. Alterações e exclusões exigem `version`; escrita concorrente obsoleta retorna 409. Cada mutação gera auditoria e outbox na mesma sessão/commit.
 
 O dashboard usa agregações SQL sobre registros persistidos: contatos, oportunidades, pipeline, tarefas, conversas, aprovações e lançamentos pagos. Receita nesse dashboard é soma de lançamentos internos marcados `paid`; não é conciliação bancária ou receita fiscal verificada. `active_automations` é zero porque a execução real não está ativa.
 
@@ -111,7 +111,7 @@ Agentes são cadastros pausados A0/A1, com orçamento declarado. O endpoint de e
 | Área | Código presente | Limite atual |
 |---|---|---|
 | Site, login e CRM | Rotas React/Next e endpoints autenticados | Homologação visual e E2E deve ser registrada após execução |
-| CRM operacional | Contatos, empresas, oportunidades, tarefas, projetos, produtos e lançamentos | Sem todas as regras de ERP, propostas, agenda, importação/merge e verticais dos legados |
+| CRM operacional | Contatos, empresas, funis configuráveis, oportunidades, tarefas, projetos, produtos e lançamentos | Sem todas as regras de ERP, propostas, agenda, importação/merge e verticais dos legados |
 | Atendimento | Conversas e rascunhos de mensagens | Sem ingestão de canal ou envio real homologado |
 | Campanhas | Organização de rascunhos e orçamento | Sem disparo, execução agendada ou métricas de provedor |
 | Automação | Persistência de DAG e simulador | Sem executor de jornadas duráveis/ativas |
