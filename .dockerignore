@@ -1,0 +1,17 @@
+.git
+.local
+.venv
+**/.venv
+.codex
+node_modules
+**/node_modules
+**/.next
+**/__pycache__
+**/.pytest_cache
+**/*.db
+.env*
+*.key
+*.pem
+graphify-out
+test-results
+playwright-report

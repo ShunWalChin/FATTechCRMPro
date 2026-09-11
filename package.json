@@ -1,0 +1,16 @@
+{
+  "name": "fattech-crm-pro",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/web"],
+  "engines": {"node": ">=24 <25"},
+  "scripts": {
+    "dev": "npm run dev --workspace @fattech/web",
+    "build": "npm run build --workspace @fattech/web",
+    "typecheck": "npm run typecheck --workspace @fattech/web",
+    "test:e2e": "playwright test",
+    "inventory": "python scripts/inventory.py",
+    "secrets:check": "python scripts/check_secrets.py"
+  },
+  "devDependencies": {"@playwright/test": "1.58.2"}
+}

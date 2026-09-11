@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily FAT Tech CRM Pro backup
+
+[Timer]
+OnCalendar=*-*-* 04:35:00
+Persistent=true
+RandomizedDelaySec=900
+
+[Install]
+WantedBy=timers.target

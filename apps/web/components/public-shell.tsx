@@ -1,0 +1,6 @@
+import Link from 'next/link';
+import {ArrowUpRight,ArrowRight} from 'lucide-react';
+import {Brand} from './brand';
+export function PublicHeader(){return <header className="public-header"><div className="site-container nav-inner"><Brand light/><nav aria-label="Navegação principal"><Link href="/#solucoes">Soluções</Link><Link href="/#metodo">Nosso método</Link><Link href="/blog">Insights</Link><Link href="/login" className="team-link">Área da equipe <ArrowUpRight size={14}/></Link></nav><Link className="button-link mint small" href="/#contato">Vamos conversar <ArrowUpRight size={16}/></Link></div></header>}
+export function PublicFooter(){return <footer className="public-footer"><div className="site-container"><div className="footer-top"><Brand light/><p>Transformamos tecnologia em<br/>crescimento de verdade.</p><a href="mailto:contato@fattech.com.br">contato@fattech.com.br <ArrowUpRight size={18}/></a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} FAT Tech. Inteligência em movimento.</span><div><Link href="/privacidade">Privacidade</Link><Link href="/integracoes">Integrações</Link><Link href="/login">Acesso da equipe <ArrowRight size={13}/></Link></div></div></div></footer>}
+export function PublicShell({children}:{children:React.ReactNode}){return <div className="public-site"><PublicHeader/>{children}<PublicFooter/></div>}

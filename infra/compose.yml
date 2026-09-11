@@ -1,0 +1,101 @@
+name: fattechcrmpro
+
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "3"}
+
+x-app: &app
+  restart: unless-stopped
+  init: true
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=128m,mode=1777"]
+  logging: *logging
+  networks: [fattech]
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fattech
+      POSTGRES_USER: fattech_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks: [fattech]
+    shm_size: 128mb
+    mem_limit: 768m
+    cpus: 1.0
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U fattech_owner -d fattech"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    <<: *app
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    image: fattechcrmpro-api:${RELEASE_TAG:-local}
+    environment: &api-env
+      FATTECH_ENV: production
+      FATTECH_DATABASE_URL: postgresql+psycopg://fattech_app:${FATTECH_DB_APP_PASSWORD:?Set runtime DB password}@postgres:5432/fattech
+      FATTECH_ALLOWED_ORIGINS: ${FATTECH_ALLOWED_ORIGINS:?Set HTTPS origins}
+      FATTECH_WEBHOOK_SECRET: ${FATTECH_WEBHOOK_SECRET:?Set webhook secret}
+      FATTECH_PUBLIC_TENANT_SLUG: ${FATTECH_PUBLIC_TENANT_SLUG:-fattech}
+      FATTECH_N8N_OUTBOUND_URL: ${FATTECH_N8N_OUTBOUND_URL:-}
+      FATTECH_N8N_OUTBOUND_TOKEN: ${FATTECH_N8N_OUTBOUND_TOKEN:-}
+    depends_on:
+      postgres: {condition: service_healthy}
+    ports: ["127.0.0.1:${API_PORT:-4321}:8000"]
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+  web:
+    <<: *app
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+      args:
+        API_INTERNAL_URL: http://api:8000
+        NEXT_PUBLIC_SITE_URL: ${FATTECH_SITE_URL:-https://fattech.com.br}
+    image: fattechcrmpro-web:${RELEASE_TAG:-local}
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      NEXT_PUBLIC_SITE_URL: ${FATTECH_SITE_URL:-https://fattech.com.br}
+    ports: ["127.0.0.1:${WEB_PORT:-4320}:3000"]
+    depends_on:
+      api: {condition: service_healthy}
+    mem_limit: 768m
+    cpus: 1.0
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 8s
+      retries: 8
+
+  worker:
+    <<: *app
+    image: fattechcrmpro-api:${RELEASE_TAG:-local}
+    command: [python, -m, fattech.worker]
+    environment: *api-env
+    depends_on:
+      api: {condition: service_healthy}
+    mem_limit: 256m
+    cpus: 0.5
+
+networks:
+  fattech:
+    name: fattechcrmpro-network
+volumes:
+  postgres:
+    name: fattechcrmpro-postgres

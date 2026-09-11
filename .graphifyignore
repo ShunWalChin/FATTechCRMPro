@@ -1,0 +1,14 @@
+.local/**
+.venv/**
+node_modules/**
+**/node_modules/**
+**/.next/**
+.git/**
+.codex/**
+graphify-out/**
+**/*.db
+**/.env*
+**/*.key
+**/*.pem
+package-lock.json
+docs/FILE_INVENTORY.csv

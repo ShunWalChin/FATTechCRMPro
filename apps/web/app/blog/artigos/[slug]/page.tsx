@@ -1,0 +1,9 @@
+import type {Metadata} from 'next';
+import {notFound} from 'next/navigation';
+import Link from 'next/link';
+import {ArrowLeft,ArrowUpRight} from 'lucide-react';
+import {PublicShell} from '@/components/public-shell';
+import {articles} from '@/lib/content';
+export function generateStaticParams(){return articles.map(a=>({slug:a.slug}))}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const {slug}=await params;const a=articles.find(a=>a.slug===slug);return {title:a?.title,description:a?.description,alternates:{canonical:`/blog/artigos/${slug}`},openGraph:{type:'article',publishedTime:a?.published}}}
+export default async function Article({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const a=articles.find(a=>a.slug===slug);if(!a)notFound();return <PublicShell><main id="main" className="article-page"><Link className="text-link" href="/blog"><ArrowLeft size={16}/> Voltar para insights</Link><span className="eyebrow">INTELIGÊNCIA APLICADA</span><h1>{a.title}</h1><div className="article-author"><span className="avatar">WF</span><span><strong>Walfredo Figueiredo</strong><small>FAT Tech · Publicado em {new Date(`${a.published}T12:00:00Z`).toLocaleDateString('pt-BR')}</small></span></div><article className="article-prose" dangerouslySetInnerHTML={{__html:a.html}}/><div className="article-cta"><h2>Vamos aplicar isso ao seu negócio?</h2><p>Transforme conhecimento em uma operação mais inteligente.</p><Link className="button-link mint" href="/#contato">Converse com a FAT Tech <ArrowUpRight size={18}/></Link></div></main><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@type':'BlogPosting',headline:a.title,description:a.description,datePublished:a.published,author:{'@type':'Person',name:'Walfredo Figueiredo'},publisher:{'@type':'Organization',name:'FAT Tech'}}).replace(/</g,'\u003c')}}/></PublicShell>}

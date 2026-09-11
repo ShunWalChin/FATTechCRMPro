@@ -1,0 +1,60 @@
+name: Validate FAT Tech CRM
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FATTECH_TEST_DB_APP_PASSWORD: fattech-ci-only-runtime-password-2026
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: fattech_test
+          POSTGRES_USER: fattech_test_owner
+          POSTGRES_PASSWORD: ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fattech_test_owner -d fattech_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install API and test dependencies
+        run: |
+          python -m venv apps/api/.venv
+          apps/api/.venv/bin/pip install -e 'apps/api[test]'
+      - run: npm ci
+      - run: python scripts/check_secrets.py
+      - name: API behavior and security tests
+        env:
+          FATTECH_TEST_POSTGRES_OWNER_URL: postgresql+psycopg://fattech_test_owner:ci-only@localhost:5432/fattech_test
+          FATTECH_TEST_POSTGRES_APP_URL: postgresql+psycopg://fattech_app:${{ env.FATTECH_TEST_DB_APP_PASSWORD }}@localhost:5432/fattech_test
+        run: apps/api/.venv/bin/python -m pytest apps/api/tests -q
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-failures
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

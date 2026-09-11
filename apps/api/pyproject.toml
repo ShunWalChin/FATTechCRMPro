@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling==1.29.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fattech-api"
+version = "0.1.0"
+description = "FAT Tech CRM transactional API and durable workers"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "fastapi==0.135.2",
+  "uvicorn[standard]==0.42.0",
+  "SQLAlchemy==2.0.48",
+  "psycopg[binary]==3.3.3",
+  "pydantic==2.12.5",
+  "pydantic-settings==2.13.1",
+  "argon2-cffi==25.1.0",
+  "email-validator==2.3.0",
+  "httpx==0.28.1",
+  "alembic==1.18.4",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.0.2", "pytest-cov==7.0.0", "ruff==0.15.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 110
+
+[tool.hatch.build.targets.wheel]
+packages = ["fattech"]
