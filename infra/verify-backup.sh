@@ -18,7 +18,13 @@ trap cleanup EXIT
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM schema_migrations WHERE version='0001') THEN
-    RAISE EXCEPTION 'Missing migration';
+    RAISE EXCEPTION 'Missing migration 0001';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM schema_migrations WHERE version='0002') THEN
+    RAISE EXCEPTION 'Missing migration 0002';
+  END IF;
+  IF EXISTS (SELECT 1 FROM records WHERE kind='deals' AND deleted=false AND (data->>'pipeline_id') IS NULL) THEN
+    RAISE EXCEPTION 'Deals without a funnel survived the restore';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM users WHERE role='owner' AND active=true) THEN
     RAISE EXCEPTION 'Missing active owner';

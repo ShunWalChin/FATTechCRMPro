@@ -7,6 +7,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Entrar no CRM](https://fattechcrmpro.64.181.178.125.nip.io/login)
 - [Contrato interativo da API](https://fattechcrmpro.64.181.178.125.nip.io/api/docs)
 - [Estado da entrega, provas e pendências](docs/releases/2026-09-11.md)
+- [Funis configuráveis e motivo de perda, publicado em 11/09](docs/releases/2026-09-11-funis-configuraveis.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.
@@ -17,7 +18,9 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
 - Site responsivo, 22 artigos, 20 landing pages e redirecionamentos das URLs anteriores.
 - Formulário público que grava contato, consentimento, atribuição UTM e auditoria no CRM.
 - Login privado, sessões revogáveis, troca de senha, papéis e administração da equipe.
-- Contatos, empresas, oportunidades em kanban, tarefas, projetos, produtos e conhecimento.
+- Contatos, empresas, tarefas, projetos, produtos e conhecimento.
+- Funis configuráveis por etapa, com rótulo, probabilidade e resultado definidos pela equipe;
+  oportunidades em kanban com motivo de perda obrigatório e previsão ponderada no dashboard.
 - Lançamentos financeiros internos, solicitações de aprovação, cadastro de campanhas,
   conversas/rascunhos, configurações de agentes e simulação estrutural de automações.
 - Dashboard calculado no banco, busca, filtros, exportação da página atual, versionamento
@@ -25,13 +28,6 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
 - API com escopos, webhook n8n assinado/idempotente e outbox durável com worker de tentativas.
 - PostgreSQL com políticas de isolamento, serviços Docker separados, TLS e backup diário
   com restauração inicial verificada em banco descartável.
-
-## Alterações no repositório ainda não publicadas
-
-Funis configuráveis por etapa, com motivo de perda obrigatório, probabilidade por etapa e previsão
-ponderada no dashboard, estão implementados e cobertos por testes de API, migração e navegador.
-**Ainda não foram publicados na Oracle**: exigem a migração `0002` e um novo deploy, descritos em
-[Operação](docs/OPERATIONS.md). O endereço em produção continua servindo as seis etapas fixas anteriores.
 
 ## Escopo que continua em desenvolvimento
 
