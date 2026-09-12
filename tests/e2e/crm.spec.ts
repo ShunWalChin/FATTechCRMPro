@@ -73,7 +73,7 @@ test('pipeline moves an opportunity with persisted version', async ({page}) => {
   const title = `Oportunidade E2E ${Date.now()}`;
   await login(page);
   await page.goto('/crm/pipeline');
-  await page.getByRole('button', {name: 'Novo oportunidade', exact: true}).click();
+  await page.getByRole('button', {name: 'Nova oportunidade', exact: true}).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Nome da oportunidade').fill(title);
   await dialog.getByLabel('Valor da oportunidade (R$)').fill('1250.50');
@@ -129,7 +129,7 @@ test('a configured funnel drives the board and a loss requires its reason', asyn
   await page.goto('/crm/pipeline');
   await page.getByLabel('Escolher funil').selectOption({label: funnel});
   await expect(page.getByRole('heading', {name: 'Descoberta', level: 2})).toBeVisible();
-  await page.getByRole('button', {name: 'Novo oportunidade', exact: true}).click();
+  await page.getByRole('button', {name: 'Nova oportunidade', exact: true}).click();
   const form = page.getByRole('dialog');
   await form.getByLabel('Nome da oportunidade').fill(title);
   await form.getByRole('button', {name: 'Salvar oportunidade'}).click();
@@ -150,7 +150,7 @@ test('the radar flags an opportunity without a next action and clears it once sc
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
   await login(page);
   await page.goto('/crm/pipeline');
-  await page.getByRole('button', {name: 'Novo oportunidade', exact: true}).click();
+  await page.getByRole('button', {name: 'Nova oportunidade', exact: true}).click();
   const form = page.getByRole('dialog');
   await form.getByLabel('Nome da oportunidade').fill(title);
   await form.getByRole('button', {name: 'Salvar oportunidade'}).click();
@@ -162,9 +162,11 @@ test('the radar flags an opportunity without a next action and clears it once sc
   // A deal with no next action is pending, even while it is still on track for its stage.
   await expect(row.getByText('Pendente')).toBeVisible();
 
-  await page.goto('/crm/pipeline');
-  await page.getByRole('button', {name: `Editar ${title}`}).or(
-    page.getByRole('heading', {name: title})).first().click();
+  // The radar links straight at the record, which now opens its own page rather than a modal.
+  await row.getByRole('link', {name: new RegExp(`Abrir ${title}`)}).click();
+  await expect(page).toHaveURL(/\/crm\/pipeline\/[0-9a-f-]{36}/);
+  // A deal keeps its editor on the board, reached from the record page by the deep link.
+  await page.getByRole('link', {name: 'Editar oportunidade'}).click();
   const editor = page.getByRole('dialog');
   await editor.getByLabel('Próxima ação').fill(tomorrow);
   await editor.getByRole('button', {name: 'Salvar oportunidade'}).click();

@@ -10,6 +10,41 @@ CRUD resources: `contacts`, `companies`, `pipelines`, `deals`, `tasks`, `convers
 
 `GET /{resource}?q=&status=&stage=&pipeline_id=&contact_id=&conversation_id=&limit=50&offset=0` returns `{items:[],total}`. `GET /{resource}/{id}` returns one record. `POST /{resource}` creates. `PATCH /{resource}/{id}` takes changed fields plus required `version`. `DELETE /{resource}/{id}?version=1` soft deletes. Version mismatch returns 409, missing or foreign tenant record 404. Fields `id,tenant_id,version,created_at,updated_at` are server-owned. Mutations return complete record; deletion returns `{deleted:true}`.
 
+## Retry-safe creation for integrations
+
+Every CRUD `POST /{resource}` accepts optional `Idempotency-Key` (8–200 ASCII letters,
+digits, `.`, `_`, `:`, `-`). Generate the key once per business operation and persist it
+in the originating workflow. On a timeout, resend the same key and the same data.
+
+The original creation and its receipt commit in one transaction. Concurrent requests
+with the same key serialize in the database. The same validated body returns the original
+201 JSON result with `Idempotency-Replayed: true`, without a second record or audit event.
+Changed content returns 409. A rolled-back creation does not reserve the key.
+Default fields and JSON property ordering do not change the request fingerprint.
+
+Keys are scoped to tenant, authenticated user or API credential, and resource. Authentication
+and current permissions are always checked before replay. A new API key starts a new namespace.
+The cached creation result may have an older version than the current record: use GET before PATCH.
+Receipts are durable with no automatic expiry; do not prune them independently of the
+integration's replay/retention policy. Without the header, the existing creation behavior remains.
+This applies to CRUD creation, not team/password/public-capture or action endpoints.
+
+Example for an n8n HTTP Request node:
+
+```text
+POST /api/v1/deals
+Authorization: Bearer <credential stored in n8n>
+Idempotency-Key: crm-deal:<stable-source-event-id>
+Content-Type: application/json
+
+{"title":"Diagnóstico comercial","value_cents":250000}
+```
+
+Do not generate a fresh key on each retry. Event delivery to n8n remains at least once;
+this receipt prevents duplicate CRM creation and does not promise exactly-once external effects.
+
+## Resource fields
+
 Fields (defaults omitted in examples are supplied by the server):
 
 | Resource | Fields |
@@ -19,7 +54,7 @@ Fields (defaults omitted in examples are supplied by the server):
 | pipelines | name (required), description, status=active (active/inactive), is_default=false, stages (required, 1-40 of {key,label,probability=0,outcome=open\|won\|lost,expected_duration_hours=72}); owner/admin only |
 | deals | title (required), contact_id, company_id, pipeline_id, stage, value_cents=0, probability, expected_close, next_action_at, position, owner_id, lost_reason, notes; `last_activity_at` is server-owned |
 
-`position` orders a card inside its column and is assigned on creation as the current column maximum plus 1000, leaving room to drop between neighbours. Deal listings are ordered by position ascending and then by creation date, so a board reads in the operator's priority rather than by age.
+`position` orders a card inside its column and is assigned on creation as the current column maximum plus 1000, leaving room to drop between neighbours. Deal listings carry `contact_name` and `company_name`, resolved in one extra query for the page being returned, so a board shows who each deal is with; both are empty strings when the deal has no such relation. Deal listings are ordered by position ascending and then by creation date, so a board reads in the operator's priority rather than by age.
 | tasks | title (required), description, status=todo (todo/in_progress/done), priority=medium (low/medium/high/urgent), due_date, contact_id, deal_id, project_id, owner_id |
 | conversations | title (required), contact_id, channel=internal (internal/whatsapp/instagram/email), status=open (open/pending/closed), owner_id, last_message; last_inbound_at is server-controlled and must be null on user writes |
 | messages | conversation_id (required), body (required), direction=outbound, status=draft; incoming/status delivery are controlled by integration endpoints |
@@ -44,11 +79,15 @@ Moving a deal to a stage whose `outcome` is `lost` requires a non-empty `lost_re
 
 Removing or renaming a stage that still holds active deals returns 409, as does deleting a funnel with active deals. An `inactive` funnel refuses new deals and reassignments but keeps the deals already inside it editable, so a funnel can be archived without stranding history. Setting `is_default` demotes the previous default in the same transaction.
 
-`GET /integrations` returns `{items:[{id,name,status,description}],total}`. External providers are explicitly `not_configured`; no simulated delivery. `GET /team` returns members; owner/admin can `POST /team {name,email,password,role}`.
+`GET /audit` returns entries carrying `label`, `actor_name` and `resource_name` alongside the raw `action`, `actor_id` and `resource_id`. The label is Portuguese wording derived server side and agreeing in gender ("Criou o contato", "Alterou a automação"); an action nobody mapped keeps its raw key rather than receiving invented wording. Names are resolved in two batched queries, and the subject is omitted when it is the actor itself, as in a sign-in. `GET /dashboard` carries the same shape under `recent_activity`.
 
-`PATCH /team/{id} {name?,role?,active?}` updates membership. Roles are `owner`, `admin`, `member`, `viewer`; only an owner may modify an owner or promote another member to owner. The final active owner cannot be demoted or disabled. Disabling an account revokes sessions and API keys. Owner/admin team listings include inactive users and `active`; other members see active users only. `viewer` cannot mutate resources. Creating/updating agents, automations and invoices requires owner/admin session; approvals may be requested by members but require a separate authorized decision maker.
+`GET /integrations` returns `{items:[{id,name,status,description}],total}`. External providers are explicitly `not_configured`; no simulated delivery. The payload also carries `scopes`, the full catalogue the key endpoint validates against, so a client never offers a permission the API would reject. `GET /team` returns members; owner/admin can `POST /team {name,email,password,role}`.
 
-Public capture: `POST /public/leads {name,email,phone,company,interest,message,consent:true,utm_source,utm_medium,utm_campaign,utm_content,utm_term}` -> `{id,status:accepted}`. A resubmission matching an existing contact by normalized e-mail or phone returns 202 with that contact's id and appends the new message to its history: it never duplicates and never answers a visitor with a conflict. First-touch attribution and the original consent instant are preserved.
+`PATCH /team/{id} {name?,role?,active?}` updates membership. Roles are `root`, `super_admin`, `admin`, `member`, `viewer`; legacy `owner` is equivalent to Super Admin. Root manages tenant roles, Super Admin manages Admin/member/viewer, Admin manages member/viewer. The last active Root and last elevated administrator are protected. Role changes, deactivation and administrative password resets revoke the target's sessions and API keys. `POST /team/{id}/password {new_password}` requires a manageable subordinate; personal password changes use `/auth/password`. Administrative team listings include inactive users and `active`; other members see active users only. `viewer` cannot mutate resources. Creating/updating agents, automations and invoices requires an administrative session; approvals may be requested by members but require a separate authorized decision maker. Login/me also return `role_label` and `permissions`, including `assignable_roles`; clients must use these capabilities.
+
+A duplicate contact conflict returns 409 with `detail` as an object carrying `message`, `contact_id` and `contact_name`, so a caller can link to the record it collided with instead of leaving a dead end.
+
+Public capture: `POST /public/leads {name,email,phone,company,interest,message,consent:true,utm_source,utm_medium,utm_campaign,utm_content,utm_term}` -> `{id,status:accepted}`. A resubmission matching one existing contact by normalized e-mail or phone returns 202 with that contact's id and appends the new message to its history. If e-mail and phone match different contacts, the API returns a generic 409 without choosing an identity. First-touch attribution, consent refusals and opt-out are preserved; an unauthenticated form cannot reactivate permission to contact.
 
 Capture also opens the work, not just the record: the lead gets an opportunity in the first open stage of the default funnel and a high-priority task due the next day. A resubmission attaches to the opportunity already running instead of opening a second one, and only creates a follow-up task when the contact has none open, so repeated form fills cannot inflate the pipeline or repeat the reminder. Set `FATTECH_CAPTURE_CREATES_DEAL=false` to keep capture to the contact alone. Consent and rate limit required. Tenant selected by server configuration, never public request.
 

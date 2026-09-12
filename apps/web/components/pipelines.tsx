@@ -6,8 +6,8 @@ import {api} from '@/lib/api';
 import {PipelineRecord,Stage,emptyStage,outcomes,stageKey} from '@/lib/resources';
 import {PageHeader,EmptyState,LoadState,StatusBadge,useRecords} from './crm-ui';
 type Row=Stage&{saved?:boolean};
-type Draft={id?:string;version?:number;name:string;description:string;status:string;is_default:boolean;stages:Row[]};
-const draftOf=(pipeline?:PipelineRecord):Draft=>pipeline?{id:pipeline.id,version:pipeline.version,name:pipeline.name,description:pipeline.description||'',status:pipeline.status,is_default:pipeline.is_default,stages:pipeline.stages.map(stage=>({...stage,saved:true}))}:{name:'',description:'',status:'active',is_default:false,stages:[emptyStage()]};
+type Draft={id?:string;version?:number;name:string;description:string;status:string;is_default:boolean;stages:Row[];loss_reasons:string[]};
+const draftOf=(pipeline?:PipelineRecord):Draft=>pipeline?{id:pipeline.id,version:pipeline.version,name:pipeline.name,description:pipeline.description||'',status:pipeline.status,is_default:pipeline.is_default,loss_reasons:pipeline.loss_reasons||[],stages:pipeline.stages.map(stage=>({...stage,saved:true}))}:{name:'',description:'',status:'active',is_default:false,loss_reasons:[],stages:[emptyStage()]};
 export function Pipelines(){
  const state=useRecords('pipelines');const items=state.items as unknown as PipelineRecord[];
  const [draft,setDraft]=useState<Draft|null>(null),[notice,setNotice]=useState('');
@@ -36,7 +36,7 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
   if(new Set(stages.map(stage=>stage.key)).size!==stages.length)return setError('Duas etapas não podem ter o mesmo identificador.');
   setBusy(true);
   try{
-   const body={name:form.name,description:form.description,status:form.status,is_default:form.is_default,stages};
+   const body={name:form.name,description:form.description,status:form.status,is_default:form.is_default,stages,loss_reasons:form.loss_reasons.map(s=>s.trim()).filter(Boolean)};
    await api(`/pipelines${form.id?'/'+form.id:''}`,{method:form.id?'PATCH':'POST',body:JSON.stringify(form.id?{...body,version:form.version}:body)});
    onSaved(form.id?'Funil atualizado.':'Funil criado.');
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o funil.')}finally{setBusy(false)}
@@ -50,7 +50,7 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
     <TextField value={form.description} onChange={value=>setForm({...form,description:value})}><Label>Descrição</Label><TextArea rows={2}/></TextField>
     <label className="select-field"><span>Status</span><select value={form.status} onChange={event=>setForm({...form,status:event.target.value})}><option value="active">Ativo</option><option value="inactive">Inativo</option></select><small className="field-help">Um funil inativo deixa de receber novas oportunidades; as que já estão nele continuam editáveis.</small></label>
     <label className="checkbox-field"><input type="checkbox" checked={form.is_default} onChange={event=>setForm({...form,is_default:event.target.checked})}/>Usar como funil padrão da equipe</label>
-    <fieldset className="stage-editor"><legend>Etapas, na ordem do processo</legend>
+    <TextField value={form.loss_reasons.join("\n")} onChange={value=>setForm({...form,loss_reasons:value.split("\n")})}><Label>Motivos de perda (um por linha)</Label><TextArea rows={4}/><small>Deixe vazio para permitir texto livre. Motivos já registrados permanecem no histórico.</small></TextField><fieldset className="stage-editor"><legend>Etapas, na ordem do processo</legend>
      {form.stages.map((stage,index)=><div className="stage-row" key={index}>
       <TextField value={stage.label} onChange={value=>patch(index,stage.saved?{label:value}:{label:value,key:stageKey(value)})} isRequired><Label>Etapa {index+1}</Label><Input/></TextField>
       <label className="select-field"><span>Resultado</span><select value={stage.outcome} onChange={event=>patch(index,{outcome:event.target.value as Stage['outcome']})}>{outcomes.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select></label>

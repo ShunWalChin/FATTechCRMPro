@@ -13,6 +13,9 @@ os.environ.update({
     "FATTECH_DATABASE_URL": "sqlite:///" + (data_dir / f"{uuid4().hex}.db").as_posix(),
     "FATTECH_ALLOWED_ORIGINS": "http://127.0.0.1:3100,http://localhost:3100",
     "FATTECH_WEBHOOK_SECRET": "e2e-local-test-secret-not-for-production-2026",
+    # The browser suite signs in once per test against one account; the production limit would throttle it.
+    "FATTECH_LOGIN_ATTEMPTS_PER_EMAIL": "500",
+    "FATTECH_LOGIN_ATTEMPTS_PER_IP": "1500",
 })
 from fattech.config import get_settings
 from fattech.db import make_engine, session_factory

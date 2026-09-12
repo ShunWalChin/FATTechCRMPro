@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Text = Annotated[str, StringConstraints(max_length=20000)]
@@ -70,10 +70,20 @@ class Pipeline(StrictModel):
     status: Literal["active", "inactive"] = "active"
     is_default: bool = False
     stages: list[PipelineStage] = Field(min_length=1, max_length=40)
+    loss_reasons: list[Name] = Field(default_factory=list, max_length=50)
+
+    @field_validator('loss_reasons')
+    @classmethod
+    def unique_loss_reasons(cls, values):
+        if len({value.casefold() for value in values}) != len(values):
+            raise ValueError('Motivos de perda devem ser únicos')
+        return values
 
 
 # Migration 0002 stores this literal without validation, so every field the schema reads must be present.
 DEFAULT_PIPELINE = {"name": "Funil comercial", "status": "active", "is_default": True,
+                    # Empty keeps free text: a team standardises its reasons when it knows them.
+                    "loss_reasons": [],
                     "description": "Etapas iniciais do processo comercial. Ajuste conforme a sua operação.",
                     # Durations only steer the radar, and 72h is what an absent field already resolved to,
                     # so adding them here changes no behaviour for a database migrated before this field existed.

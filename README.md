@@ -10,6 +10,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Funis configuráveis e motivo de perda, publicado em 11/09](docs/releases/2026-09-11-funis-configuraveis.md)
 - [Compliance de envio, radar comercial e destino externo, publicado em 12/09](docs/releases/2026-09-12-compliance-e-radar.md)
 - [Do lead ao trabalho, kanban arrastável e ferramental, publicado em 12/09](docs/releases/2026-09-12-lead-para-trabalho.md)
+- [Acabamento, ficha do registro e busca global, publicado em 12/09](docs/releases/2026-09-12-acabamento-e-ficha.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.

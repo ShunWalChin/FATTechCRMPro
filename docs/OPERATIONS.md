@@ -36,8 +36,14 @@ Em Linux, o contrato equivalente é `PYTHONPATH=apps/api`, ambiente development,
 ## Variáveis de envio e destino externo
 
 `FATTECH_EXTERNAL_SENDS_ENABLED` nasce em `false` e é a trava persistente de modo seguro: mesmo
-quando a avaliação de compliance libera a mensagem, nenhum efeito externo sai enquanto ela estiver
-desarmada. Armar exige decisão explícita do operador, depois de existir um adaptador homologado.
+quando a avaliação de compliance libera a mensagem, o endpoint de envio permanece bloqueado enquanto
+ela estiver desarmada. Esse sinal controla mensagens, não a entrega de eventos ao n8n, que depende de
+`FATTECH_N8N_OUTBOUND_URL`. Armar exige decisão explícita do operador e adaptador homologado.
+
+`FATTECH_LOGIN_ATTEMPTS_PER_EMAIL` e `FATTECH_LOGIN_ATTEMPTS_PER_IP` nascem em 10 e 30 por cinco minutos.
+São a defesa contra tentativa em massa de credenciais. Em produção a configuração recusa valores acima de
+20 e 60; um harness de navegador em loopback pode elevá-los, e é o que `scripts/e2e-api.py` faz para que a
+suíte possa crescer sem esbarrar no próprio limite.
 
 `FATTECH_CAPTURE_CREATES_DEAL` nasce em `true`: um lead do site abre também uma oportunidade na
 primeira etapa do funil padrão e uma tarefa de retorno. Defina `false` para que a captação registre
@@ -48,6 +54,12 @@ caracteres invisíveis, de modo que um espaço de largura zero entre letras não
 
 `FATTECH_N8N_OUTBOUND_URL` passa por checagem de faixa reservada quando é um endereço literal, e o
 worker recusa iniciar se o host resolver para rede privada ou reservada.
+
+`FATTECH_ENV` aceita somente `development`, `test` e `production`: erros de digitação
+interrompem o início em vez de remover proteções. URL do banco, origens e slug público
+explicitamente vazios são inválidos. Campos opcionais n8n vazios desabilitam a conexão.
+O Compose passa os controles de captação, envio, termos bloqueados e worker ao processo;
+valores booleanos/números explicitamente vazios falham na validação, não viram defaults.
 
 ## Migrações e atualização
 
@@ -99,6 +111,15 @@ hash, resultado do restore e tempo medido; não inventar RPO/RTO.
 - `docker compose ... logs --tail 100 api worker web`: logs limitados.
 - `/api/v1/audit`: ações autorizadas com ator e escopo.
 - `/api/v1/events`: eventos duráveis e estado de processamento.
+
+O worker publica um heartbeat atômico em seu `/tmp` após cada tenant processado e
+iteração concluída, incluindo espera sem conexão n8n. O healthcheck verifica o relógio
+monotônico; arquivo ausente, inválido ou com idade superior a `max(120, 3 * poll_seconds)`
+falha. Exceção de iteração remove o heartbeat. Não há thread independente capaz de
+declarar saudável um loop travado. O arquivo contém somente um número, sem payloads.
+Saúde comprova progresso do processo, não sucesso do n8n; inspecione também estados
+pending/dead_letter. Docker marca unhealthy, mas não reinicia automaticamente por esse
+estado: investigar a causa e os logs antes de reiniciar o serviço.
 
 Logs não devem conter senhas, tokens, cabeçalhos de autorização ou texto integral de mensagens.
 Falhas externas permanecem visíveis. Uma resposta ambígua de envio nunca vira reenvio cego.

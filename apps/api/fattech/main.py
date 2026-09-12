@@ -5,7 +5,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import timedelta
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -21,10 +21,45 @@ from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChang
 from .security import (DUMMY_HASH, digest, hasher, rate_limit, require_auth, user_dict, utc,
                        verify_password)
 from .permissions import ADMIN_ROLES, ELEVATED_ROLES, RANK, can_manage
+from .idempotency import creation_receipt
+from .record_views import register_record_views
 from . import compliance
 from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_radar, capture_lead, create_record,
                        default_pipeline, delete_record, get_record, list_records, serialize, simulate,
                        update_record)
+
+RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
+                  "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
+                  "messages": ("mensagem", "a"), "campaigns": ("campanha", "a"), "automations": ("automação", "a"),
+                  "knowledge": ("documento", "o"), "approvals": ("solicitação", "a"), "agents": ("agente", "o"),
+                  "projects": ("projeto", "o"), "invoices": ("lançamento", "o"), "products": ("produto", "o")}
+ACTION_VERBS = {"created": "Criou", "updated": "Alterou", "deleted": "Excluiu"}
+ACTION_LABELS = {
+    "auth.login": "Entrou no sistema", "auth.logout": "Saiu do sistema",
+    "auth.password_changed": "Alterou a própria senha", "auth.session_revoked": "Encerrou uma sessão",
+    "team.created": "Cadastrou um integrante", "team.updated": "Alterou um integrante",
+    "team.operator_provisioned": "Provisionou um acesso", "team.password_reset": "Redefiniu a senha de um integrante",
+    "api_key.created": "Criou uma chave de API", "api_key.revoked": "Revogou uma chave de API",
+    "webhook.accepted": "Recebeu um evento externo", "event.retried": "Reprocessou um evento",
+    "approval.decided": "Decidiu uma solicitação", "contacts.recaptured": "Recebeu um contato pelo site",
+}
+
+
+def action_label(action: str) -> str:
+    """Falls back to the raw key rather than inventing wording for an action nobody mapped."""
+    if action in ACTION_LABELS:
+        return ACTION_LABELS[action]
+    kind, _, verb = action.partition(".")
+    noun = RESOURCE_NOUNS.get(kind)
+    if noun and verb in ACTION_VERBS:
+        return f"{ACTION_VERBS[verb]} {noun[1]} {noun[0]}"
+    return action
+
+
+def api_scopes():
+    return {f"{kind}:{op}" for kind in RESOURCES for op in ("read", "write")} | {
+        "webhooks:write", "events:read", "dashboard:read", "integrations:read", "team:read"}
+
 
 COMPLIANCE_REASONS = {
     "no_consent": "Contato sem consentimento registrado.",
@@ -134,8 +169,8 @@ def create_app(settings: Settings | None = None, engine=None):
         if origin and origin.rstrip("/") not in settings.origins:
             raise HTTPException(403, "Origem não autorizada")
         ip = request.client.host if request.client else "unknown"
-        rate_limit(db, f"login:ip:{ip}", 30, 300)
-        rate_limit(db, f"login:email:{payload.email.lower()}", 10, 300)
+        rate_limit(db, f"login:ip:{ip}", settings.login_attempts_per_ip, 300)
+        rate_limit(db, f"login:email:{payload.email.lower()}", settings.login_attempts_per_email, 300)
         user = db.scalar(select(User).where(User.email == payload.email.lower()))
         valid = verify_password(user.password_hash if user else DUMMY_HASH, payload.password)
         if not user or not valid or not user.active or user.role not in RANK:
@@ -275,7 +310,7 @@ def create_app(settings: Settings | None = None, engine=None):
                 "active_automations": 0, "conversion_rate": round(closed_won / total * 100, 1) if total else 0,
                 "pipeline": pipeline, "pipeline_id": funnel.id if funnel else None,
                 "pipeline_name": funnel.data["name"] if funnel else "",
-                "recent_activity": [audit_dict(item) for item in activity],
+                "recent_activity": describe_audit(db, principal.tenant_id, list(activity)),
                 "capabilities": CAPABILITIES}
 
     @app.get("/api/v1/integrations")
@@ -288,8 +323,14 @@ def create_app(settings: Settings | None = None, engine=None):
                         "ai": "Execução bloqueada até configurar runtime e orçamento",
                         "calendar": "Requer OAuth Google",
                         "payments": "Controle interno disponível; provedor de pagamentos pendente"}
-        return {"items": [{"id": key, "name": key, "status": "available" if key == "n8n" and settings.webhook_secret else "not_configured",
-                            "description": description} for key, description in descriptions.items()], "total": len(descriptions)}
+        names = {"n8n": "n8n", "whatsapp": "WhatsApp", "instagram": "Instagram", "email": "E-mail",
+                 "ai": "Inteligência artificial", "calendar": "Google Agenda", "payments": "Pagamentos"}
+        # The scope catalogue is served from the same set the key endpoint validates against, so they cannot drift.
+        scopes = sorted(api_scopes())
+        return {"items": [{"id": key, "name": names.get(key, key),
+                            "status": "available" if key == "n8n" and settings.webhook_secret else "not_configured",
+                            "description": description} for key, description in descriptions.items()],
+                "total": len(descriptions), "scopes": scopes}
 
     @app.get("/api/v1/team")
     def team(principal=Depends(require_auth), db=Depends(get_db)):
@@ -368,17 +409,16 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.get("/api/v1/audit")
     def audit(principal=Depends(require_auth), db=Depends(get_db), limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
         principal.admin()
-        records = db.scalars(select(Audit).where(Audit.tenant_id == principal.tenant_id)
-                              .order_by(Audit.created_at.desc()).limit(limit).offset(offset))
+        records = list(db.scalars(select(Audit).where(Audit.tenant_id == principal.tenant_id)
+                                  .order_by(Audit.created_at.desc()).limit(limit).offset(offset)))
         total = db.scalar(select(func.count()).select_from(Audit).where(Audit.tenant_id == principal.tenant_id))
-        return {"items": [audit_dict(item) for item in records], "total": total}
+        return {"items": describe_audit(db, principal.tenant_id, records), "total": total}
 
     @app.post("/api/v1/api-keys", status_code=201)
     def create_key(payload: KeyCreate, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
         lock_membership(db, principal)
-        allowed = {f"{kind}:{op}" for kind in RESOURCES for op in ("read", "write")}
-        allowed |= {"webhooks:write", "events:read", "dashboard:read", "integrations:read", "team:read"}
+        allowed = api_scopes()
         if not set(payload.scopes).issubset(allowed):
             raise HTTPException(422, "Escopo desconhecido")
         token = "fat_" + secrets.token_urlsafe(40)
@@ -576,6 +616,7 @@ def create_app(settings: Settings | None = None, engine=None):
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)
+    register_record_views(app)
     return app
 
 
@@ -595,6 +636,25 @@ def lock_membership(db, principal):
         raise HTTPException(401, "Sessão expirada. Entre novamente.")
     principal.role = actor.role
     return actor, members
+
+
+def describe_audit(db, tenant_id, records):
+    """Resolve actor and subject names in two batched queries; an audit nobody can read is not a control."""
+    actors = {item.actor_id for item in records if item.actor_id}
+    subjects = {item.resource_id for item in records if item.resource_id}
+    people = {user.id: user.name for user in db.scalars(select(User).where(
+        User.tenant_id == tenant_id, User.id.in_(actors | subjects)))} if (actors or subjects) else {}
+    titles = {record.id: (record.data.get("name") or record.data.get("title") or "")
+              for record in db.scalars(select(Record).where(
+                  Record.tenant_id == tenant_id, Record.id.in_(subjects)))} if subjects else {}
+    described = []
+    for item in records:
+        actor = people.get(item.actor_id) or ("Sistema" if not item.actor_id else "Conta indisponível")
+        subject = titles.get(item.resource_id) or people.get(item.resource_id, "")
+        # Signing in names the actor twice; the subject only adds information when it differs.
+        described.append({**audit_dict(item), "label": action_label(item.action), "actor_name": actor,
+                          "resource_name": "" if subject == actor else subject})
+    return described
 
 
 def audit_dict(item):
@@ -620,13 +680,29 @@ def register_resource(app, kind, schema):
         principal.require(f"{kind}:read")
         return serialize(get_record(db, principal.tenant_id, kind, record_id))
 
-    def create(payload: schema, principal=Depends(require_auth), db=Depends(get_db)):
+    def create(payload: schema, response: Response,
+               idempotency_key: str | None = Header(default=None, alias="Idempotency-Key",
+                   description="Optional stable operation key. Repeat the same key and body to recover the original creation result."),
+               principal=Depends(require_auth), db=Depends(get_db)):
         principal.require(f"{kind}:write")
         if kind in PRIVILEGED and kind != "approvals":
             principal.admin()
-        record = create_record(db, principal.tenant_id, principal.actor_id, kind, payload.model_dump(mode="json"))
+        data = payload.model_dump(mode="json")
+        key = idempotency_key
+        receipt = None
+        if key is not None:
+            receipt, replayed = creation_receipt(db, principal, kind, key, data)
+            response.headers["Idempotency-Replayed"] = str(replayed).lower()
+            if replayed:
+                result = receipt.response
+                db.commit()
+                return result
+        record = create_record(db, principal.tenant_id, principal.actor_id, kind, data)
+        result = serialize(record)
+        if receipt is not None:
+            receipt.response = result
         db.commit()
-        return serialize(record)
+        return result
 
     def patch(record_id: str, payload: dict = Body(...), principal=Depends(require_auth), db=Depends(get_db)):
         principal.require(f"{kind}:write")

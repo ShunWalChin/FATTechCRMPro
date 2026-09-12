@@ -447,3 +447,74 @@ def test_board_order_follows_position_not_creation_date(system):
     assert promoted.status_code == 200
     order = [item["title"] for item in client.get("/api/v1/deals").json()["items"]]
     assert order == ["Segunda", "Primeira"]
+
+
+def test_audit_reads_as_portuguese_with_names_instead_of_identifiers(system):
+    client, _, _, _, _, owner_id, _ = system
+    contact = post(client, "contacts", {"name": "Joana Prado", "email": "joana@example.com"})
+    entries = client.get("/api/v1/audit").json()["items"]
+    created = next(item for item in entries if item["resource_id"] == contact["id"])
+    assert created["label"] == "Criou o contato"
+    assert created["actor_name"] == "FAT Tech"
+    assert created["resource_name"] == "Joana Prado"
+    login = next(item for item in entries if item["action"] == "auth.login")
+    # Signing in names the actor twice, so the subject is dropped rather than echoed.
+    assert login["label"] == "Entrou no sistema" and login["resource_name"] == ""
+    # An action nobody mapped keeps its key rather than receiving invented wording.
+    from fattech.main import action_label
+    assert action_label("something.unmapped") == "something.unmapped"
+
+
+def test_integration_catalogue_serves_every_scope_the_key_endpoint_accepts(system):
+    client, _, _, _, _, _, _ = system
+    payload = client.get("/api/v1/integrations").json()
+    assert payload["items"][0]["name"] == "n8n"
+    assert {item["name"] for item in payload["items"]} >= {"WhatsApp", "Instagram", "E-mail"}
+    offered = set(payload["scopes"])
+    assert {"pipelines:read", "invoices:write", "products:read", "agents:read", "dashboard:read"} <= offered
+    # Every offered scope must be accepted, or the form would promise a permission the API rejects.
+    created = client.post("/api/v1/api-keys", json={"name": "Catálogo", "scopes": sorted(offered)})
+    assert created.status_code == 201
+
+
+def test_duplicate_contact_conflict_names_the_record_it_hit(system):
+    client, _, _, _, _, _, _ = system
+    first = post(client, "contacts", {"name": "Original", "email": "mesmo@example.com"})
+    clash = client.post("/api/v1/contacts", json={"name": "Repetido", "email": "mesmo@example.com"})
+    assert clash.status_code == 409
+    detail = clash.json()["detail"]
+    assert detail["contact_id"] == first["id"] and detail["contact_name"] == "Original"
+
+
+def test_board_listing_carries_the_name_of_who_the_deal_is_with(system):
+    client, _, _, _, _, _, _ = system
+    company = post(client, "companies", {"name": "Padaria Aurora"})
+    contact = post(client, "contacts", {"name": "Rita Mendes", "email": "rita@example.com"})
+    post(client, "deals", {"title": "Implantação", "contact_id": contact["id"], "company_id": company["id"]})
+    listed = client.get("/api/v1/deals").json()["items"][0]
+    assert listed["contact_name"] == "Rita Mendes" and listed["company_name"] == "Padaria Aurora"
+    # A deal with no relations must not gain empty keys that look like a missing lookup.
+    post(client, "deals", {"title": "Sem vínculo"})
+    solo = next(item for item in client.get("/api/v1/deals").json()["items"] if item["title"] == "Sem vínculo")
+    assert solo["contact_name"] == "" and solo["company_name"] == ""
+
+
+def test_the_owner_is_not_labelled_as_a_legacy_role(system):
+    client, _, _, _, _, _, _ = system
+    from fattech.permissions import LABELS
+    assert LABELS["owner"] == "Proprietário"
+    assert "legado" not in " ".join(LABELS.values()).lower()
+    assert client.get("/api/v1/auth/me").json()["user"]["role"] == "owner"
+
+
+def test_production_refuses_permissive_login_limits():
+    """A harness may raise the throttle; production must not inherit that freedom."""
+    base = dict(_env_file=None, env="production", database_url="postgresql+psycopg://ignored",
+                allowed_origins="https://example.com", webhook_secret="x" * 32)
+    assert Settings(**base).login_attempts_per_email == 10
+    with pytest.raises(ValueError, match="restrictive"):
+        Settings(**base, login_attempts_per_email=500)
+    with pytest.raises(ValueError, match="restrictive"):
+        Settings(**base, login_attempts_per_ip=1500)
+    # Development is free to raise it, which is what the browser suite relies on.
+    assert Settings(_env_file=None, env="development", login_attempts_per_email=500).login_attempts_per_email == 500

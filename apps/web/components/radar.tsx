@@ -10,7 +10,7 @@ type Item={id:string;title:string;stage:string;stage_label:string;value_cents:nu
 type RadarData={pipeline_id:string|null;pipeline_name:string;items:Item[];total:number;summary:Record<string,number>};
 const buckets=[{key:'critico',label:'Crítico',hint:'Parada por mais que o dobro do tempo esperado',icon:CircleAlert,tone:'#a8473c'},{key:'em_risco',label:'Em risco',hint:'Passou do tempo esperado na etapa',icon:Clock,tone:'#8f6413'},{key:'em_voo',label:'Em voo',hint:'Tem próxima ação marcada',icon:Plane,tone:'#2f6f8f'},{key:'em_dia',label:'Em dia',hint:'Dentro do tempo da etapa',icon:CircleCheck,tone:'#2c6f58'}] as const;
 const toneOf=(bucket:Risk['bucket'])=>buckets.find(b=>b.key===bucket)?.tone||'#7a8b97';
-const staleness=(risk:Risk)=>risk.elapsed_hours===null?'Sem atividade registrada':risk.elapsed_hours<48?`Parada há ${Math.round(risk.elapsed_hours)}h`:`Parada há ${Math.round(risk.elapsed_hours/24)} dias`;
+const staleness=(risk:Risk)=>risk.elapsed_hours===null?'Sem atividade registrada':risk.elapsed_hours<1?'Sem movimento ainda':risk.elapsed_hours<48?`Parada há ${Math.round(risk.elapsed_hours)}h`:`Parada há ${Math.round(risk.elapsed_hours/24)} dias`;
 export function Radar(){
  const pipelines=usePipelines();const [funnel,setFunnel]=useState('');
  const [data,setData]=useState<RadarData|null>(null),[error,setError]=useState(''),[tick,setTick]=useState(0);
@@ -24,12 +24,12 @@ export function Radar(){
   {data.items.length===0?<div className="crm-panel"><EmptyState title="Nada parado por aqui." description="Quando uma oportunidade passar do tempo esperado na etapa, ela aparece neste radar."/></div>
   :<div className="crm-panel data-table-wrap"><table className="data-table"><thead><tr><th>Oportunidade</th><th>Etapa</th><th>Situação</th><th>Valor</th><th>Próxima ação</th><th><span className="sr-only">Abrir</span></th></tr></thead>
    <tbody>{data.items.map(item=><tr key={item.id}>
-    <td><Link href="/crm/pipeline" className="table-record"><span><strong>{item.title}</strong><small>{staleness(item.risk)}</small></span></Link></td>
+    <td><Link href={`/crm/pipeline/${item.id}`} className="table-record"><span><strong>{item.title}</strong><small>{staleness(item.risk)}</small></span></Link></td>
     <td><span className="status-badge" style={{color:toneOf(item.risk.bucket)}}><span style={{background:toneOf(item.risk.bucket)}}/>{item.stage_label}</span></td>
     <td><strong style={{color:toneOf(item.risk.bucket)}}>{buckets.find(b=>b.key===item.risk.bucket)?.label}</strong>{item.band&&<small className="field-help"> · {item.band}</small>}</td>
     <td>{money(item.value_cents)}</td>
     <td>{item.needs_action?<span className="outline-badge">Pendente</span>:dateLabel(item.next_action_at)}</td>
-    <td><Link href="/crm/pipeline" aria-label={`Abrir ${textValue(item.title)} no pipeline`}><ArrowUpRight size={17}/></Link></td>
+    <td><Link href={`/crm/pipeline/${item.id}`} aria-label={`Abrir ${textValue(item.title)} no pipeline`}><ArrowUpRight size={17}/></Link></td>
    </tr>)}</tbody></table></div>}
   <p className="subtle-notice">O risco compara o tempo desde a última atividade com a duração esperada da etapa, configurada em Funis. Uma próxima ação marcada no futuro mantém a oportunidade em voo.</p>
  </>}</>;

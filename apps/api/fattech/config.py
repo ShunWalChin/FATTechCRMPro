@@ -1,18 +1,23 @@
 from functools import lru_cache
+from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="FATTECH_", env_file=".env", extra="ignore")
-    env: str = "development"
+    model_config = SettingsConfigDict(env_prefix="FATTECH_", env_file=".env", extra="ignore",
+                                     hide_input_in_errors=True)
+    env: Literal["development", "test", "production"] = "development"
     database_url: str = "sqlite:///./fattech.db"
     allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173"
     webhook_secret: str = ""
     public_tenant_slug: str = "fattech"
     session_hours: int = 12
+    # Credential-stuffing limits. Production keeps the defaults; a loopback test harness may raise them.
+    login_attempts_per_email: int = 10
+    login_attempts_per_ip: int = 30
     max_body_bytes: int = 1_048_576
     external_sends_enabled: bool = False
     capture_creates_deal: bool = True
@@ -21,6 +26,21 @@ class Settings(BaseSettings):
     n8n_outbound_token: str = ""
     worker_max_attempts: int = 8
     worker_poll_seconds: int = 5
+
+    @field_validator("database_url", "allowed_origins", "public_tenant_slug")
+    @classmethod
+    def require_nonblank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Required configuration must not be blank")
+        return value
+
+    @field_validator("webhook_secret", "n8n_outbound_url", "n8n_outbound_token")
+    @classmethod
+    def reject_whitespace_only(cls, value: str) -> str:
+        # Empty optional integration settings intentionally disable the adapter.
+        if value and not value.strip():
+            raise ValueError("Configuration must not contain only whitespace")
+        return value
 
     @property
     def origins(self) -> list[str]:
@@ -36,6 +56,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production(self):
+        if not 1 <= self.login_attempts_per_email <= 1000 or not 1 <= self.login_attempts_per_ip <= 3000:
+            raise ValueError('Invalid login attempt limits')
+        if self.production and (self.login_attempts_per_email > 20 or self.login_attempts_per_ip > 60):
+            raise ValueError('Production login limits must stay restrictive')
         if not 1 <= self.session_hours <= 168 or not 1 <= self.worker_max_attempts <= 20:
             raise ValueError("Invalid session duration or worker attempt limit")
         if self.worker_poll_seconds < 1 or self.max_body_bytes < 1024:

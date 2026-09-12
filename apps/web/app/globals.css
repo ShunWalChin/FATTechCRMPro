@@ -48,3 +48,18 @@
 .deal-card[draggable="true"]{cursor:grab}
 .deal-card.is-dragging{opacity:.45;cursor:grabbing}
 .kanban-column.is-drop-target{outline:2px dashed var(--stage-tone,#a7bbce);outline-offset:3px;background:#f2f7f6}
+.deal-who{font-size:10px;color:#6f8794;margin-top:4px;font-weight:500}
+.simulation-trace{padding:16px 18px;margin-bottom:18px}
+.trace-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.trace-head strong{font-size:13px;color:var(--ink)}
+.trace-head button{margin-left:auto;border:0;background:transparent;font-size:18px;cursor:pointer;color:#8ca0ad;line-height:1}
+.simulation-trace ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.simulation-trace li{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.simulation-trace li.is-blocked{opacity:.82}
+.trace-step{width:22px;height:22px;border-radius:50%;background:#e7eeee;color:#3b4b5b;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.simulation-trace li.is-blocked .trace-step{background:#f7eae8;color:#a8473c}
+.simulation-trace li strong{font-size:13px;display:block}
+.simulation-trace li small{font-size:10px;color:#92a3ae;display:block}
+.blocked-note{color:#a8473c!important;margin-top:4px}
+/* Record workbench: details stay readable and scroll inside narrow layouts. */
+.record-tabs{display:flex;gap:8px;overflow-x:auto;margin:20px 0;padding-bottom:8px}.record-tabs button{white-space:nowrap;padding:12px 16px;border:1px solid #dce5ea;border-radius:10px;background:white;color:#415869}.record-tabs button[aria-selected=true]{background:#007f78;color:white;border-color:#007f78}.record-tabs small{margin-left:8px;opacity:.8}.record-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.record-facts dt{font-size:12px;color:#738795;margin-bottom:6px}.record-facts dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.record-timeline{list-style:none;padding:0;margin:16px 0}.record-timeline li{padding:16px 0;border-bottom:1px solid #e3eaef}.record-timeline p{margin:8px 0;color:#526676;overflow-wrap:anywhere}.record-timeline small{color:#708594}.preserve-lines{white-space:pre-wrap}.record-timeline a{display:block}.record-timeline a:hover{color:#007f78}@media(max-width:640px){.record-facts{grid-template-columns:1fr}.record-tabs{max-width:100%}}

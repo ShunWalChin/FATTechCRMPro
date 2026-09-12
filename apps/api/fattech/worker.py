@@ -16,6 +16,7 @@ from .config import get_settings
 from .db import make_engine, session_factory, set_tenant
 from .outbound import assert_safe_outbound_url
 from .models import Outbox, Tenant, now, uid
+from .worker_health import HEARTBEAT_PATH, write_heartbeat
 
 log = logging.getLogger("fattech.worker")
 
@@ -84,7 +85,7 @@ def deliver_event(client, settings, claim):
         return "upstream_network_error", False
 
 
-def run_once(factory, settings, client):
+def run_once(factory, settings, client, *, on_progress=None):
     if not settings.n8n_outbound_url:
         return 0
     with factory() as db:
@@ -94,11 +95,15 @@ def run_once(factory, settings, client):
         with factory() as db:
             claim = claim_event(db, tenant_id)
         if claim is None:
+            if on_progress is not None:
+                on_progress()
             continue
         error, permanent = deliver_event(client, settings, claim)
         with factory() as db:
             finish_event(db, claim, error=error, permanent=permanent, max_attempts=settings.worker_max_attempts)
         processed += 1
+        if on_progress is not None:
+            on_progress()
         log.info("event=%s result=%s attempt=%s", claim["id"], error or "delivered", claim["attempts"])
     return processed
 
@@ -109,6 +114,7 @@ def main():
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     settings = get_settings()
+    HEARTBEAT_PATH.unlink(missing_ok=True)
     engine = make_engine(settings.database_url)
     factory = session_factory(engine)
     stop = threading.Event()
@@ -122,8 +128,11 @@ def main():
     with httpx.Client(timeout=httpx.Timeout(20, connect=5), follow_redirects=False, trust_env=False) as client:
         while not stop.is_set():
             try:
-                processed = run_once(factory, settings, client)
+                processed = run_once(factory, settings, client, on_progress=write_heartbeat)
+                # No independent timer: a stuck or failing loop must become unhealthy.
+                write_heartbeat()
             except Exception as exc:
+                HEARTBEAT_PATH.unlink(missing_ok=True)
                 # Do not print database URLs, credential-bearing requests or customer payloads.
                 log.error("worker_iteration_failed type=%s", type(exc).__name__)
                 if args.once:

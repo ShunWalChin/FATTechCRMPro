@@ -1,6 +1,6 @@
 """Application roles remain tenant-scoped, including root. Unknown roles fail closed."""
 ROLES = ("root", "super_admin", "admin", "member", "viewer")
-LABELS = {"root": "Root", "super_admin": "Super Admin", "owner": "Super Admin (legado)",
+LABELS = {"root": "Root", "super_admin": "Super Admin", "owner": "Proprietário",
           "admin": "Admin", "member": "Integrante", "viewer": "Somente leitura"}
 ADMIN_ROLES = frozenset(("root", "super_admin", "owner", "admin"))
 ELEVATED_ROLES = frozenset(("root", "super_admin", "owner"))

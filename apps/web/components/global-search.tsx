@@ -1,0 +1,13 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import {Search,X} from 'lucide-react';
+import {api,PageData,textValue} from '@/lib/api';
+import {recordHref} from './record-detail';
+export function GlobalSearch(){
+ const [open,setOpen]=useState(false),[q,setQ]=useState(''),[data,setData]=useState<PageData>({items:[],total:0}),[error,setError]=useState(''),[loading,setLoading]=useState(false);const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setOpen(o=>!o)}};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[]);
+ useEffect(()=>{if(open)dialog.current?.showModal();else dialog.current?.close()},[open]);
+ useEffect(()=>{if(!open||q.trim().length<2){setData({items:[],total:0});setLoading(false);return}const controller=new AbortController();setLoading(true);setError('');const timer=setTimeout(()=>{api<PageData>('/search?'+new URLSearchParams({q:q.trim(),limit:'20'}),{signal:controller.signal}).then(setData).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:'Busca indisponível.')}).finally(()=>{if(!controller.signal.aborted)setLoading(false)})},200);return()=>{clearTimeout(timer);controller.abort()}},[q,open]);
+ return <><button className="global-search" onClick={()=>setOpen(true)}><Search size={16}/><span>Buscar no CRM</span><span className="keyboard-hint">Ctrl K</span></button><dialog ref={dialog} className="record-dialog" onCancel={()=>setOpen(false)} onClick={e=>{if(e.target===dialog.current)setOpen(false)}}><div className="dialog-head"><h2>Busca global</h2><button aria-label="Fechar busca" onClick={()=>setOpen(false)}><X/></button></div><div className="dialog-fields"><label className="search-field"><Search size={18}/><input autoFocus aria-label="Buscar no CRM" type="search" placeholder="Contato, empresa, oportunidade ou tarefa" value={q} onChange={e=>setQ(e.target.value)}/></label>{error&&<p role="alert">{error}</p>}{loading?<p role="status">Buscando…</p>:q.trim().length<2?<p>Digite pelo menos dois caracteres.</p>:<><p>{data.total} resultado(s){data.total>20?' · mostrando os primeiros 20':''}</p><ul className="record-timeline">{data.items.map(item=><li key={textValue(item.kind)+item.id}><Link onClick={()=>setOpen(false)} href={recordHref(textValue(item.kind),item.id)}><strong>{textValue(item.title)}</strong><p>{textValue(item.subtitle)}</p><small>{({contacts:'Contato',companies:'Empresa',deals:'Oportunidade',tasks:'Tarefa'} as Record<string,string>)[textValue(item.kind)]}</small></Link></li>)}</ul></>}</div></dialog></>;
+}

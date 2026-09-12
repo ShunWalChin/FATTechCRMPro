@@ -50,8 +50,11 @@ def find_contact_matches(db, tenant_id, data, exclude_id=None):
 
 
 def ensure_unique_contact(db, tenant_id, data, exclude_id=None):
-    if find_contact_matches(db, tenant_id, data, exclude_id):
-        raise HTTPException(409, "Já existe um contato com este e-mail ou telefone nesta empresa")
+    matches = find_contact_matches(db, tenant_id, data, exclude_id)
+    if matches:
+        raise HTTPException(409, {"message": "Já existe um contato com este e-mail ou telefone.",
+                                  "contact_id": matches[0].id,
+                                  "contact_name": matches[0].data.get("name", "")})
 
 
 def normalize_contact_identifiers(data):
@@ -181,7 +184,7 @@ def guard_stage_removal(db, tenant_id, pipeline_id, before, after):
             raise HTTPException(409, f"A etapa {stage['label']} possui oportunidades ativas; mova-as antes de removê-la")
 
 
-def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None):
+def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previous_reason=None):
     """Stage vocabulary is tenant configuration, so it is resolved here rather than by a static schema literal."""
     if data.get("pipeline_id"):
         pipeline = get_record(db, tenant_id, "pipelines", data["pipeline_id"], share=True)
@@ -198,6 +201,10 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None):
         raise HTTPException(422, "Etapa desconhecida neste funil")
     if stage["outcome"] == "lost" and not data.get("lost_reason", "").strip():
         raise HTTPException(422, "Informe o motivo da perda para encerrar a oportunidade")
+    reasons = pipeline.data.get("loss_reasons", [])
+    if (stage["outcome"] == "lost" and reasons and data.get("lost_reason") not in reasons
+            and not (previous == pipeline.id and previous_reason == data.get("lost_reason"))):
+        raise HTTPException(422, "Escolha um motivo de perda configurado no funil")
     if stage["outcome"] != "lost":
         data["lost_reason"] = ""
     if not keep_probability:
@@ -388,7 +395,8 @@ def update_record(db, principal, kind, record_id, payload):
     if kind == "automations":
         validate_flow(data)
     if kind == "deals":
-        apply_deal_rules(db, principal.tenant_id, data, "probability" in changes, record.data.get("pipeline_id"))
+        apply_deal_rules(db, principal.tenant_id, data, "probability" in changes,
+                         record.data.get("pipeline_id"), record.data.get("lost_reason"))
     if kind == "pipelines":
         guard_stage_removal(db, principal.tenant_id, record_id, record.data["stages"], data["stages"])
     result = db.execute(update(Record).where(Record.id == record_id, Record.tenant_id == principal.tenant_id,
@@ -438,7 +446,22 @@ def list_records(db, tenant_id, kind, filters):
     order = ((func.coalesce(cast(Record.data["position"].as_string(), Integer), 0), Record.created_at.desc())
              if kind == "deals" else (Record.created_at.desc(),))
     records = db.scalars(statement.order_by(*order).limit(filters["limit"]).offset(filters["offset"]))
-    return {"items": [serialize(record) for record in records], "total": total}
+    items = [serialize(record) for record in records]
+    if kind == "deals":
+        attach_related_names(db, tenant_id, items)
+    return {"items": items, "total": total}
+
+
+def attach_related_names(db, tenant_id, items):
+    """One extra query for the page being returned, so the board shows who the deal is with."""
+    ids = {item[field] for item in items for field in ("contact_id", "company_id") if item.get(field)}
+    if not ids:
+        return
+    names = {record.id: record.data.get("name", "") for record in db.scalars(
+        select(Record).where(Record.tenant_id == tenant_id, Record.id.in_(ids), Record.deleted.is_(False)))}
+    for item in items:
+        item["contact_name"] = names.get(item.get("contact_id"), "")
+        item["company_name"] = names.get(item.get("company_id"), "")
 
 
 def simulate(data, supplied):
