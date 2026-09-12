@@ -270,6 +270,110 @@ def build_radar(db, tenant_id, pipeline):
             "items": items, "total": len(items), "summary": summary}
 
 
+MAX_IMPORT_ROWS = 500
+
+
+def contact_identifier_index(db, tenant_id):
+    """One pass over the base instead of a scan per row; a 500-row import must not be quadratic."""
+    index = {}
+    for record in db.scalars(scoped(tenant_id, "contacts")):
+        try:
+            identifiers = normalize_contact_identifiers(record.data)
+        except HTTPException:
+            identifiers = normalize_contact_identifiers({**record.data, "phone": ""})
+        for field in ("email", "phone"):
+            if identifiers.get(field):
+                index.setdefault(identifiers[field], (record.id, record.data.get("name", "")))
+    return index
+
+
+def import_contacts(db, tenant_id, actor_id, rows, commit):
+    """Dry run by default: an import nobody can preview is an import nobody should trust.
+
+    The advisory lock is held across the whole batch, so the preview a person approves is still the
+    state being written when they confirm it.
+    """
+    if len(rows) > MAX_IMPORT_ROWS:
+        raise HTTPException(422, f"Importe no máximo {MAX_IMPORT_ROWS} linhas por vez")
+    lock_contacts(db, tenant_id)
+    index = contact_identifier_index(db, tenant_id)
+    report = {"total": len(rows), "ready": 0, "created": 0, "invalid": [], "duplicates": [], "committed": commit}
+    for line, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            report["invalid"].append({"line": line, "errors": "Linha inválida"})
+            continue
+        try:
+            data = normalize_contact_identifiers(validate("contacts", {**row, "source": row.get("source") or "import"}))
+        except HTTPException as exc:
+            report["invalid"].append({"line": line, "errors": exc.detail})
+            continue
+        keys = [data[field] for field in ("email", "phone") if data.get(field)]
+        clash = next((index[key] for key in keys if key in index), None)
+        if clash is not None:
+            report["duplicates"].append({"line": line, "contact_id": clash[0], "contact_name": clash[1],
+                                         "reason": "Identificador já cadastrado"})
+            continue
+        if not keys:
+            report["invalid"].append({"line": line, "errors": "Informe e-mail ou telefone para evitar duplicatas"})
+            continue
+        report["ready"] += 1
+        if commit:
+            record = Record(tenant_id=tenant_id, kind="contacts", data=data)
+            db.add(record)
+            db.flush()
+            audit_event(db, tenant_id, actor_id, "contacts.imported", record.id, {"line": line})
+            report["created"] += 1
+            reserved = (record.id, data.get("name", ""))
+        else:
+            reserved = ("", data.get("name", ""))
+        # Reserving the identifiers reports a row repeated inside the same file instead of allowing it twice.
+        for key in keys:
+            index[key] = reserved
+    return report
+
+
+NOTICE_ORDER = {"critical": 3, "attention": 2, "info": 1}
+
+
+def build_notifications(db, tenant_id, limit=25):
+    """Derived at read time from the records themselves.
+
+    A stored notification goes stale the moment someone resolves the thing it points at, and nobody
+    reconciles it. Deriving means a closed task or a scheduled next action simply stops appearing.
+    """
+    today = now().date().isoformat()
+    items = []
+    for record in db.scalars(scoped(tenant_id, "tasks")):
+        due = record.data.get("due_date")
+        if record.data.get("status") != "done" and due and due < today:
+            items.append({"kind": "task_overdue", "severity": "critical", "id": record.id,
+                          "title": record.data.get("title", ""), "detail": f"Prazo venceu em {due}",
+                          "href": f"/crm/tarefas?abrir={record.id}", "at": due})
+    for record in db.scalars(scoped(tenant_id, "approvals")):
+        if record.data.get("status") == "pending":
+            items.append({"kind": "approval_pending", "severity": "attention", "id": record.id,
+                          "title": record.data.get("title", ""),
+                          "detail": f"Aguarda decisão no gate {record.data.get('gate', '')}".strip(),
+                          "href": f"/crm/aprovacoes?abrir={record.id}",
+                          "at": record.data.get("expires_at", "")})
+    pipeline = default_pipeline(db, tenant_id)
+    if pipeline is not None:
+        for entry in build_radar(db, tenant_id, pipeline)["items"]:
+            bucket = entry["risk"]["bucket"]
+            if bucket not in ("critico", "em_risco"):
+                continue
+            elapsed = entry["risk"]["elapsed_hours"]
+            waited = "sem atividade registrada" if elapsed is None else f"parada há {round(elapsed / 24)} dias"
+            items.append({"kind": "deal_at_risk", "severity": "critical" if bucket == "critico" else "attention",
+                          "id": entry["id"], "title": entry["title"],
+                          "detail": f"Etapa {entry['stage_label']}, {waited}",
+                          "href": f"/crm/pipeline?abrir={entry['id']}",
+                          "at": entry["last_activity_at"] or ""})
+    items.sort(key=lambda item: (-NOTICE_ORDER[item["severity"]], item["at"] or ""))
+    counts = {severity: sum(1 for item in items if item["severity"] == severity) for severity in NOTICE_ORDER}
+    return {"items": items[:limit], "total": len(items), "counts": counts}
+
+
 def create_record(db, tenant_id, actor_id, kind, payload):
     if kind == "contacts":
         lock_contacts(db, tenant_id)

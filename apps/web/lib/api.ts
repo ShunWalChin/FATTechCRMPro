@@ -29,6 +29,8 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     if(/^\/events\/[^/]+\/retry$/.test(path))return hasId(data)&&data.status==='pending';
     if(/^\/approvals\/[^/]+\/decision$/.test(path))return hasId(data)&&['approved','rejected'].includes(String(data.status))&&data.execution_status==='not_executed';
     if(path==='/api-keys')return hasId(data)&&nonemptyString(data.key);
+    // An import answers with a report rather than a record, so it declares its own shape.
+    if(path==='/contacts/import')return ['total','ready','created'].every(key=>Number.isInteger(data[key]))&&typeof data.committed==='boolean'&&Array.isArray(data.invalid)&&Array.isArray(data.duplicates);
     return hasId(data);
   }
   if(path==='/health')return data.status==='ok'&&nonemptyString(data.version);

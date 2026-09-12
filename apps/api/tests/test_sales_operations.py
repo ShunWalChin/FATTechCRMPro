@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
 from fattech.models import Audit, Record, User
-from fattech.sales_operations import router
 from test_access import signed_in
 from test_api import PASSWORD, post, system as system
 
@@ -15,8 +14,8 @@ from test_api import PASSWORD, post, system as system
 @pytest.fixture
 def sales_system(system):
     _, app, *_ = system
-    if not any(route.path == "/api/v1/sales/proposals" for route in app.routes):
-        app.include_router(router)
+    # The application must expose these routes itself; mounting them here would hide an unmounted router.
+    assert any(route.path == "/api/v1/sales/proposals" for route in app.routes), "router de vendas não montado"
     return system
 
 

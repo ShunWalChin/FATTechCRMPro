@@ -16,17 +16,23 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
 from .models import ApiKey, Audit, Idempotency, LoginSession, Outbox, Record, Tenant, User, now, uid
-from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset, Simulation, TeamCreate,
+from .schemas import (RESOURCES, ContactImport, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
+                      Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
 from .security import (DUMMY_HASH, digest, hasher, rate_limit, require_auth, user_dict, utc,
                        verify_password)
 from .permissions import ADMIN_ROLES, ELEVATED_ROLES, RANK, can_manage
 from .idempotency import creation_receipt
 from .record_views import register_record_views
+from .sales_operations import router as sales_router
 from . import compliance
-from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_radar, capture_lead, create_record,
+from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications, build_radar,
+                       capture_lead, create_record, import_contacts,
                        default_pipeline, delete_record, get_record, list_records, serialize, simulate,
                        update_record)
+
+# One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
+APP_VERSION = "0.2.0"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
@@ -110,7 +116,7 @@ def create_app(settings: Settings | None = None, engine=None):
                 connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'" )).scalar_one()
         yield
 
-    app = FastAPI(title="FAT Tech CRM API", version="0.1.0", lifespan=lifespan,
+    app = FastAPI(title="FAT Tech CRM API", version=APP_VERSION, lifespan=lifespan,
                   docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)
     app.state.settings = settings
     app.state.engine = engine
@@ -161,7 +167,7 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.get("/api/v1/health")
     def health(db=Depends(get_db)):
         db.execute(text("SELECT 1"))
-        return {"status": "ok", "version": "0.1.0", "environment": settings.env}
+        return {"status": "ok", "version": APP_VERSION, "environment": settings.env}
 
     @app.post("/api/v1/auth/login")
     def login(payload: Login, request: Request, response: Response, db=Depends(get_db)):
@@ -572,6 +578,21 @@ def create_app(settings: Settings | None = None, engine=None):
             raise HTTPException(503, "Envios externos estão desarmados neste ambiente; nenhuma mensagem saiu.")
         raise HTTPException(503, "Provedor de envio não configurado. A mensagem permanece como rascunho.")
 
+    @app.post("/api/v1/contacts/import")
+    def contact_import(payload: ContactImport, principal=Depends(require_auth), db=Depends(get_db)):
+        principal.require("contacts:write")
+        report = import_contacts(db, principal.tenant_id, principal.actor_id, payload.rows, payload.commit)
+        if payload.commit:
+            db.commit()
+        else:
+            db.rollback()
+        return report
+
+    @app.get("/api/v1/notifications")
+    def notifications(principal=Depends(require_auth), db=Depends(get_db)):
+        principal.require("dashboard:read")
+        return build_notifications(db, principal.tenant_id)
+
     @app.get("/api/v1/crm/radar")
     def radar(principal=Depends(require_auth), db=Depends(get_db), pipeline_id: str | None = None):
         principal.require("deals:read")
@@ -613,6 +634,8 @@ def create_app(settings: Settings | None = None, engine=None):
             raise HTTPException(409, "Agente bloqueado: orçamento disponível obrigatório")
         raise HTTPException(503, "Runtime de IA não configurado; nenhum crédito foi gasto")
 
+    # Proposals, goals and reports live in their own router; mounting it is what makes them exist.
+    app.include_router(sales_router)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

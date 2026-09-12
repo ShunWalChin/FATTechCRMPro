@@ -12,7 +12,7 @@ from fattech.config import Settings
 from fattech.db import Base, make_engine, session_factory
 from fattech.main import create_app
 from fattech.migrate import UNRECORDED_LOSS, migrate
-from fattech.schemas import DEFAULT_PIPELINE, Pipeline
+from fattech.schemas import DEFAULT_PIPELINE, RESOURCES, Pipeline
 from fattech.services import default_pipeline
 from fattech.models import Audit, Outbox, Record, Tenant, User, now
 from fattech.seed import bootstrap
@@ -518,3 +518,78 @@ def test_production_refuses_permissive_login_limits():
         Settings(**base, login_attempts_per_ip=1500)
     # Development is free to raise it, which is what the browser suite relies on.
     assert Settings(_env_file=None, env="development", login_attempts_per_email=500).login_attempts_per_email == 500
+
+
+def test_every_declared_router_is_actually_mounted(system):
+    """Tested code that no route reaches is not a delivered feature."""
+    _, app, *_ = system
+    paths = {route.path for route in app.routes}
+    assert {"/api/v1/sales/proposals", "/api/v1/sales/goals", "/api/v1/sales/report"} <= paths
+    assert {"/api/v1/crm/radar", "/api/v1/audit", "/api/v1/integrations"} <= paths
+    for kind in RESOURCES:
+        assert f"/api/v1/{kind}" in paths, kind
+
+
+def test_notifications_are_derived_and_stop_appearing_once_resolved(system):
+    client, _, _, _, _, _, _ = system
+    overdue = post(client, "tasks", {"title": "Ligar para o cliente", "due_date": "2020-01-02"})
+    post(client, "approvals", {"title": "Autorizar desconto", "gate": "G4"})
+    first = client.get("/api/v1/notifications").json()
+    kinds = {item["kind"] for item in first["items"]}
+    assert {"task_overdue", "approval_pending"} <= kinds
+    late = next(item for item in first["items"] if item["kind"] == "task_overdue")
+    assert late["severity"] == "critical" and "2020-01-02" in late["detail"]
+    assert late["href"].endswith(overdue["id"])
+    # The most severe entries come first, so a bell shows the worst thing at the top.
+    assert first["items"][0]["severity"] == "critical"
+    assert first["counts"]["critical"] >= 1 and first["total"] == len(first["items"])
+
+    done = client.patch(f"/api/v1/tasks/{overdue['id']}", json={"version": overdue["version"], "status": "done"})
+    assert done.status_code == 200
+    # Nothing reconciles a stored notification, so these are derived and simply stop appearing.
+    after = client.get("/api/v1/notifications").json()
+    assert not any(item["id"] == overdue["id"] for item in after["items"])
+
+
+def test_contact_import_previews_before_it_writes(system):
+    client, _, _, _, _, _, _ = system
+    existing = post(client, "contacts", {"name": "Já cadastrada", "email": "repetida@example.com"})
+    rows = [{"name": "Nova Pessoa", "email": "nova@example.com"},
+            {"name": "Outra", "email": "repetida@example.com"},
+            {"name": "Repetida no arquivo", "email": "nova@example.com"},
+            {"name": "Sem identificador"},
+            {"email": "sem-nome@example.com"}]
+    preview = client.post("/api/v1/contacts/import", json={"rows": rows}).json()
+    assert preview["total"] == 5 and preview["ready"] == 1 and preview["created"] == 0
+    assert preview["committed"] is False
+    assert [d["line"] for d in preview["duplicates"]] == [2, 3]
+    assert preview["duplicates"][0]["contact_id"] == existing["id"]
+    # A row repeated inside the same file is reported, not silently written twice.
+    assert preview["duplicates"][1]["contact_name"] == "Nova Pessoa"
+    assert [i["line"] for i in preview["invalid"]] == [4, 5]
+    # The preview writes nothing at all.
+    assert client.get("/api/v1/contacts").json()["total"] == 1
+
+    committed = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}).json()
+    assert committed["created"] == 1 and committed["committed"] is True
+    listed = client.get("/api/v1/contacts").json()
+    assert listed["total"] == 2
+    imported = next(item for item in listed["items"] if item["name"] == "Nova Pessoa")
+    assert imported["source"] == "import"
+    # Re-running the same file creates nothing more.
+    again = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}).json()
+    assert again["created"] == 0 and client.get("/api/v1/contacts").json()["total"] == 2
+
+
+def test_contact_import_refuses_an_oversized_batch(system):
+    client, _, _, _, _, _, _ = system
+    rows = [{"name": f"Pessoa {n}", "email": f"p{n}@example.com"} for n in range(501)]
+    assert client.post("/api/v1/contacts/import", json={"rows": rows}).status_code == 422
+
+
+def test_health_and_openapi_report_the_same_version(system):
+    client, app, *_ = system
+    from fattech.main import APP_VERSION
+    assert APP_VERSION == "0.2.0"
+    assert client.get("/api/health").json()["version"] == APP_VERSION
+    assert app.openapi()["info"]["version"] == APP_VERSION

@@ -11,6 +11,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Compliance de envio, radar comercial e destino externo, publicado em 12/09](docs/releases/2026-09-12-compliance-e-radar.md)
 - [Do lead ao trabalho, kanban arrastável e ferramental, publicado em 12/09](docs/releases/2026-09-12-lead-para-trabalho.md)
 - [Acabamento, ficha do registro e busca global, publicado em 12/09](docs/releases/2026-09-12-acabamento-e-ficha.md)
+- [Versão 0.2: avisos, importação e operação comercial ligada](docs/releases/2026-09-12-versao-0.2.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.
@@ -26,6 +27,10 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
   pela equipe; oportunidades em kanban com motivo de perda obrigatório e previsão ponderada.
 - Radar de risco comercial: oportunidades paradas classificadas contra a duração da etapa, com
   sumário por faixa e destaque para quem está sem próxima ação marcada.
+- Avisos derivados dos próprios registros: tarefa vencida, aprovação pendente e oportunidade
+  parada, com sino no topo e link direto para o registro.
+- Importação de contatos com mapeamento de colunas e conferência que grava só depois de aprovada.
+- Propostas com itens do catálogo, metas por responsável e relatório por safra de criação.
 - Lead do site vira trabalho: contato, oportunidade no funil e tarefa de retorno, sem duplicar
   pipeline nem repetir lembrete quando a mesma pessoa reenvia o formulário.
 - Kanban com arrastar-e-soltar entre etapas, mantendo o seletor de etapa para uso por teclado.

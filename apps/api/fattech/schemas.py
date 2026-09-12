@@ -241,6 +241,12 @@ RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "
              "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product}
 
 
+class ContactImport(StrictModel):
+    """`commit` false previews the same batch the confirmation will write."""
+    rows: list[dict] = Field(min_length=1, max_length=500)
+    commit: bool = False
+
+
 class Login(StrictModel):
     # Local bootstrap addresses deliberately supported without DNS/TLD verification.
     email: str = Field(min_length=3, max_length=320)

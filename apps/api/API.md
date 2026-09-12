@@ -1,4 +1,4 @@
-# FAT Tech API v1
+# FAT Tech API v1 · aplicação 0.2.0
 
 Base `/api/v1`, JSON UTF-8, dates ISO-8601 UTC, money integer BRL cents. Interactive typed documentation: `/api/docs`; machine contract: `/api/openapi.json`.
 
@@ -78,6 +78,12 @@ A deal without `pipeline_id` adopts the tenant default funnel and stores that id
 Moving a deal to a stage whose `outcome` is `lost` requires a non-empty `lost_reason` (422 otherwise). Moving it back to any other stage clears the reason. Stage keys match `^[a-z][a-z0-9_-]{0,39}$` and are unique per funnel.
 
 Removing or renaming a stage that still holds active deals returns 409, as does deleting a funnel with active deals. An `inactive` funnel refuses new deals and reassignments but keeps the deals already inside it editable, so a funnel can be archived without stranding history. Setting `is_default` demotes the previous default in the same transaction.
+
+`GET /notifications` derives what needs attention from the records themselves: overdue tasks, pending approvals and deals the radar ranks as `critico` or `em_risco`. It returns `{items:[{kind,severity,id,title,detail,href,at}],total,counts}` ordered by severity. Nothing is stored: resolving the underlying record is what makes an entry disappear, because no background job reconciles a stored notice.
+
+`POST /contacts/import {rows:[{...}],commit:false}` previews a batch of up to 500 rows and writes nothing. It answers `{total,ready,created,committed,invalid:[{line,errors}],duplicates:[{line,contact_id,contact_name,reason}]}`. Rows are validated against the contact schema and their identifiers normalized; a row colliding with an existing contact, or with an earlier row of the same file, is reported rather than written. `commit:true` writes exactly the rows the preview listed as ready, under the same per-tenant lock, so the state a person approved is the state that gets written.
+
+`POST /sales/proposals`, `GET|PATCH /sales/proposals/{id}`, `POST|GET|PATCH /sales/goals` and `GET /sales/report` are mounted under the sales router: proposals snapshot catalogue prices at issue time, goals are per-owner targets, and the report describes the current outcome of a creation-date cohort.
 
 `GET /audit` returns entries carrying `label`, `actor_name` and `resource_name` alongside the raw `action`, `actor_id` and `resource_id`. The label is Portuguese wording derived server side and agreeing in gender ("Criou o contato", "Alterou a automação"); an action nobody mapped keeps its raw key rather than receiving invented wording. Names are resolved in two batched queries, and the subject is omitted when it is the actor itself, as in a sign-in. `GET /dashboard` carries the same shape under `recent_activity`.
 

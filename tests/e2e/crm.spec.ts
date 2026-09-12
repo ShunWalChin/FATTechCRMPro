@@ -177,3 +177,37 @@ test('the radar flags an opportunity without a next action and clears it once sc
   await expect(scheduled).toBeVisible();
   await expect(scheduled.getByText('Pendente')).toHaveCount(0);
 });
+
+test('the bell surfaces overdue work and the import previews before writing', async ({page}) => {
+  const stamp = Date.now();
+  await login(page);
+  const csrf = await page.evaluate(async () => {
+    const me = await fetch('/api/v1/auth/me', {credentials: 'include'}).then(r => r.json());
+    return me.csrf_token as string;
+  });
+  const post = (path: string, data: object) => page.request.post(`/api/v1${path}`,
+    {data, headers: {'X-CSRF-Token': csrf}});
+  expect((await post('/tasks', {title: `Vencida ${stamp}`, due_date: '2020-03-04'})).status()).toBe(201);
+
+  await page.goto('/crm');
+  const bell = page.getByRole('button', {name: /Avisos/});
+  await expect(bell).toBeVisible();
+  await bell.click();
+  const panel = page.getByRole('dialog', {name: 'Avisos da operação'});
+  await expect(panel).toContainText(`Vencida ${stamp}`);
+  await expect(panel).toContainText('Tarefa vencida');
+
+  await page.goto('/crm/importar');
+  await page.getByLabel('Conteúdo do CSV').fill(
+    `nome;email\nPessoa Importada ${stamp};import${stamp}@example.com\nSem identificador ${stamp};`);
+  await page.getByRole('button', {name: /Conferir 2 linhas/}).click();
+  await expect(page.locator('.import-report')).toContainText('Com problema');
+  // The preview writes nothing, so the base is untouched until the second click.
+  const before = await (await page.request.get(`/api/v1/contacts?q=import${stamp}`)).json();
+  expect(before.total).toBe(0);
+
+  await page.getByRole('button', {name: /Gravar 1 contato/}).click();
+  await expect(page.getByRole('status')).toContainText('1 contato gravado');
+  const after = await (await page.request.get(`/api/v1/contacts?q=import${stamp}`)).json();
+  expect(after.total).toBe(1);
+});
