@@ -41,6 +41,21 @@ O autodetector da versão instalada não encontrou o Codex no Windows, embora o 
 esteja no PATH. O servidor MCP pode ser registrado explicitamente apontando para este wrapper.
 Não habilitar serviços cloud, cadastro de contas ou execução paga apenas por existirem no catálogo.
 
+### Limite observado no Windows (12/09/2026)
+
+`memory store` funciona até o daemon subir e criar os sidecars `-wal`/`-shm`. A partir daí toda
+escrita falha com *"refusing an unsafe sql.js whole-image write"*, porque a ponte nativa
+better-sqlite3 está desabilitada no Windows após a issue #3024 do projeto. Parar o daemon não
+resolve: a própria invocação seguinte do CLI o reinicia.
+
+Consequência prática: as nove entradas gravadas antes do primeiro `status` persistem e a busca
+semântica funciona sobre elas, mas atualizações posteriores são perdidas silenciosamente se o código
+de saída não for conferido. `doctor` sinaliza o mesmo problema por outro ângulo, ao notar que o banco
+tem 11 tabelas — formato do fallback sql.js — em vez das ~47 do schema nativo.
+
+Existe a opção `CLAUDE_FLOW_ENABLE_NATIVE_BRIDGE_ON_WINDOWS=1`, que não foi ativada: habilitar uma
+ponte que o próprio projeto desligou por segurança é decisão do operador, não do agente.
+
 ## Graphify
 
 ```text
