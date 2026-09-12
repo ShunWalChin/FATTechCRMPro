@@ -1,6 +1,6 @@
 'use client';
 
-export interface User { id:string; name:string; email:string; role:string; tenant_id:string }
+export interface User { id:string; name:string; email:string; role:string; tenant_id:string; role_label:string; permissions:{manage_team:boolean;manage_integrations:boolean;view_audit:boolean;approve_sensitive:boolean;write_records:boolean;assignable_roles:string[]} }
 export interface RecordData { id:string; version:number; created_at?:string; updated_at?:string; [key:string]:unknown }
 export interface PageData { items:RecordData[]; total:number }
 export class ApiError extends Error { constructor(message:string, public status:number){super(message)} }

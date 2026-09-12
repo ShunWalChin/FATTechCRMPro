@@ -10,6 +10,7 @@ patterns = {
     "GitHub token": re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{50,})\b"),
     "provider secret": re.compile(r"\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{30,}\b"),
     "AWS access key": re.compile(r"\bAKIA[A-Z0-9]{16}\b"),
+    "Cloudflare token": re.compile(r"\bcfat_[A-Za-z0-9_-]{30,}\b"),
     "database credentials": re.compile(r"postgres(?:ql)?(?:\+psycopg)?://[^\s:/]+:[A-Za-z0-9+/=_-]{16,}@"),
 }
 names = subprocess.check_output(

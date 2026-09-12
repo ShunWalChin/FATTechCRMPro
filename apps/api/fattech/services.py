@@ -334,13 +334,15 @@ def promote_lead(db, tenant_id, contact, interest):
 def capture_lead(db, tenant_id, payload, attribution, promote=True):
     """Public resubmission enriches the existing contact instead of failing.
 
-    WEB-03 asks that a resend not duplicate, not that it error: a visitor filling the form twice must
-    not receive a conflict, which would also disclose that the address is already in the CRM. First-touch
-    attribution and the original consent instant are never overwritten by a later submission.
+    A resend must not duplicate a contact. Conflicting identities require review rather than guessing
+    which person submitted the form. First-touch attribution and consent decisions stay intact;
+    an unauthenticated submission cannot undo a refusal or an opt-out.
     """
     lock_contacts(db, tenant_id)
     identifiers = normalize_contact_identifiers(validate("contacts", payload))
     existing = find_contact_matches(db, tenant_id, identifiers)
+    if len(existing) > 1:
+        raise HTTPException(409, "Não foi possível processar o cadastro. Entre em contato com a equipe.")
     if not existing:
         record = create_record(db, tenant_id, None, "contacts", payload)
         record.data = {**record.data, "attribution": attribution, "consented_at": now().isoformat()}
@@ -350,10 +352,11 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
     record = existing[0]
     entry = f"{now().date().isoformat()} · {payload['notes']}".strip()
     history = str(record.data.get("notes") or "").strip()
-    merged = {**record.data, "consent": True,
+    merged = {**record.data,
               "notes": f"{history}\n\n{entry}"[-20000:] if history else entry[:20000]}
     merged.setdefault("attribution", attribution)
-    merged.setdefault("consented_at", now().isoformat())
+    if merged.get("consent") and not merged.get("opted_out_at"):
+        merged.setdefault("consented_at", now().isoformat())
     db.execute(update(Record).where(Record.id == record.id, Record.tenant_id == tenant_id)
                .values(data=merged, version=record.version + 1, updated_at=now()))
     audit_event(db, tenant_id, None, "contacts.recaptured", record.id, {"version": record.version + 1})

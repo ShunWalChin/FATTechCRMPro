@@ -1,32 +1,20 @@
 import hashlib
 import hmac
-import secrets
 import time
 from dataclasses import dataclass
 from datetime import timezone
 
-from argon2 import PasswordHasher
-from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 
 from .db import get_db, set_tenant
 from .models import ApiKey, LoginSession, RateLimit, User
 from .permissions import ADMIN_ROLES, LABELS, RANK, capabilities
-
-hasher = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=2)
-DUMMY_HASH = hasher.hash(secrets.token_urlsafe(32))
+from .passwords import DUMMY_HASH as DUMMY_HASH, hasher as hasher, verify_password as verify_password
 
 
 def digest(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
-
-
-def verify_password(encoded: str, candidate: str) -> bool:
-    try:
-        return hasher.verify(encoded, candidate)
-    except (VerificationError, InvalidHashError):
-        return False
 
 
 def utc(value):

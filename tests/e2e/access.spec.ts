@@ -1,0 +1,41 @@
+import {test,expect} from '@playwright/test';
+
+test('administrator manages a subordinate and can change their own password',async({page})=>{
+  await page.goto('/login');
+  await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
+  await page.getByLabel('Senha',{exact:true}).fill('Test-only-Fattech-Password-2026!');
+  await page.getByRole('button',{name:'Acessar meu workspace'}).click();
+  await expect(page).toHaveURL(/\/crm$/);
+  const {csrf_token}=await (await page.request.get('/api/v1/auth/me')).json();
+  const password='Browser-check-only-Password-2026!';
+  const email=`access-${Date.now()}@example.com`;
+  await page.goto('/crm/equipe');
+  await page.getByRole('button',{name:'Adicionar integrante'}).click();
+  await page.getByLabel('Nome completo').fill('Pessoa para teste de acesso');
+  await page.getByLabel('E-mail',{exact:true}).fill(email);
+  await page.getByLabel('Senha inicial (mínimo 12 caracteres)').fill(password);
+  await expect(page.getByRole('combobox',{name:'Permissão'})).not.toContainText('Root');
+  await page.getByRole('button',{name:'Criar acesso',exact:true}).click();
+  const card=page.locator('.team-card').filter({hasText:email});
+  await expect(card).toBeVisible();
+  await card.getByRole('button',{name:'Gerenciar acesso'}).click();
+  await page.getByRole('combobox',{name:'Permissão'}).selectOption('viewer');
+  await page.getByRole('button',{name:'Salvar acesso'}).click();
+  await expect(card).toContainText('Somente leitura');
+  // Use the subordinate for password mutation so the shared fixture's login remains stable.
+  await page.request.post('/api/v1/auth/logout',{headers:{'X-CSRF-Token':csrf_token}});
+  await page.goto('/login');
+  await page.getByLabel('E-mail da equipe').fill(email);
+  await page.getByLabel('Senha',{exact:true}).fill(password);
+  await page.getByRole('button',{name:'Acessar meu workspace'}).click();
+  await expect(page).toHaveURL(/\/crm$/);
+  await page.goto('/crm/configuracoes');
+  await page.getByLabel('Senha atual',{exact:true}).fill(password);
+  await page.getByLabel('Nova senha (mínimo 12 caracteres)',{exact:true}).fill(password+'changed');
+  await page.getByLabel('Confirmar nova senha',{exact:true}).fill(password+'changed');
+  await page.getByRole('button',{name:'Alterar minha senha'}).click();
+  await expect(page.getByRole('status')).toContainText('Senha alterada');
+  await expect(page.getByText('Esta sessão',{exact:true})).toBeVisible();
+  await page.goto('/crm/equipe');
+  await expect(page.getByRole('button',{name:'Adicionar integrante'})).toHaveCount(0);
+});

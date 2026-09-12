@@ -9,8 +9,9 @@ from sqlalchemy import func, select
 
 from fattech.db import Base, make_engine, session_factory, set_tenant
 from fattech.models import Audit, Outbox, Record, Tenant
+from fattech.schemas import DEFAULT_PIPELINE
 
-from fattech.services import (create_record, delete_record, find_contact_matches, lock_contacts,
+from fattech.services import (capture_lead, create_record, delete_record, find_contact_matches, lock_contacts,
                              normalize_contact_identifiers, update_record)
 
 
@@ -147,6 +148,67 @@ def test_legacy_contact_formats_and_split_identity_do_not_merge(contacts_db):
         with pytest.raises(HTTPException) as duplicate:
             create_record(db, tenant_id, None, "contacts", {"name": "Novo", "email": "old@example.com"})
         assert duplicate.value.status_code == 409
+
+
+def test_public_capture_rejects_split_identity_without_mutations(contacts_db):
+    factory, (tenant_id, _) = contacts_db
+    with factory() as db:
+        create_record(db, tenant_id, None, "pipelines", DEFAULT_PIPELINE)
+        first = create_record(db, tenant_id, None, "contacts", {"name": "Primeira pessoa", "email": "first@example.com"})
+        second = create_record(db, tenant_id, None, "contacts", {"name": "Segunda pessoa", "phone": "38 99999-1234"})
+        db.commit()
+        before = {record.id: (dict(record.data), record.version) for record in (first, second)}
+        counts = [db.scalar(select(func.count()).select_from(model)) for model in (Record, Audit, Outbox)]
+        with pytest.raises(HTTPException) as conflict:
+            capture_lead(db, tenant_id, {"name": "Cadastro público", "email": "FIRST@example.com",
+                         "phone": "+5538999991234", "consent": True, "notes": "Novo interesse"}, {})
+        assert conflict.value.status_code == 409
+        assert conflict.value.detail == "Não foi possível processar o cadastro. Entre em contato com a equipe."
+        # Even if the caller commits, no contact, attribution, opportunity, task or event was changed.
+        db.commit()
+        assert [db.scalar(select(func.count()).select_from(model)) for model in (Record, Audit, Outbox)] == counts
+        for record_id, (data, version) in before.items():
+            stored = db.get(Record, record_id)
+            assert stored.data == data and stored.version == version
+
+
+@pytest.mark.parametrize("consent,opted_out,original_at", [
+    (False, False, None),
+    (False, True, "2026-01-01T10:00:00+00:00"),
+    (True, True, None),
+    (True, False, "2026-01-01T10:00:00+00:00"),
+])
+def test_public_recapture_preserves_consent_and_sales_followup(contacts_db, consent, opted_out, original_at):
+    factory, (tenant_id, _) = contacts_db
+    with factory() as db:
+        create_record(db, tenant_id, None, "pipelines", DEFAULT_PIPELINE)
+        contact = create_record(db, tenant_id, None, "contacts", {"name": "Nome comercial", "email": "lead@example.com",
+                                "consent": consent, "notes": "Histórico comercial", "tags": ["cliente"]})
+        protected = {"attribution": {"utm_source": "original"}}
+        if opted_out:
+            protected["opted_out_at"] = "2026-02-01T10:00:00+00:00"
+        if original_at:
+            protected["consented_at"] = original_at
+        contact.data = {**contact.data, **protected}
+        db.commit()
+        for _ in range(2):
+            captured = capture_lead(db, tenant_id, {"name": "Nome enviado", "email": "LEAD@example.com",
+                                    "consent": True, "notes": "Interesse novo"}, {"utm_source": "recaptura"})
+            db.commit()
+            assert captured.id == contact.id
+        assert captured.data["consent"] is consent
+        assert captured.data["name"] == "Nome comercial" and captured.data["tags"] == ["cliente"]
+        assert all(captured.data[key] == value for key, value in protected.items())
+        if original_at is None:
+            assert "consented_at" not in captured.data
+        assert "Histórico comercial" in captured.data["notes"] and "Interesse novo" in captured.data["notes"]
+        for kind in ("contacts", "deals", "tasks"):
+            assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id, Record.kind == kind)) == 1
+        deal = db.scalar(select(Record).where(Record.tenant_id == tenant_id, Record.kind == "deals"))
+        task = db.scalar(select(Record).where(Record.tenant_id == tenant_id, Record.kind == "tasks"))
+        assert deal.data["contact_id"] == task.data["contact_id"] == contact.id
+        assert task.data["deal_id"] == deal.id
+        assert db.scalar(select(func.count()).select_from(Audit).where(Audit.action == "contacts.recaptured")) == 2
 
 
 def competing_creates(factory, tenant_id):
