@@ -222,7 +222,8 @@ def create_app(settings: Settings | None = None, engine=None):
             "name": payload.name, "email": str(payload.email), "phone": payload.phone,
             "company": payload.company, "source": "website", "consent": True,
             "notes": f"Interesse: {payload.interest}\n{payload.message}".strip(),
-        }, {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")})
+        }, {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")},
+            promote=settings.capture_creates_deal)
         db.commit()
         return {"id": lead.id, "status": "accepted"}
 

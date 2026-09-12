@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-09-12T02:19:43.784Z",
+  "target": "H:/Documentos/Fattech-CRM/apps",
+  "depth": "standard",
+  "type": "all",
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 0,
+    "total": 1
+  },
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "type": "React XSS",
+      "location": "web\\app\\page.tsx:7",
+      "description": "React XSS risk"
+    }
+  ]
+}

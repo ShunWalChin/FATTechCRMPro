@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     session_hours: int = 12
     max_body_bytes: int = 1_048_576
     external_sends_enabled: bool = False
+    capture_creates_deal: bool = True
     blocked_terms: str = ""
     n8n_outbound_url: str = ""
     n8n_outbound_token: str = ""

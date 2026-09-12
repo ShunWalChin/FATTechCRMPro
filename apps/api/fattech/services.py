@@ -4,7 +4,7 @@ import re
 
 from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import func, or_, select, text, update
+from sqlalchemy import Integer, cast, func, or_, select, text, update
 from sqlalchemy.orm import Session
 
 from .models import Audit, Outbox, Record, User, now, uid
@@ -275,6 +275,8 @@ def create_record(db, tenant_id, actor_id, kind, payload):
         validate_flow(data)
     if kind == "deals":
         apply_deal_rules(db, tenant_id, data, bool(payload.get("probability")))
+        if not data.get("position"):
+            data["position"] = next_position(db, tenant_id, data["pipeline_id"], data["stage"])
     if kind == "approvals":
         data.update(requested_by=actor_id, expires_at=(now() + timedelta(hours=24)).isoformat())
     record = Record(tenant_id=tenant_id, kind=kind, data=data)
@@ -286,7 +288,50 @@ def create_record(db, tenant_id, actor_id, kind, payload):
     return record
 
 
-def capture_lead(db, tenant_id, payload, attribution):
+def open_stage_keys(db, tenant_id):
+    return {record.id: {stage["key"] for stage in record.data["stages"] if stage["outcome"] == "open"}
+            for record in db.scalars(scoped(tenant_id, "pipelines"))}
+
+
+def next_position(db, tenant_id, pipeline_id, stage):
+    """New cards land at the bottom of their column; gaps of 1000 leave room to drop between neighbours."""
+    positions = [int(record.data.get("position") or 0) for record in db.scalars(scoped(tenant_id, "deals").where(
+        Record.data["pipeline_id"].as_string() == pipeline_id, Record.data["stage"].as_string() == stage))]
+    return (max(positions) + 1000) if positions else 1000
+
+
+def promote_lead(db, tenant_id, contact, interest):
+    """WEB-03: a captured lead becomes a tracked opportunity and a next action, not just a row in contacts.
+
+    A resubmission never opens a second opportunity; it attaches the follow-up to the one already running,
+    so repeat form fills cannot inflate the pipeline the sales team reads.
+    """
+    pipeline = default_pipeline(db, tenant_id)
+    stage = next((item for item in (pipeline.data["stages"] if pipeline else []) if item["outcome"] == "open"), None)
+    if stage is None:
+        return None
+    opened = open_stage_keys(db, tenant_id)
+    deal = next((record for record in db.scalars(scoped(tenant_id, "deals").where(
+        Record.data["contact_id"].as_string() == contact.id))
+        if record.data.get("stage") in opened.get(record.data.get("pipeline_id"), set())), None)
+    if deal is None:
+        deal = create_record(db, tenant_id, None, "deals", {
+            "title": f"{contact.data['name']} · {interest or 'Contato pelo site'}"[:200],
+            "contact_id": contact.id, "pipeline_id": pipeline.id, "stage": stage["key"],
+            "position": next_position(db, tenant_id, pipeline.id, stage["key"])})
+    # One open next action per contact: ten form fills must not become ten identical reminders.
+    pending = any(record.data.get("status") != "done" for record in db.scalars(
+        scoped(tenant_id, "tasks").where(Record.data["contact_id"].as_string() == contact.id)))
+    if not pending:
+        create_record(db, tenant_id, None, "tasks", {
+            "title": f"Responder {contact.data['name']}"[:200],
+            "description": f"Lead recebido pelo site.\n{interest}".strip()[:20000],
+            "priority": "high", "due_date": (now() + timedelta(days=1)).date().isoformat(),
+            "contact_id": contact.id, "deal_id": deal.id})
+    return deal
+
+
+def capture_lead(db, tenant_id, payload, attribution, promote=True):
     """Public resubmission enriches the existing contact instead of failing.
 
     WEB-03 asks that a resend not duplicate, not that it error: a visitor filling the form twice must
@@ -299,6 +344,8 @@ def capture_lead(db, tenant_id, payload, attribution):
     if not existing:
         record = create_record(db, tenant_id, None, "contacts", payload)
         record.data = {**record.data, "attribution": attribution, "consented_at": now().isoformat()}
+        if promote:
+            promote_lead(db, tenant_id, record, payload.get("notes", ""))
         return record
     record = existing[0]
     entry = f"{now().date().isoformat()} · {payload['notes']}".strip()
@@ -311,6 +358,8 @@ def capture_lead(db, tenant_id, payload, attribution):
                .values(data=merged, version=record.version + 1, updated_at=now()))
     audit_event(db, tenant_id, None, "contacts.recaptured", record.id, {"version": record.version + 1})
     db.refresh(record)
+    if promote:
+        promote_lead(db, tenant_id, record, payload.get("notes", ""))
     return record
 
 
@@ -382,7 +431,10 @@ def list_records(db, tenant_id, kind, filters):
         statement = statement.where(or_(*[Record.data[field].as_string().ilike(f"%{term}%", escape="\\")
                                           for field in ("name", "title", "email", "body")]))
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
-    records = db.scalars(statement.order_by(Record.created_at.desc()).limit(filters["limit"]).offset(filters["offset"]))
+    # A board is read top to bottom, so its column order is the operator's priority, not the creation date.
+    order = ((func.coalesce(cast(Record.data["position"].as_string(), Integer), 0), Record.created_at.desc())
+             if kind == "deals" else (Record.created_at.desc(),))
+    records = db.scalars(statement.order_by(*order).limit(filters["limit"]).offset(filters["offset"]))
     return {"items": [serialize(record) for record in records], "total": total}
 
 

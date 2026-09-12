@@ -9,6 +9,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Estado da entrega, provas e pendências](docs/releases/2026-09-11.md)
 - [Funis configuráveis e motivo de perda, publicado em 11/09](docs/releases/2026-09-11-funis-configuraveis.md)
 - [Compliance de envio, radar comercial e destino externo, publicado em 12/09](docs/releases/2026-09-12-compliance-e-radar.md)
+- [Do lead ao trabalho, kanban arrastável e ferramental, publicado em 12/09](docs/releases/2026-09-12-lead-para-trabalho.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.
@@ -24,6 +25,9 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
   pela equipe; oportunidades em kanban com motivo de perda obrigatório e previsão ponderada.
 - Radar de risco comercial: oportunidades paradas classificadas contra a duração da etapa, com
   sumário por faixa e destaque para quem está sem próxima ação marcada.
+- Lead do site vira trabalho: contato, oportunidade no funil e tarefa de retorno, sem duplicar
+  pipeline nem repetir lembrete quando a mesma pessoa reenvia o formulário.
+- Kanban com arrastar-e-soltar entre etapas, mantendo o seletor de etapa para uso por teclado.
 - Decisão de envio determinística e auditável antes de qualquer mensagem: consentimento, opt-out,
   janela do canal, blocklist e cooldown avaliados no instante do envio, com trava de modo seguro.
 - Lançamentos financeiros internos, solicitações de aprovação, cadastro de campanhas,

@@ -16,32 +16,35 @@
 
 ### Color Palette
 
+Derived from `apps/web/app/globals.css`, which is the source of truth. If the two disagree, the
+stylesheet is right and this file is stale.
+
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#1E40AF` | `--color-primary` |
-| On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#3B82F6` | `--color-secondary` |
-| Accent/CTA | `#D97706` | `--color-accent` |
-| Background | `#F8FAFC` | `--color-background` |
-| Foreground | `#1E3A8A` | `--color-foreground` |
-| Muted | `#E9EEF6` | `--color-muted` |
-| Border | `#DBEAFE` | `--color-border` |
-| Destructive | `#DC2626` | `--color-destructive` |
-| Ring | `#1E40AF` | `--color-ring` |
+| Navy (ground, sidebar) | `#0c1c2c` | `--navy` |
+| Navy light | `#122a3c` | `--navy-light` |
+| Mint (accent, highlight) | `#6be9c1` | `--mint` |
+| Teal | `#007a70` | `--teal` |
+| Accent (actions) | `#087d72` | `--accent` |
+| On accent | `#ffffff` | `--accent-foreground` |
+| Ink (text) | `#172b3e` | `--ink` |
+| Muted text | `#667586` | `--muted` |
+| Canvas (page ground) | `#f5f7f9` | `--canvas` |
+| Line (borders) | `#e5eaee` | `--line` |
 
-**Color Notes:** Blue data + amber highlights [Accent adjusted from #F59E0B for WCAG 3:1]
+Stage tones on the kanban come from the funnel, not from this palette: an outcome of won uses
+`#6fad8d`, lost uses `#cc9b94`, and open stages cycle a six-colour ramp by position, so a funnel with
+custom stages still reads as one system.
 
 ### Typography
 
-- **Heading Font:** Fira Code
-- **Body Font:** Fira Sans
-- **Mood:** dashboard, data, analytics, code, technical, precise
-- **Google Fonts:** [Fira Code + Fira Sans](https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap)
+- **Body and headings:** Inter Variable, served locally, with `Arial, sans-serif` as the fallback stack.
+- **Numerals in tables and metrics:** `font-variant-numeric: tabular-nums`.
+- **Radius:** `--radius: 12px`.
 
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
-```
+There is no Fira family in the product. An earlier generated version of this file prescribed
+Fira Code/Fira Sans with a blue and amber palette; none of it was ever implemented, and following it
+would have produced an interface that does not match anything shipped.
 
 ### Spacing Variables
 
@@ -73,7 +76,7 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #D97706;
+  background: var(--accent);
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -90,8 +93,8 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #1E40AF;
-  border: 2px solid #1E40AF;
+  color: var(--accent);
+  border: 2px solid var(--accent);
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -130,9 +133,9 @@
 }
 
 .input:focus {
-  border-color: #1E40AF;
+  border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px #1E40AF20;
+  box-shadow: 0 0 0 3px rgba(8,125,114,.18);
 }
 ```
 

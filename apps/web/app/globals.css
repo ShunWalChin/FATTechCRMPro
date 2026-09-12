@@ -45,3 +45,6 @@
 .stage-actions{display:flex;gap:2px}
 .stage-key{grid-column:1/-1;font-size:9px;color:#92a3ae;font-family:ui-monospace,SFMono-Regular,monospace}
 @media (max-width:720px){.stage-row{grid-template-columns:1fr 1fr;align-items:start}.stage-actions{grid-column:1/-1;justify-content:flex-end}}
+.deal-card[draggable="true"]{cursor:grab}
+.deal-card.is-dragging{opacity:.45;cursor:grabbing}
+.kanban-column.is-drop-target{outline:2px dashed var(--stage-tone,#a7bbce);outline-offset:3px;background:#f2f7f6}

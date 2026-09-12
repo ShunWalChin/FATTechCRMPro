@@ -211,8 +211,8 @@ def test_rate_limit_and_seed_repeatability(system):
         before = db.get(User, owner_id).password_hash
         bootstrap(db, slug="fattech", email="owner@example.com", password="Different-Test-Password!", demo=True)
         assert db.get(User, owner_id).password_hash == before
-        # The captured lead is an operational record, so demo data must never be seeded over it.
-        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 2
+        # Ten identical submissions leave one contact, one opportunity and one next action, plus the funnel.
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 4
 
 
 def test_production_config_fails_closed():
@@ -408,3 +408,42 @@ def test_migration_0003_gives_every_stored_stage_its_duration(tmp_path):
         assert connection.execute(select(func.count()).select_from(records)
                                   .where(records.c.kind == "pipelines")).scalar() == 1
     engine.dispose()
+
+
+def test_website_lead_becomes_an_opportunity_and_a_next_action(system):
+    client, _, _, _, _, _, _ = system
+    lead = {"name": "Empresa Nova", "email": "nova@example.com", "consent": True,
+            "interest": "CRM", "message": "Quero organizar o comercial"}
+    assert client.post("/api/v1/public/leads", json=lead).status_code == 202
+    deals = client.get("/api/v1/deals").json()
+    tasks = client.get("/api/v1/tasks").json()
+    assert deals["total"] == 1 and tasks["total"] == 1
+    deal = deals["items"][0]
+    contact = client.get("/api/v1/contacts").json()["items"][0]
+    assert deal["contact_id"] == contact["id"] and deal["stage"] == "lead"
+    assert tasks["items"][0]["deal_id"] == deal["id"] and tasks["items"][0]["priority"] == "high"
+
+    # A resubmission must not inflate the pipeline the sales team reads, nor repeat the reminder.
+    assert client.post("/api/v1/public/leads", json={**lead, "message": "Reenvio"}).status_code == 202
+    assert client.get("/api/v1/deals").json()["total"] == 1
+    assert client.get("/api/v1/tasks").json()["total"] == 1
+
+    # Once the team closes the follow-up, a later submission opens a fresh next action.
+    done = client.patch(f"/api/v1/tasks/{tasks['items'][0]['id']}",
+                        json={"version": tasks["items"][0]["version"], "status": "done"})
+    assert done.status_code == 200
+    assert client.post("/api/v1/public/leads", json={**lead, "message": "Voltou"}).status_code == 202
+    assert client.get("/api/v1/tasks").json()["total"] == 2
+    assert client.get("/api/v1/deals").json()["total"] == 1
+
+
+def test_board_order_follows_position_not_creation_date(system):
+    client, _, _, _, _, _, _ = system
+    first = post(client, "deals", {"title": "Primeira", "stage": "lead"})
+    second = post(client, "deals", {"title": "Segunda", "stage": "lead"})
+    assert second["position"] > first["position"]
+    promoted = client.patch(f"/api/v1/deals/{second['id']}",
+                            json={"version": second["version"], "position": 1})
+    assert promoted.status_code == 200
+    order = [item["title"] for item in client.get("/api/v1/deals").json()["items"]]
+    assert order == ["Segunda", "Primeira"]

@@ -116,7 +116,7 @@ Estado da coluna final: **Pendente** significa “mapeado para reescrita e valid
 | UNI-19 | Compliance final, opt-out, cooldown, blocklist e limite por canal | F `src/compliance.mjs`; W `compliance.ts`; Palantyr K | Segurança de envio / P0 | Implementado: `compliance.py` decide no instante do envio, coberto por `test_channels.py`; falta o adaptador que consome a decisão |
 | UNI-20 | Claim antes da rede, fingerprint, unknown e reconciliação humana | W `outbound-delivery.server.ts`; F `src/conversoes-servico.mjs` | Entregas / P0 | Pendente |
 | UNI-21 | Webhook HMAC bruto, dedupe, outbox e recuperação da fila | W `webhook-outbox.server.ts`, `queue.server.ts`; G `api/ingest.py` | Integrações / P0 | Pendente |
-| UNI-22 | Fontes de captação por token, destinos de funil e logs de entrada | F `src/central.mjs`; W `src/routes/api/webhook-sources.ts`; D `lib/webhooks/` | Aquisição / P1 | Pendente |
+| UNI-22 | Fontes de captação por token, destinos de funil e logs de entrada | F `src/central.mjs`; W `src/routes/api/webhook-sources.ts`; D `lib/webhooks/` | Aquisição / P1 | Parcial: captação do site cria contato, oportunidade e tarefa com deduplicação; fontes externas por token pendentes |
 | UNI-23 | n8n bidirecional, comandos tipados, health, HMAC e idempotência | W `n8n-contract.ts`, `n8n-integration.server.ts`; G `api/atendimento.py` | Integrações / P1 | Pendente |
 | UNI-24 | API tokens com escopo/hash/revogação e catálogo MCP autorizado | D `app/app/settings/api-tokens/`, `lib/mcp/tools/` | Plataforma / P1–P2 | Pendente |
 | UNI-25 | DAG versionado/publicado, execução e trilha por nó | W `automation-engine.server.ts`, `automation-graph.ts`, migrations DAG | Automações / P1 | Pendente |

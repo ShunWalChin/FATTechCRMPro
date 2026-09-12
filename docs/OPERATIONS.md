@@ -39,6 +39,10 @@ Em Linux, o contrato equivalente é `PYTHONPATH=apps/api`, ambiente development,
 quando a avaliação de compliance libera a mensagem, nenhum efeito externo sai enquanto ela estiver
 desarmada. Armar exige decisão explícita do operador, depois de existir um adaptador homologado.
 
+`FATTECH_CAPTURE_CREATES_DEAL` nasce em `true`: um lead do site abre também uma oportunidade na
+primeira etapa do funil padrão e uma tarefa de retorno. Defina `false` para que a captação registre
+apenas o contato, sem tocar no pipeline que a equipe comercial lê.
+
 `FATTECH_BLOCKED_TERMS` aceita termos separados por vírgula. A comparação normaliza o texto e remove
 caracteres invisíveis, de modo que um espaço de largura zero entre letras não contorna a lista.
 
