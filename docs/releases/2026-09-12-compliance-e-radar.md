@@ -75,7 +75,7 @@ visitante que o endereço já está no CRM. A recaptação agora enriquece o con
 
 | Verificação | Resultado |
 |---|---|
-| Testes Python | 78 passaram, 2 pulados (PostgreSQL e um marcado no trabalho de terceiros) |
+| Testes Python | 79 passaram, 2 pulados (PostgreSQL e um marcado no trabalho de terceiros) |
 | Testes de navegador | 11 passaram, incluindo relacionamentos e radar |
 | TypeScript e build | Limpos; rota `/crm/radar` registrada |
 | Módulos puros | `compliance.py` e `outbound.py` não importam banco nem SQLAlchemy |
