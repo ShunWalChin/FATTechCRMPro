@@ -1,12 +1,12 @@
 export type RelationshipResource='contacts'|'companies'|'projects'|'deals'|'conversations'|'team';
 export type Field={key:string;label:string;type?:'text'|'email'|'tel'|'url'|'date'|'textarea'|'number'|'money'|'tags'|'checkbox'|'select'|'json';required?:boolean;options?:string[];help?:string;relationship?:RelationshipResource};
 export type Option={value:string;label:string};
-export type Stage={key:string;label:string;probability:number;outcome:'open'|'won'|'lost'};
+export type Stage={key:string;label:string;probability:number;outcome:'open'|'won'|'lost';expected_duration_hours?:number};
 export type PipelineRecord={id:string;version:number;name:string;description?:string;status:string;is_default:boolean;stages:Stage[]};
 export type Resource={key:string;route:string;title:string;singular:string;description:string;icon:string;fields:Field[];columns:string[];view?:'board'|'cards'|'tasks'|'knowledge'|'agents'|'automations'|'approvals'|'finance'};
 const relationships:Record<string,RelationshipResource>={contact_id:'contacts',company_id:'companies',project_id:'projects',deal_id:'deals',conversation_id:'conversations',owner_id:'team'};
 const field=(key:string,label:string,type:Field['type']='text',options?:string[]):Field=>({key,label,type,options,relationship:relationships[key]});
-export const emptyStage=():Stage=>({key:'',label:'',probability:0,outcome:'open'});
+export const emptyStage=():Stage=>({key:'',label:'',probability:0,outcome:'open',expected_duration_hours:72});
 export const stageKey=(label:string)=>label.normalize('NFD').replace(/[^\u0020-\u007e]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/^(?![a-z])/,'e').slice(0,40);
 export const outcomes:Option[]=[{value:'open',label:'Em andamento'},{value:'won',label:'Ganho'},{value:'lost',label:'Perdido'}];
 export const labels:Record<string,string>={lead:'Entrada',qualified:'Qualificação',proposal:'Proposta',negotiation:'Negociação',won:'Ganho',lost:'Perdido',new:'Novo',active:'Ativo',inactive:'Inativo',customer:'Cliente',qualified_contact:'Qualificado',todo:'A fazer',in_progress:'Em andamento',done:'Concluído',low:'Baixa',medium:'Média',high:'Alta',urgent:'Urgente',open:'Aberta',pending:'Pendente',closed:'Encerrada',draft:'Rascunho',scheduled:'Agendada',running:'Em execução',paused:'Pausado',completed:'Concluído',planning:'Planejamento',approved:'Aprovado',rejected:'Rejeitado',paid:'Pago',overdue:'Vencido',sent:'Enviado',internal:'Interno',not_configured:'Configuração pendente',manual:'Manual',service:'Serviço',general:'Geral',archived:'Arquivado',cancelled:'Cancelado',social:'Redes sociais',ads:'Anúncios',owner:'Proprietário',admin:'Administrador',member:'Integrante',viewer:'Leitura'};

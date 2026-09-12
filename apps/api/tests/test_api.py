@@ -385,3 +385,26 @@ def test_radar_ranks_stalled_deals_and_summarises_the_funnel(system):
     # Won and lost stages are terminal and never appear on a radar of open work.
     client.patch(f"/api/v1/deals/{stale['id']}", json={"version": stale["version"], "stage": "won"})
     assert client.get("/api/v1/crm/radar").json()["total"] == 1
+
+
+def test_migration_0003_gives_every_stored_stage_its_duration(tmp_path):
+    """A funnel written by 0002 predates the field the radar measures against."""
+    engine = make_engine(f"sqlite:///{tmp_path / 'legacy.db'}")
+    Base.metadata.create_all(engine)
+    records = Record.__table__
+    legacy = {**DEFAULT_PIPELINE, "stages": [{k: v for k, v in stage.items() if k != "expected_duration_hours"}
+                                             for stage in DEFAULT_PIPELINE["stages"]]}
+    with engine.begin() as connection:
+        connection.execute(Tenant.__table__.insert().values(id="t1", name="Legado", slug="legado", created_at=now()))
+        connection.execute(records.insert().values(id="p1", tenant_id="t1", kind="pipelines", version=4,
+            deleted=False, created_at=now(), updated_at=now(), data=legacy))
+    migrate(engine)
+    with engine.begin() as connection:
+        stored, version = connection.execute(select(records.c.data, records.c.version)
+                                             .where(records.c.kind == "pipelines")).one()
+        assert all(stage["expected_duration_hours"] >= 1 for stage in stored["stages"])
+        # A normalization is not a user edit, so the optimistic version stays where it was.
+        assert version == 4
+        assert connection.execute(select(func.count()).select_from(records)
+                                  .where(records.c.kind == "pipelines")).scalar() == 1
+    engine.dispose()

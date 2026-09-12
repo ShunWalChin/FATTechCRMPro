@@ -8,7 +8,7 @@ from sqlalchemy import func, or_, select, text, update
 from sqlalchemy.orm import Session
 
 from .models import Audit, Outbox, Record, User, now, uid
-from .schemas import RESOURCES
+from .schemas import DEFAULT_STAGE_HOURS, RESOURCES
 
 RELATIONS = {"contact_id": "contacts", "company_id": "companies", "deal_id": "deals",
              "project_id": "projects", "conversation_id": "conversations"}
@@ -206,7 +206,6 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None):
     data["last_activity_at"] = now().isoformat()
 
 
-DEFAULT_STAGE_HOURS = 72
 RISK_ORDER = {"critico": 4, "em_risco": 3, "em_voo": 2, "em_dia": 1}
 
 

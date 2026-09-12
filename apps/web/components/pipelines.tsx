@@ -31,7 +31,7 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
  const move=(index:number,delta:number)=>setForm(f=>{const stages=[...f.stages];const [row]=stages.splice(index,1);stages.splice(index+delta,0,row);return {...f,stages}});
  async function save(){
   setError('');
-  const stages=form.stages.map(stage=>({key:stage.key||stageKey(stage.label),label:stage.label.trim(),probability:stage.probability,outcome:stage.outcome}));
+  const stages=form.stages.map(stage=>({key:stage.key||stageKey(stage.label),label:stage.label.trim(),probability:stage.probability,outcome:stage.outcome,expected_duration_hours:stage.expected_duration_hours??72}));
   if(stages.some(stage=>!stage.label))return setError('Toda etapa precisa de um nome.');
   if(new Set(stages.map(stage=>stage.key)).size!==stages.length)return setError('Duas etapas não podem ter o mesmo identificador.');
   setBusy(true);
@@ -55,6 +55,7 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
       <TextField value={stage.label} onChange={value=>patch(index,stage.saved?{label:value}:{label:value,key:stageKey(value)})} isRequired><Label>Etapa {index+1}</Label><Input/></TextField>
       <label className="select-field"><span>Resultado</span><select value={stage.outcome} onChange={event=>patch(index,{outcome:event.target.value as Stage['outcome']})}>{outcomes.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
       <TextField value={String(stage.probability)} onChange={value=>patch(index,{probability:Math.max(0,Math.min(100,Number(value)||0))})} type="number"><Label>Probabilidade</Label><Input min={0} max={100} step="1"/></TextField>
+      <TextField value={String(stage.expected_duration_hours??72)} onChange={value=>patch(index,{expected_duration_hours:Math.max(1,Math.min(8760,Number(value)||1))})} type="number"><Label>Prazo (h)</Label><Input min={1} max={8760} step="1"/></TextField>
       <div className="stage-actions">
        <Button isIconOnly variant="tertiary" aria-label={`Mover ${stage.label||`etapa ${index+1}`} para cima`} isDisabled={index===0} onPress={()=>move(index,-1)}><ArrowUp size={16}/></Button>
        <Button isIconOnly variant="tertiary" aria-label={`Mover ${stage.label||`etapa ${index+1}`} para baixo`} isDisabled={index===form.stages.length-1} onPress={()=>move(index,1)}><ArrowDown size={16}/></Button>

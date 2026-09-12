@@ -102,9 +102,21 @@ código morto.
 `last_activity_at` é gravado a cada alteração da oportunidade, inclusive uma renomeação. É a mesma
 semântica de `updated_at` e serve ao radar; não é um registro de contato com o cliente.
 
-## Migração
+## Migração 0003
 
-Nenhuma. Os campos novos vivem no JSON de `records` e resolvem por default quando ausentes:
-`expected_duration_hours` cai em 72 horas, que é o valor que a ausência já produzia, e
-`last_activity_at` recua para o `updated_at` do registro. Bancos migrados antes destes campos se
-comportam igual aos novos.
+Os campos novos vivem no JSON de `records` e resolvem por default quando ausentes, então o radar
+funciona sem migração: `expected_duration_hours` cai em 72 horas e `last_activity_at` recua para o
+`updated_at` do registro.
+
+A verificação contra a produção, porém, mostrou um descompasso real: o funil criado pela `0002` é
+anterior ao campo, então a resposta de `GET /pipelines` não o trazia, ainda que o radar calculasse
+certo pelo fallback. Dados e contrato publicado precisam coincidir, então `0003` grava nas etapas
+existentes exatamente a duração que a ausência já produzia — `version` e `updated_at` intactos,
+porque normalização não é edição de usuário.
+
+Diferente da `0002`, a `0003` **não** é exigida na inicialização da API: sem ela o sistema se comporta
+igual, e exigir a marca só acrescentaria fragilidade de implantação sem ganho de segurança.
+
+A mesma verificação expôs a outra ponta: o campo estava no schema e no radar, mas não no editor de
+funis — ou seja, uma configuração que ninguém conseguia configurar. O editor agora tem o prazo por
+etapa, ao lado da probabilidade.

@@ -6,7 +6,7 @@ from sqlalchemy import select, text
 from .config import get_settings
 from .db import Base, make_engine
 from .models import Record, Tenant, now, uid
-from .schemas import DEFAULT_PIPELINE
+from .schemas import DEFAULT_PIPELINE, DEFAULT_STAGE_HOURS
 from . import models  # noqa: F401 - register metadata
 
 UNRECORDED_LOSS = "Motivo não registrado antes da migração 0002."
@@ -55,6 +55,31 @@ def migrate(engine, app_password: str = ""):
         if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'")).scalar():
             backfill_pipelines(connection, postgres)
             connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0002')"))
+        if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0003'")).scalar():
+            normalize_stage_durations(connection, postgres)
+            connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0003')"))
+
+
+def normalize_stage_durations(connection, postgres):
+    """0003: store the stage duration the radar already assumed, so a funnel matches the published contract.
+
+    Cosmetic rather than a precondition: an absent field always resolved to the same default, so the API
+    startup check deliberately does not require this marker.
+    """
+    records = Record.__table__
+    for tenant_id in connection.scalars(select(Tenant.__table__.c.id)):
+        if postgres:
+            connection.execute(text("SELECT set_config('fattech.tenant_id', :tenant, true)"), {"tenant": tenant_id})
+        rows = connection.execute(select(records.c.id, records.c.data).where(
+            records.c.tenant_id == tenant_id, records.c.kind == "pipelines")).all()
+        for pipeline_id, data in rows:
+            stages = data.get("stages") or []
+            if all("expected_duration_hours" in stage for stage in stages):
+                continue
+            patched = [{**stage, "expected_duration_hours": stage.get("expected_duration_hours", DEFAULT_STAGE_HOURS)}
+                       for stage in stages]
+            connection.execute(records.update().where(records.c.id == pipeline_id)
+                               .values(data={**data, "stages": patched}))
 
 
 def backfill_pipelines(connection, postgres):
@@ -90,7 +115,7 @@ def main():
     engine = make_engine(settings.database_url)
     try:
         migrate(engine, os.environ.get("FATTECH_DB_APP_PASSWORD", ""))
-        print("Schema 0002 ready; tenant RLS enforced and every tenant has a configurable funnel.")
+        print("Schema 0003 ready; tenant RLS enforced and every funnel declares its stage durations.")
     finally:
         engine.dispose()
 

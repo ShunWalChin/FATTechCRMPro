@@ -11,6 +11,8 @@ StageKey = Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True
                                             pattern=r"^[a-z][a-z0-9_-]{0,39}$")]
 Password = Annotated[str, StringConstraints(strip_whitespace=False, min_length=1, max_length=200)]
 NewPassword = Annotated[str, StringConstraints(strip_whitespace=False, min_length=12, max_length=200)]
+# Single source for the stage duration the radar measures against, shared with services and migration 0003.
+DEFAULT_STAGE_HOURS = 72
 
 
 def iso_date(value: str):
@@ -59,7 +61,7 @@ class PipelineStage(StrictModel):
     probability: int = Field(default=0, ge=0, le=100)
     outcome: Literal["open", "won", "lost"] = "open"
     # How long a deal is expected to sit here; the radar measures staleness against this, not a global constant.
-    expected_duration_hours: int = Field(default=72, ge=1, le=8760)
+    expected_duration_hours: int = Field(default=DEFAULT_STAGE_HOURS, ge=1, le=8760)
 
 
 class Pipeline(StrictModel):
