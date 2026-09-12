@@ -33,10 +33,11 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     if(path==='/contacts/import')return ['total','ready','created'].every(key=>Number.isInteger(data[key]))&&typeof data.committed==='boolean'&&Array.isArray(data.invalid)&&Array.isArray(data.duplicates);
     return hasId(data);
   }
+  if(path==='/sales/report')return ['deal_count','open_count','won_count','lost_count','pipeline_cents','weighted_pipeline_cents','won_cents'].every(key=>Number.isInteger(data[key]))&&isObject(data.lost_reasons)&&Array.isArray(data.goals)&&data.goals.every(hasId)&&nonemptyString(data.date_basis);
   if(path==='/health')return data.status==='ok'&&nonemptyString(data.version);
   if(/^\/records\/[^/]+\/[^/]+\/overview$/.test(path))return hasId(data.record)&&['activities','deals','tasks','conversations','history'].every(key=>isObject(data[key])&&Array.isArray(data[key].items)&&Number.isInteger(data[key].total));
   if(path==='/dashboard')return Array.isArray(data.pipeline)&&Array.isArray(data.recent_activity)&&typeof data.contacts==='number';
-  if(path==='/crm/radar'||path==='/auth/sessions'||path.split('/').length===2)
+  if(path==='/crm/radar'||path==='/auth/sessions'||path==='/sales/goals'||path==='/sales/proposals'||path.split('/').length===2)
     return Array.isArray(data.items)&&data.items.every(hasId)&&Number.isInteger(data.total)&&Number(data.total)>=0&&
       (path!=='/crm/radar'||isObject(data.summary));
   return hasId(data);
@@ -56,6 +57,11 @@ export async function api<T>(path:string, options:RequestInit={}):Promise<T> {
   }
   if(!validResponse(data,path.split('?')[0],(options.method||'GET').toUpperCase()))throw invalid();
   return data as T;
+}
+export function downloadCsv(rows:string[][],filename:string){
+  const csv=rows.map(row=>row.map(v=>'"'+(/^[=+@\-\t\r]/.test(v)?"'":'')+v.replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
+  const link=document.createElement('a');link.href=url;link.download=filename;link.click();URL.revokeObjectURL(url);
 }
 export const money=(cents:unknown)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(cents || 0)/100);
 export const textValue=(value:unknown)=>value===null || value===undefined ? '' : Array.isArray(value) ? value.join(', ') : String(value);

@@ -589,7 +589,17 @@ def test_contact_import_refuses_an_oversized_batch(system):
 
 def test_health_and_openapi_report_the_same_version(system):
     client, app, *_ = system
+    import tomllib
+    from pathlib import Path
+
     from fattech.main import APP_VERSION
-    assert APP_VERSION == "0.2.0"
+    root = Path(__file__).resolve().parents[3]
+    # Uma versao declarada em quatro arquivos vira quatro versoes; o que o teste guarda e que sao a mesma.
+    manifests = {
+        "pyproject": tomllib.loads((root / "apps/api/pyproject.toml").read_text(encoding="utf-8"))["project"]["version"],
+        "monorepo": json.loads((root / "package.json").read_text(encoding="utf-8"))["version"],
+        "web": json.loads((root / "apps/web/package.json").read_text(encoding="utf-8"))["version"],
+    }
+    assert set(manifests.values()) == {APP_VERSION}, manifests
     assert client.get("/api/health").json()["version"] == APP_VERSION
     assert app.openapi()["info"]["version"] == APP_VERSION

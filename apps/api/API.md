@@ -1,4 +1,4 @@
-# FAT Tech API v1 · aplicação 0.2.0
+# FAT Tech API v1 · aplicação 0.2.1
 
 Base `/api/v1`, JSON UTF-8, dates ISO-8601 UTC, money integer BRL cents. Interactive typed documentation: `/api/docs`; machine contract: `/api/openapi.json`.
 
