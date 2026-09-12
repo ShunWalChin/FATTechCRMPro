@@ -16,12 +16,32 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
 from .models import ApiKey, Audit, Idempotency, LoginSession, Outbox, Record, Tenant, User, now, uid
-from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, Simulation, TeamCreate,
+from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset, Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
 from .security import (DUMMY_HASH, digest, hasher, rate_limit, require_auth, user_dict, utc,
                        verify_password)
-from .services import (PRIVILEGED, audit_event, create_record, default_pipeline, delete_record, get_record,
-                       list_records, serialize, simulate, update_record)
+from .permissions import ADMIN_ROLES, ELEVATED_ROLES, RANK, can_manage
+from . import compliance
+from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_radar, capture_lead, create_record,
+                       default_pipeline, delete_record, get_record, list_records, serialize, simulate,
+                       update_record)
+
+COMPLIANCE_REASONS = {
+    "no_consent": "Contato sem consentimento registrado.",
+    "opted_out": "O contato pediu para parar de receber mensagens.",
+    "blocked_content": "A mensagem contém um termo da lista de bloqueio.",
+    "no_inbound_interaction": "O contato ainda não iniciou uma conversa por este canal.",
+    "outside_24h": "A janela de 24 horas encerrou; use um template aprovado.",
+    "outside_7d": "A janela de sete dias do atendimento humano encerrou.",
+    "human_agent_is_not_automation": "A marca de atendimento humano não pode ser usada por automação.",
+    "trigger_cooldown": "O gatilho já disparou para este contato dentro do intervalo mínimo.",
+    "comment_already_replied": "Este comentário já recebeu uma resposta privada.",
+    "outside_private_reply_window": "A janela de resposta privada ao comentário encerrou.",
+    "invalid_interaction_time": "A última interação está no futuro; verifique o relógio da origem.",
+    "whatsapp_template_required": "Fora da janela de 24 horas o WhatsApp exige template aprovado.",
+    "whatsapp_template_not_approved": "O template ainda não foi aprovado pela Meta.",
+    "whatsapp_template_missing_opt_out": "Um template usado por automação precisa conter a saída.",
+}
 
 CAPABILITIES = {
     "crm": "available", "public_leads": "available", "flow_simulator": "available",
@@ -118,7 +138,7 @@ def create_app(settings: Settings | None = None, engine=None):
         rate_limit(db, f"login:email:{payload.email.lower()}", 10, 300)
         user = db.scalar(select(User).where(User.email == payload.email.lower()))
         valid = verify_password(user.password_hash if user else DUMMY_HASH, payload.password)
-        if not user or not valid or not user.active:
+        if not user or not valid or not user.active or user.role not in RANK:
             raise HTTPException(401, "E-mail ou senha inválidos")
         token, csrf = secrets.token_urlsafe(48), secrets.token_urlsafe(32)
         session = LoginSession(token_hash=digest(token), user_id=user.id, csrf_token=csrf,
@@ -198,13 +218,11 @@ def create_app(settings: Settings | None = None, engine=None):
         if not tenant:
             raise HTTPException(503, "Captação não configurada")
         set_tenant(db, tenant.id)
-        lead = create_record(db, tenant.id, None, "contacts", {
+        lead = capture_lead(db, tenant.id, {
             "name": payload.name, "email": str(payload.email), "phone": payload.phone,
             "company": payload.company, "source": "website", "consent": True,
-            "notes": f"Interesse: {payload.interest}\n{payload.message}",
-        })
-        lead.data = {**lead.data, "attribution": {key: value for key, value in payload.model_dump().items()
-                                                if key.startswith("utm_")}, "consented_at": now().isoformat()}
+            "notes": f"Interesse: {payload.interest}\n{payload.message}".strip(),
+        }, {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")})
         db.commit()
         return {"id": lead.id, "status": "accepted"}
 
@@ -276,7 +294,7 @@ def create_app(settings: Settings | None = None, engine=None):
     def team(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("team:read")
         query = select(User).where(User.tenant_id == principal.tenant_id)
-        if principal.role not in ("owner", "admin"):
+        if principal.role not in ADMIN_ROLES:
             query = query.where(User.active.is_(True))
         items = [{**user_dict(user), "active": user.active} for user in db.scalars(query)]
         return {"items": items, "total": len(items)}
@@ -284,6 +302,9 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.post("/api/v1/team", status_code=201)
     def add_member(payload: TeamCreate, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
+        actor, _ = lock_membership(db, principal)
+        if not can_manage(actor.role, payload.role):
+            raise HTTPException(403, "Você não pode conceder este nível de acesso")
         user = User(tenant_id=principal.tenant_id, name=payload.name, email=str(payload.email).lower(),
                     password_hash=hasher.hash(payload.password), role=payload.role)
         db.add(user)
@@ -300,30 +321,48 @@ def create_app(settings: Settings | None = None, engine=None):
     def update_member(user_id: str, payload: TeamUpdate, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
         # Serialize membership transitions to protect the last active owner from concurrent requests.
-        members = list(db.scalars(select(User).where(User.tenant_id == principal.tenant_id)
-                                  .order_by(User.id).with_for_update().execution_options(populate_existing=True)))
-        actor = next((member for member in members if member.id == principal.actor_id), None)
-        if not actor or not actor.active or actor.role not in ("owner", "admin"):
-            raise HTTPException(403, "Permissão de administração revogada")
+        actor, members = lock_membership(db, principal)
         user = next((member for member in members if member.id == user_id), None)
         if not user:
             raise HTTPException(404, "Usuário não encontrado")
         changes = payload.model_dump(exclude_none=True)
-        if (user.role == "owner" or changes.get("role") == "owner") and actor.role != "owner":
-            raise HTTPException(403, "Somente proprietário pode alterar outro proprietário")
-        if user.active and user.role == "owner" and (changes.get("active") is False or
-                                                     changes.get("role", "owner") != "owner"):
-            if sum(member.active and member.role == "owner" for member in members) <= 1:
+        loses_access = changes.get("active") is False
+        next_role = changes.get("role", user.role)
+        if user.active and user.role == "root" and (loses_access or next_role != "root"):
+            if sum(member.active and member.role == "root" for member in members) <= 1:
+                raise HTTPException(409, "Não é possível remover o último Root ativo")
+        if user.active and user.role in ELEVATED_ROLES and (loses_access or next_role not in ELEVATED_ROLES):
+            if sum(member.active and member.role in ELEVATED_ROLES for member in members) <= 1:
                 raise HTTPException(409, "Não é possível remover o último proprietário ativo")
+        own_name_only = user.id == actor.id and set(changes) <= {"name"}
+        if not own_name_only and (not can_manage(actor.role, user.role) or not can_manage(actor.role, next_role)):
+            raise HTTPException(403, "Você só pode administrar acessos subordinados ao seu papel")
+        old_role = user.role
         for key, value in changes.items():
             setattr(user, key, value)
-        if not user.active:
+        if not user.active or old_role != user.role:
             db.execute(update(LoginSession).where(LoginSession.user_id == user.id).values(revoked=True))
             db.execute(update(ApiKey).where(ApiKey.created_by == user.id,
                                            ApiKey.tenant_id == principal.tenant_id).values(revoked=True))
         audit_event(db, principal.tenant_id, principal.actor_id, "team.updated", user.id, {"fields": sorted(changes)})
         db.commit()
         return {**user_dict(user), "active": user.active}
+
+    @app.post("/api/v1/team/{user_id}/password")
+    def reset_member_password(user_id: str, payload: PasswordReset, principal=Depends(require_auth), db=Depends(get_db)):
+        principal.admin()
+        actor, members = lock_membership(db, principal)
+        target = next((member for member in members if member.id == user_id), None)
+        if target is None:
+            raise HTTPException(404, "Usuário não encontrado")
+        if target.id == actor.id or not can_manage(actor.role, target.role):
+            raise HTTPException(403, "Use a troca de senha pessoal ou selecione um acesso subordinado")
+        target.password_hash = hasher.hash(payload.new_password)
+        db.execute(update(LoginSession).where(LoginSession.user_id == target.id).values(revoked=True))
+        db.execute(update(ApiKey).where(ApiKey.created_by == target.id, ApiKey.tenant_id == principal.tenant_id).values(revoked=True))
+        audit_event(db, principal.tenant_id, actor.id, "team.password_reset", target.id)
+        db.commit()
+        return {"ok": True, "sessions_revoked": True, "api_keys_revoked": True}
 
     @app.get("/api/v1/audit")
     def audit(principal=Depends(require_auth), db=Depends(get_db), limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
@@ -336,6 +375,7 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.post("/api/v1/api-keys", status_code=201)
     def create_key(payload: KeyCreate, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
+        lock_membership(db, principal)
         allowed = {f"{kind}:{op}" for kind in RESOURCES for op in ("read", "write")}
         allowed |= {"webhooks:write", "events:read", "dashboard:read", "integrations:read", "team:read"}
         if not set(payload.scopes).issubset(allowed):
@@ -353,14 +393,21 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.get("/api/v1/api-keys")
     def keys(principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
-        items = [key_dict(key) for key in db.scalars(select(ApiKey).where(ApiKey.tenant_id == principal.tenant_id))]
+        creators = [user.id for user in db.scalars(select(User).where(User.tenant_id == principal.tenant_id))
+                    if user.id == principal.actor_id or can_manage(principal.role, user.role)]
+        items = [key_dict(key) for key in db.scalars(select(ApiKey).where(ApiKey.tenant_id == principal.tenant_id,
+                                                                        ApiKey.created_by.in_(creators)))]
         return {"items": items, "total": len(items)}
 
     @app.delete("/api/v1/api-keys/{key_id}")
     def revoke_key(key_id: str, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
+        actor, members = lock_membership(db, principal)
         key = db.scalar(select(ApiKey).where(ApiKey.id == key_id, ApiKey.tenant_id == principal.tenant_id))
         if not key:
+            raise HTTPException(404, "Chave não encontrada")
+        creator = next((member for member in members if member.id == key.created_by), None)
+        if creator is None or (creator.id != actor.id and not can_manage(actor.role, creator.role)):
             raise HTTPException(404, "Chave não encontrada")
         key.revoked = True
         audit_event(db, principal.tenant_id, principal.actor_id, "api_key.revoked", key.id)
@@ -448,23 +495,51 @@ def create_app(settings: Settings | None = None, engine=None):
         db.commit()
         return {"id": record_id, "status": "pending"}
 
+    def message_decision(db, principal, record_id):
+        """Shared by the preview and the send path, so the operator never sees a verdict the sender would not apply."""
+        message = get_record(db, principal.tenant_id, "messages", record_id)
+        conversation = get_record(db, principal.tenant_id, "conversations", message.data["conversation_id"])
+        contact = (get_record(db, principal.tenant_id, "contacts", conversation.data["contact_id"])
+                   if conversation.data.get("contact_id") else None)
+        body = message.data["body"]
+        if contact is not None and not contact.data.get("consent"):
+            return message, compliance.Decision(False, "blocked", body, reason="no_consent")
+        channel = conversation.data["channel"]
+        if channel not in ("whatsapp", "instagram"):
+            return message, compliance.Decision(True, "internal", body)
+        evaluator = compliance.evaluate_whatsapp if channel == "whatsapp" else compliance.evaluate
+        return message, evaluator(message=body, is_automated=False, blocklist=settings.blocklist,
+                                  last_inbound_at=conversation.data.get("last_inbound_at"),
+                                  opted_out_at=contact.data.get("opted_out_at") if contact else None)
+
+    @app.post("/api/v1/messages/{record_id}/compliance")
+    def message_compliance(record_id: str, principal=Depends(require_auth), db=Depends(get_db)):
+        principal.require("messages:read")
+        _, decision = message_decision(db, principal, record_id)
+        return {**decision.as_dict(), "preview": decision.body, "explanation": COMPLIANCE_REASONS.get(decision.reason)}
+
     @app.post("/api/v1/messages/{record_id}/send")
     def send_message(record_id: str, payload: Version, principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("messages:write")
-        message = get_record(db, principal.tenant_id, "messages", record_id)
+        message, decision = message_decision(db, principal, record_id)
         if message.version != payload.version:
             raise HTTPException(409, "Versão desatualizada")
-        conversation = get_record(db, principal.tenant_id, "conversations", message.data["conversation_id"])
-        if conversation.data.get("contact_id"):
-            contact = get_record(db, principal.tenant_id, "contacts", conversation.data["contact_id"])
-            if not contact.data.get("consent"):
-                raise HTTPException(409, "Envio bloqueado: contato sem consentimento")
-        if conversation.data["channel"] in ("whatsapp", "instagram"):
-            inbound = conversation.data.get("last_inbound_at")
-            from datetime import datetime
-            if not inbound or utc(datetime.fromisoformat(inbound)) < now() - timedelta(hours=24):
-                raise HTTPException(409, "Janela de atendimento encerrada; template aprovado necessário")
+        if not decision.allowed:
+            raise HTTPException(409, {"message": COMPLIANCE_REASONS.get(decision.reason, "Envio bloqueado."),
+                                      "compliance": decision.as_dict()})
+        if not settings.external_sends_enabled:
+            raise HTTPException(503, "Envios externos estão desarmados neste ambiente; nenhuma mensagem saiu.")
         raise HTTPException(503, "Provedor de envio não configurado. A mensagem permanece como rascunho.")
+
+    @app.get("/api/v1/crm/radar")
+    def radar(principal=Depends(require_auth), db=Depends(get_db), pipeline_id: str | None = None):
+        principal.require("deals:read")
+        funnel = (get_record(db, principal.tenant_id, "pipelines", pipeline_id) if pipeline_id
+                  else default_pipeline(db, principal.tenant_id))
+        if funnel is None:
+            return {"pipeline_id": None, "pipeline_name": "", "items": [], "total": 0,
+                    "summary": {**{bucket: 0 for bucket in RISK_ORDER}, "needs_action": 0}}
+        return build_radar(db, principal.tenant_id, funnel)
 
     @app.post("/api/v1/approvals/{record_id}/decision")
     def decision(record_id: str, payload: Decision, principal=Depends(require_auth), db=Depends(get_db)):
@@ -475,7 +550,7 @@ def create_app(settings: Settings | None = None, engine=None):
             raise HTTPException(409, "Solicitação encerrada ou expirada")
         if record.data.get("requested_by") == principal.actor_id:
             raise HTTPException(403, "Solicitante não pode aprovar a própria intenção")
-        if record.data["gate"] in ("G1", "G2", "G3", "G5", "G6") and principal.role != "owner":
+        if record.data["gate"] in ("G1", "G2", "G3", "G5", "G6") and principal.role not in ELEVATED_ROLES:
             raise HTTPException(403, "Este gate requer o proprietário")
         data = {**record.data, "status": payload.decision, "decided_by": principal.actor_id,
                 "decided_at": now().isoformat(), "reason": payload.reason, "execution_status": "not_executed"}
@@ -501,6 +576,24 @@ def create_app(settings: Settings | None = None, engine=None):
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)
     return app
+
+
+def lock_membership(db, principal):
+    """Recheck the actor after locking the tenant's membership in a stable order."""
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("UPDATE users SET active=active WHERE 1=0"))
+    members = list(db.scalars(select(User).where(User.tenant_id == principal.tenant_id)
+                             .order_by(User.id).with_for_update().execution_options(populate_existing=True)))
+    actor = next((member for member in members if member.id == principal.actor_id), None)
+    if not actor or not actor.active or actor.role not in ADMIN_ROLES:
+        raise HTTPException(403, "Permissão de administração revogada")
+    if not principal.session:
+        raise HTTPException(403, "Sessão de usuário obrigatória")
+    db.refresh(principal.session)
+    if principal.session.revoked or utc(principal.session.expires_at) <= now():
+        raise HTTPException(401, "Sessão expirada. Entre novamente.")
+    principal.role = actor.role
+    return actor, members
 
 
 def audit_dict(item):

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     public_tenant_slug: str = "fattech"
     session_hours: int = 12
     max_body_bytes: int = 1_048_576
+    external_sends_enabled: bool = False
+    blocked_terms: str = ""
     n8n_outbound_url: str = ""
     n8n_outbound_token: str = ""
     worker_max_attempts: int = 8
@@ -22,6 +24,10 @@ class Settings(BaseSettings):
     @property
     def origins(self) -> list[str]:
         return [origin.strip().rstrip("/") for origin in self.allowed_origins.split(",") if origin.strip()]
+
+    @property
+    def blocklist(self) -> list[str]:
+        return [term.strip() for term in self.blocked_terms.split(",") if term.strip()]
 
     @property
     def production(self) -> bool:
@@ -37,6 +43,16 @@ class Settings(BaseSettings):
             url = urlsplit(self.n8n_outbound_url)
             if url.scheme not in ("http", "https") or not url.hostname or url.username or url.password:
                 raise ValueError("Outbound n8n URL must be an HTTP(S) URL without embedded credentials")
+            # A literal address is checked here; a hostname is resolved by the worker before each delivery.
+            from .outbound import is_public_address
+            import ipaddress
+            try:
+                ipaddress.ip_address(url.hostname)
+            except ValueError:
+                pass
+            else:
+                if not is_public_address(url.hostname):
+                    raise ValueError("Outbound n8n URL must not target a private or reserved address")
             if self.production and url.scheme != "https":
                 raise ValueError("Production outbound n8n requires HTTPS")
             if len(self.webhook_secret) < 32:

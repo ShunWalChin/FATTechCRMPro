@@ -102,7 +102,7 @@ Estado da coluna final: **Pendente** significa “mapeado para reescrita e valid
 | UNI-05 | Busca global normalizada e navegação até ficha com estado na URL | F `web/app.js`, README; D `app/app/contacts/[id]/page.tsx` | Experiência / P1 | Pendente |
 | UNI-06 | Funis, vocabulário por nicho, etapas, oportunidade e responsáveis | F `src/api.mjs`; W `crm-pipeline.server.ts`; D `lib/pipelines/` | Vendas / P0 | Parcial: `pipelines` com etapas/rótulos configuráveis, funil padrão e migração `0002`; vocabulário por nicho e responsáveis por etapa pendentes |
 | UNI-07 | Kanban concorrente, valores exatos, ganho/perda e motivo obrigatório | G `api/crm.py`; W `crm-pipeline-contract.ts`; F `src/dinheiro.mjs` | Vendas / P0 | Implementado: `apply_deal_rules` exige motivo em etapa de perda, kanban usa concorrência por versão e a previsão ponderada soma centavos inteiros; coberto por `test_configurable_pipeline_stages_and_loss_reason` e pelo teste de navegador do funil |
-| UNI-08 | Radar de risco/inatividade, snooze por assunto e próxima ação | W `src/routes/api/crm/radar.ts`; D `app/app/radar/`; F `adiamentos` | Operação / P1 | Pendente |
+| UNI-08 | Radar de risco/inatividade, snooze por assunto e próxima ação | W `src/routes/api/crm/radar.ts`; D `app/app/radar/`; F `adiamentos` | Operação / P1 | Parcial: `classify_risk` e `GET /crm/radar` com faixas, sumário e próxima ação; snooze por assunto pendente |
 | UNI-09 | Atividades, notas fixadas, ações em lote e histórico auditado | W `contacts-crm.server.ts`; D `app/app/activities/`, `lib/leads/` | CRM / P1 | Pendente |
 | UNI-10 | Workspaces, listas hierárquicas, itens, campos e item→oportunidade | G `api/workspaces.py`, `workers/router.py` | Projetos / P1 | Pendente |
 | UNI-11 | Tarefas, prazo, responsável, produtividade e entrega de implantação | D `app/app/tasks/`, `lib/tarefas/`; G `api/workspaces.py` | Projetos / P1 | Pendente |
@@ -113,7 +113,7 @@ Estado da coluna final: **Pendente** significa “mapeado para reescrita e valid
 | UNI-16 | WhatsApp oficial, embedded signup, WABA, templates e receipts | W `whatsapp-api.server.ts`, `whatsapp-sender.server.ts`; D `lib/channels/` | Canais / P2 | Pendente |
 | UNI-17 | Canal WhatsApp QR/multinúmero, saúde e reconexão | D `lib/waha/`, `app/api/v1/channel-sessions/`; Palantyr Evolution | Canais / P2 | Pendente |
 | UNI-18 | Instagram OAuth, comments, DM, story e Private Reply | W `meta-api.server.ts`, `webhook-processor.server.ts` | Canais / P2 | Pendente |
-| UNI-19 | Compliance final, opt-out, cooldown, blocklist e limite por canal | F `src/compliance.mjs`; W `compliance.ts`; Palantyr K | Segurança de envio / P0 | Pendente |
+| UNI-19 | Compliance final, opt-out, cooldown, blocklist e limite por canal | F `src/compliance.mjs`; W `compliance.ts`; Palantyr K | Segurança de envio / P0 | Implementado: `compliance.py` decide no instante do envio, coberto por `test_channels.py`; falta o adaptador que consome a decisão |
 | UNI-20 | Claim antes da rede, fingerprint, unknown e reconciliação humana | W `outbound-delivery.server.ts`; F `src/conversoes-servico.mjs` | Entregas / P0 | Pendente |
 | UNI-21 | Webhook HMAC bruto, dedupe, outbox e recuperação da fila | W `webhook-outbox.server.ts`, `queue.server.ts`; G `api/ingest.py` | Integrações / P0 | Pendente |
 | UNI-22 | Fontes de captação por token, destinos de funil e logs de entrada | F `src/central.mjs`; W `src/routes/api/webhook-sources.ts`; D `lib/webhooks/` | Aquisição / P1 | Pendente |

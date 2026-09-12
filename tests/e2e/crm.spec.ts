@@ -90,7 +90,7 @@ test('all workspace modules load without backend error', async ({page}) => {
   // Sixteen routes, each compiled on first visit by the dev server this suite starts.
   test.slow();
   await login(page);
-  for (const route of ['empresas','tarefas','projetos','campanhas','automacoes','ia','conhecimento','financeiro','produtos','aprovacoes','conversas','funis','integracoes','equipe','configuracoes']) {
+  for (const route of ['empresas','tarefas','projetos','campanhas','automacoes','ia','conhecimento','financeiro','produtos','aprovacoes','conversas','funis','radar','integracoes','equipe','configuracoes']) {
     await page.goto(`/crm/${route}`);
     await expect(page.getByRole('heading', {level: 1})).toBeVisible();
     await expect(page.locator('.data-loading')).toHaveCount(0);
@@ -143,4 +143,35 @@ test('a configured funnel drives the board and a loss requires its reason', asyn
   await expect(loss).not.toBeVisible();
   const records = await (await page.request.get(`/api/v1/deals?q=${encodeURIComponent(title)}`)).json();
   expect(records.items[0]).toMatchObject({stage: 'arquivado', lost_reason: 'Cliente adiou o projeto para o próximo ciclo.'});
+});
+
+test('the radar flags an opportunity without a next action and clears it once scheduled', async ({page}) => {
+  const title = `Radar E2E ${Date.now()}`;
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  await login(page);
+  await page.goto('/crm/pipeline');
+  await page.getByRole('button', {name: 'Novo oportunidade', exact: true}).click();
+  const form = page.getByRole('dialog');
+  await form.getByLabel('Nome da oportunidade').fill(title);
+  await form.getByRole('button', {name: 'Salvar oportunidade'}).click();
+  await expect(form).not.toBeVisible();
+
+  await page.goto('/crm/radar');
+  const row = page.locator('tbody tr').filter({hasText: title});
+  await expect(row).toBeVisible();
+  // A deal with no next action is pending, even while it is still on track for its stage.
+  await expect(row.getByText('Pendente')).toBeVisible();
+
+  await page.goto('/crm/pipeline');
+  await page.getByRole('button', {name: `Editar ${title}`}).or(
+    page.getByRole('heading', {name: title})).first().click();
+  const editor = page.getByRole('dialog');
+  await editor.getByLabel('Próxima ação').fill(tomorrow);
+  await editor.getByRole('button', {name: 'Salvar oportunidade'}).click();
+  await expect(editor).not.toBeVisible();
+
+  await page.goto('/crm/radar');
+  const scheduled = page.locator('tbody tr').filter({hasText: title});
+  await expect(scheduled).toBeVisible();
+  await expect(scheduled.getByText('Pendente')).toHaveCount(0);
 });

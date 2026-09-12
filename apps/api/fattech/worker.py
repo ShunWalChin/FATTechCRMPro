@@ -14,6 +14,7 @@ from sqlalchemy import and_, or_, select, update
 
 from .config import get_settings
 from .db import make_engine, session_factory, set_tenant
+from .outbound import assert_safe_outbound_url
 from .models import Outbox, Tenant, now, uid
 
 log = logging.getLogger("fattech.worker")
@@ -115,6 +116,9 @@ def main():
         signal.signal(sig, lambda *_: stop.set())
     if not settings.n8n_outbound_url:
         log.warning("n8n outbound is not configured; events remain pending without external delivery")
+    else:
+        # Refuse to start against a private or reserved destination instead of failing one event at a time.
+        assert_safe_outbound_url(settings.n8n_outbound_url)
     with httpx.Client(timeout=httpx.Timeout(20, connect=5), follow_redirects=False, trust_env=False) as client:
         while not stop.is_set():
             try:

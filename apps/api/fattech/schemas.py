@@ -58,6 +58,8 @@ class PipelineStage(StrictModel):
     label: Name
     probability: int = Field(default=0, ge=0, le=100)
     outcome: Literal["open", "won", "lost"] = "open"
+    # How long a deal is expected to sit here; the radar measures staleness against this, not a global constant.
+    expected_duration_hours: int = Field(default=72, ge=1, le=8760)
 
 
 class Pipeline(StrictModel):
@@ -71,12 +73,20 @@ class Pipeline(StrictModel):
 # Migration 0002 stores this literal without validation, so every field the schema reads must be present.
 DEFAULT_PIPELINE = {"name": "Funil comercial", "status": "active", "is_default": True,
                     "description": "Etapas iniciais do processo comercial. Ajuste conforme a sua operação.",
-                    "stages": [{"key": "lead", "label": "Entrada", "probability": 10, "outcome": "open"},
-                               {"key": "qualified", "label": "Qualificação", "probability": 30, "outcome": "open"},
-                               {"key": "proposal", "label": "Proposta", "probability": 60, "outcome": "open"},
-                               {"key": "negotiation", "label": "Negociação", "probability": 80, "outcome": "open"},
-                               {"key": "won", "label": "Ganho", "probability": 100, "outcome": "won"},
-                               {"key": "lost", "label": "Perdido", "probability": 0, "outcome": "lost"}]}
+                    # Durations only steer the radar, and 72h is what an absent field already resolved to,
+                    # so adding them here changes no behaviour for a database migrated before this field existed.
+                    "stages": [{"key": "lead", "label": "Entrada", "probability": 10, "outcome": "open",
+                                "expected_duration_hours": 48},
+                               {"key": "qualified", "label": "Qualificação", "probability": 30, "outcome": "open",
+                                "expected_duration_hours": 72},
+                               {"key": "proposal", "label": "Proposta", "probability": 60, "outcome": "open",
+                                "expected_duration_hours": 120},
+                               {"key": "negotiation", "label": "Negociação", "probability": 80, "outcome": "open",
+                                "expected_duration_hours": 120},
+                               {"key": "won", "label": "Ganho", "probability": 100, "outcome": "won",
+                                "expected_duration_hours": 72},
+                               {"key": "lost", "label": "Perdido", "probability": 0, "outcome": "lost",
+                                "expected_duration_hours": 72}]}
 
 
 class Deal(StrictModel):
@@ -88,6 +98,8 @@ class Deal(StrictModel):
     value_cents: Cents = 0
     probability: int = Field(default=0, ge=0, le=100)
     expected_close: DateText | None = None
+    next_action_at: DateText | None = None
+    position: int = Field(default=0, ge=0, le=1_000_000_000)
     owner_id: Identifier | None = None
     lost_reason: str = Field(default="", max_length=500)
     notes: Text = ""
@@ -227,17 +239,21 @@ class TeamCreate(StrictModel):
     name: Name
     email: EmailStr
     password: NewPassword
-    role: Literal["admin", "member", "viewer"] = "member"
+    role: Literal["root", "super_admin", "admin", "member", "viewer"] = "member"
 
 
 class TeamUpdate(StrictModel):
     name: Name | None = None
-    role: Literal["owner", "admin", "member", "viewer"] | None = None
+    role: Literal["root", "super_admin", "owner", "admin", "member", "viewer"] | None = None
     active: bool | None = None
 
 
 class PasswordChange(StrictModel):
     current_password: Password
+    new_password: NewPassword
+
+
+class PasswordReset(StrictModel):
     new_password: NewPassword
 
 

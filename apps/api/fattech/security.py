@@ -12,6 +12,7 @@ from sqlalchemy import select
 
 from .db import get_db, set_tenant
 from .models import ApiKey, LoginSession, RateLimit, User
+from .permissions import ADMIN_ROLES, LABELS, RANK, capabilities
 
 hasher = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=2)
 DUMMY_HASH = hasher.hash(secrets.token_urlsafe(32))
@@ -62,13 +63,15 @@ class Principal:
     key: ApiKey | None = None
 
     def require(self, scope: str):
+        if self.role not in RANK:
+            raise HTTPException(403, "Papel de acesso inválido")
         if self.key and scope not in self.key.scopes:
             raise HTTPException(403, "Escopo de API insuficiente")
         if scope.endswith(":write") and self.role == "viewer":
             raise HTTPException(403, "Perfil somente leitura")
 
     def admin(self):
-        if self.key or self.role not in ("owner", "admin"):
+        if self.key or self.role not in ADMIN_ROLES:
             raise HTTPException(403, "Requer proprietário ou administrador")
 
 
@@ -80,7 +83,7 @@ def require_auth(request: Request, db=Depends(get_db)) -> Principal:
         if key is None or utc(key.expires_at) <= now():
             raise HTTPException(401, "Chave inválida ou expirada")
         user = db.get(User, key.created_by)
-        if not user or not user.active or user.tenant_id != key.tenant_id:
+        if not user or not user.active or user.tenant_id != key.tenant_id or user.role not in RANK:
             raise HTTPException(401, "Conta inativa")
         set_tenant(db, key.tenant_id)
         return Principal(key.tenant_id, user.id, user.role, user, key=key)
@@ -89,7 +92,7 @@ def require_auth(request: Request, db=Depends(get_db)) -> Principal:
     if session is None or session.revoked or utc(session.expires_at) <= now():
         raise HTTPException(401, "Sessão expirada. Entre novamente.")
     user = db.get(User, session.user_id)
-    if not user or not user.active:
+    if not user or not user.active or user.role not in RANK:
         raise HTTPException(401, "Conta inativa")
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         origin = request.headers.get("origin")
@@ -104,4 +107,5 @@ def require_auth(request: Request, db=Depends(get_db)) -> Principal:
 
 
 def user_dict(user: User):
-    return {"id": user.id, "tenant_id": user.tenant_id, "name": user.name, "email": user.email, "role": user.role}
+    return {"id": user.id, "tenant_id": user.tenant_id, "name": user.name, "email": user.email,
+            "role": user.role, "role_label": LABELS.get(user.role, "Inválido"), "permissions": capabilities(user.role)}

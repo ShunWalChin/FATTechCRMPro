@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import time
+from datetime import timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -210,7 +211,8 @@ def test_rate_limit_and_seed_repeatability(system):
         before = db.get(User, owner_id).password_hash
         bootstrap(db, slug="fattech", email="owner@example.com", password="Different-Test-Password!", demo=True)
         assert db.get(User, owner_id).password_hash == before
-        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 11
+        # The captured lead is an operational record, so demo data must never be seeded over it.
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 2
 
 
 def test_production_config_fails_closed():
@@ -319,3 +321,67 @@ def test_stage_removal_and_archived_funnel_protect_existing_deals(system):
     assert client.post("/api/v1/deals", json={"title": "Novo", "stage": "lead"}).status_code == 409
     moved = client.patch(f"/api/v1/deals/{deal['id']}", json={"version": 1, "stage": "won"})
     assert moved.status_code == 200 and moved.json()["probability"] == 100
+
+
+def test_public_recapture_enriches_instead_of_duplicating(system):
+    client, _, _, _, _, _, _ = system
+    first = client.post("/api/v1/public/leads", json={"name": "Lead", "email": "lead@example.com",
+                        "consent": True, "utm_source": "primeira", "message": "Quero um diagnostico"})
+    assert first.status_code == 202
+    again = client.post("/api/v1/public/leads", json={"name": "Lead", "email": "LEAD@example.com",
+                        "consent": True, "utm_source": "segunda", "message": "Reenviei o formulario"})
+    # A visitor filling the form twice must not get a conflict, and must not create a second contact.
+    assert again.status_code == 202 and again.json()["id"] == first.json()["id"]
+    contacts = client.get("/api/v1/contacts").json()
+    assert contacts["total"] == 1
+    record = contacts["items"][0]
+    assert record["attribution"]["utm_source"] == "primeira"
+    assert "Quero um diagnostico" in record["notes"] and "Reenviei o formulario" in record["notes"]
+
+
+def test_send_is_blocked_with_an_auditable_compliance_reason(system):
+    client, _, _, _, _, _, _ = system
+    contact = post(client, "contacts", {"name": "Cliente", "email": "cliente@example.com", "consent": False})
+    conversation = post(client, "conversations", {"title": "Atendimento", "contact_id": contact["id"],
+                                                  "channel": "whatsapp"})
+    message = post(client, "messages", {"conversation_id": conversation["id"], "body": "Ola, tudo bem?"})
+    preview = client.post(f"/api/v1/messages/{message['id']}/compliance").json()
+    assert preview["allowed"] is False and preview["reason"] == "no_consent" and preview["explanation"]
+    blocked = client.post(f"/api/v1/messages/{message['id']}/send", json={"version": message["version"]})
+    assert blocked.status_code == 409
+    assert blocked.json()["detail"]["compliance"]["reason"] == "no_consent"
+    granted = client.patch(f"/api/v1/contacts/{contact['id']}",
+                           json={"version": contact["version"], "consent": True})
+    assert granted.status_code == 200
+    # Consent alone opens no window: WhatsApp still needs an inbound message or an approved template.
+    second = client.post(f"/api/v1/messages/{message['id']}/send", json={"version": message["version"]})
+    assert second.status_code == 409
+    assert second.json()["detail"]["compliance"]["reason"] == "whatsapp_template_required"
+
+
+def test_external_sends_stay_disarmed_even_when_compliance_allows(system):
+    client, _, _, _, _, _, _ = system
+    conversation = post(client, "conversations", {"title": "Interno", "channel": "internal"})
+    message = post(client, "messages", {"conversation_id": conversation["id"], "body": "Rascunho"})
+    allowed = client.post(f"/api/v1/messages/{message['id']}/compliance").json()
+    assert allowed["allowed"] is True
+    response = client.post(f"/api/v1/messages/{message['id']}/send", json={"version": message["version"]})
+    assert response.status_code == 503 and "desarmados" in response.json()["detail"]
+
+
+def test_radar_ranks_stalled_deals_and_summarises_the_funnel(system):
+    client, _, factory, _, _, _, _ = system
+    post(client, "deals", {"title": "Recente", "stage": "lead"})
+    stale = post(client, "deals", {"title": "Parada", "stage": "qualified"})
+    with factory() as db:
+        record = db.get(Record, stale["id"])
+        record.data = {**record.data, "last_activity_at": (now() - timedelta(days=30)).isoformat()}
+        db.commit()
+    radar = client.get("/api/v1/crm/radar").json()
+    assert radar["total"] == 2 and radar["pipeline_name"] == "Funil comercial"
+    assert radar["items"][0]["title"] == "Parada" and radar["items"][0]["risk"]["bucket"] == "critico"
+    assert radar["items"][0]["band"] == "frio" and radar["items"][0]["needs_action"] is True
+    assert radar["summary"]["critico"] == 1 and radar["summary"]["em_dia"] == 1
+    # Won and lost stages are terminal and never appear on a radar of open work.
+    client.patch(f"/api/v1/deals/{stale['id']}", json={"version": stale["version"], "stage": "won"})
+    assert client.get("/api/v1/crm/radar").json()["total"] == 1

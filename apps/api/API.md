@@ -16,8 +16,8 @@ Fields (defaults omitted in examples are supplied by the server):
 |---|---|
 | contacts | name (required), email, phone, company, company_id, status=new, source=manual, tags:[], score=0, consent=false, notes, owner_id |
 | companies | name (required), website, industry, email, phone, document, status=active, notes |
-| pipelines | name (required), description, status=active (active/inactive), is_default=false, stages (required, 1-40 of {key,label,probability=0,outcome=open\|won\|lost}); owner/admin only |
-| deals | title (required), contact_id, company_id, pipeline_id, stage, value_cents=0, probability, expected_close, owner_id, lost_reason, notes |
+| pipelines | name (required), description, status=active (active/inactive), is_default=false, stages (required, 1-40 of {key,label,probability=0,outcome=open\|won\|lost,expected_duration_hours=72}); owner/admin only |
+| deals | title (required), contact_id, company_id, pipeline_id, stage, value_cents=0, probability, expected_close, next_action_at, position=0, owner_id, lost_reason, notes; `last_activity_at` is server-owned |
 | tasks | title (required), description, status=todo (todo/in_progress/done), priority=medium (low/medium/high/urgent), due_date, contact_id, deal_id, project_id, owner_id |
 | conversations | title (required), contact_id, channel=internal (internal/whatsapp/instagram/email), status=open (open/pending/closed), owner_id, last_message; last_inbound_at is server-controlled and must be null on user writes |
 | messages | conversation_id (required), body (required), direction=outbound, status=draft; incoming/status delivery are controlled by integration endpoints |
@@ -46,7 +46,11 @@ Removing or renaming a stage that still holds active deals returns 409, as does 
 
 `PATCH /team/{id} {name?,role?,active?}` updates membership. Roles are `owner`, `admin`, `member`, `viewer`; only an owner may modify an owner or promote another member to owner. The final active owner cannot be demoted or disabled. Disabling an account revokes sessions and API keys. Owner/admin team listings include inactive users and `active`; other members see active users only. `viewer` cannot mutate resources. Creating/updating agents, automations and invoices requires owner/admin session; approvals may be requested by members but require a separate authorized decision maker.
 
-Public capture: `POST /public/leads {name,email,phone,company,interest,message,consent:true,utm_source,utm_medium,utm_campaign,utm_content,utm_term}` -> `{id,status:accepted}`. Consent and rate limit required. Tenant selected by server configuration, never public request.
+Public capture: `POST /public/leads {name,email,phone,company,interest,message,consent:true,utm_source,utm_medium,utm_campaign,utm_content,utm_term}` -> `{id,status:accepted}`. A resubmission matching an existing contact by normalized e-mail or phone returns 202 with that contact's id and appends the new message to its history: it never duplicates and never answers a visitor with a conflict. First-touch attribution and the original consent instant are preserved. Consent and rate limit required. Tenant selected by server configuration, never public request.
+
+`GET /crm/radar?pipeline_id=` ranks the funnel's open deals by commercial risk and returns `{pipeline_id,pipeline_name,items:[{id,title,stage,stage_label,value_cents,probability,band,risk:{bucket,elapsed_hours,ratio},needs_action,...}],total,summary}`. Buckets are `em_dia`, `em_voo`, `em_risco` and `critico`, derived from the time since `last_activity_at` against the stage's `expected_duration_hours`; a `next_action_at` in the future holds a deal in `em_voo`. `band` is `quente`/`morno`/`frio` from probability.
+
+`POST /messages/{id}/compliance` returns the send decision without sending: `{allowed,policy,reason,tag,seconds_left,preview,explanation}`. Policies are `internal`, `standard_24h`, `human_agent_7d`, `private_reply_7d`, `whatsapp_template` and `blocked`. `POST /messages/{id}/send` applies the same decision: a blocked message returns 409 carrying `detail.compliance`, and an allowed one returns 503 while external sends are disarmed or no provider adapter is configured. Consent, service window, blocklist and cooldown are re-evaluated at the moment of sending, never when the draft is written.
 
 Special actions: `POST /automations/{id}/simulate {input:{}}`; `POST /messages/{id}/send {version}` validates compliance and provider capability (503 until a provider adapter is configured); `POST /approvals/{id}/decision {version,decision:approved|rejected,reason}`; `POST /agents/{id}/run {input}` fails closed without configured runtime/budget.
 

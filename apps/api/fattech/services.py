@@ -1,8 +1,10 @@
 from datetime import timedelta
+import hashlib
+import re
 
 from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import func, or_, select, text, update
 from sqlalchemy.orm import Session
 
 from .models import Audit, Outbox, Record, User, now, uid
@@ -13,6 +15,71 @@ RELATIONS = {"contact_id": "contacts", "company_id": "companies", "deal_id": "de
 # Configuration parents are read by every deal write, so they are guarded without an exclusive row lock.
 SHARED_RELATIONS = {"pipeline_id": "pipelines"}
 PRIVILEGED = {"agents", "approvals", "automations", "invoices", "pipelines"}
+
+
+def lock_contacts(db, tenant_id):
+    """Serialize every contact writer before reading rows; lock survives until outer commit/rollback."""
+    if db.bind.dialect.name == "postgresql":
+        key = int.from_bytes(hashlib.sha256(f"fattech:contacts:{tenant_id}".encode()).digest()[:8], "big", signed=True)
+        db.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": key})
+    else:
+        # SQLite has one writer per database. A no-op write reserves it before a read/write upgrade can race.
+        db.execute(update(Record).where(Record.tenant_id == tenant_id, Record.id == "")
+                   .values(version=Record.version).execution_options(synchronize_session=False))
+
+
+def find_contact_matches(db, tenant_id, data, exclude_id=None):
+    """Caller holds lock_contacts. Returns only this tenant's active matches; never merges historical rows."""
+    identifiers = normalize_contact_identifiers(data)
+    if not identifiers.get("email") and not identifiers.get("phone"):
+        return []
+    query = scoped(tenant_id, "contacts")
+    if exclude_id:
+        query = query.where(Record.id != exclude_id)
+    matches = []
+    # ponytail: scan normalizes legacy formats without rewriting history; indexed keys need a backfill migration.
+    for record in db.scalars(query.execution_options(populate_existing=True)):
+        try:
+            candidate = normalize_contact_identifiers(record.data)
+        except HTTPException:
+            # Existing malformed phone data must not hide an otherwise matching valid email.
+            candidate = normalize_contact_identifiers({**record.data, "phone": ""})
+        if any(identifiers.get(field) and identifiers[field] == candidate.get(field) for field in ("email", "phone")):
+            matches.append(record)
+    return matches
+
+
+def ensure_unique_contact(db, tenant_id, data, exclude_id=None):
+    if find_contact_matches(db, tenant_id, data, exclude_id):
+        raise HTTPException(409, "Já existe um contato com este e-mail ou telefone nesta empresa")
+
+
+def normalize_contact_identifiers(data):
+    """Canonical CRM identifiers; local 10/11-digit phones are Brazilian, other countries need + or 00."""
+    normalized = dict(data)
+    email = normalized.get("email")
+    normalized["email"] = email.strip().lower() if email else None
+    phone = (normalized.get("phone") or "").strip()
+    if not phone:
+        normalized["phone"] = ""
+        return normalized
+    if not re.fullmatch(r"\+?[0-9()\s.\-]+", phone):
+        raise HTTPException(422, "Telefone inválido; informe DDD e número, sem ramal ou letras")
+    digits = re.sub(r"[^0-9]", "", phone)
+    international = phone.startswith("+") or digits.startswith("00")
+    if digits.startswith("00") and not phone.startswith("+"):
+        digits = digits[2:]
+    if not international:
+        if len(digits) in (10, 11):
+            digits = "55" + digits
+        elif not (digits.startswith("55") and len(digits) in (12, 13)):
+            raise HTTPException(422, "Telefone inválido; informe DDD ou prefixo internacional +")
+    if not 8 <= len(digits) <= 15 or digits.startswith("0"):
+        raise HTTPException(422, "Telefone inválido; use de 8 a 15 dígitos com código do país")
+    if digits.startswith("55") and (len(digits) not in (12, 13) or digits[2] == "0"):
+        raise HTTPException(422, "Telefone brasileiro inválido; informe DDD e número completo")
+    normalized["phone"] = "+" + digits
+    return normalized
 
 
 def scoped(tenant_id: str, kind: str):
@@ -135,10 +202,75 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None):
         data["lost_reason"] = ""
     if not keep_probability:
         data["probability"] = stage["probability"]
+    # Server-owned and deliberately outside the schema, so it survives edits and no client can forge it.
+    data["last_activity_at"] = now().isoformat()
+
+
+DEFAULT_STAGE_HOURS = 72
+RISK_ORDER = {"critico": 4, "em_risco": 3, "em_voo": 2, "em_dia": 1}
+
+
+def classify_risk(last_activity, next_action, expected_hours, moment):
+    """A scheduled next action holds a deal in flight: whoever already booked the next step is not stalled."""
+    elapsed = float("inf") if last_activity is None else max(0.0, (moment - last_activity).total_seconds() / 3600)
+    ratio = elapsed / max(1, expected_hours)
+    if next_action and next_action > moment and ratio < 1.5:
+        bucket = "em_voo"
+    elif ratio >= 2:
+        bucket = "critico"
+    elif ratio >= 1:
+        bucket = "em_risco"
+    else:
+        bucket = "em_dia"
+    finite = elapsed if elapsed != float("inf") else None
+    return {"bucket": bucket, "elapsed_hours": None if finite is None else round(finite, 1),
+            "ratio": None if finite is None else round(ratio, 2)}
+
+
+def score_band(probability):
+    """Shared vocabulary between interface, report and automation; probability now comes from the stage."""
+    if probability is None:
+        return None
+    return "quente" if probability >= 65 else "morno" if probability >= 35 else "frio"
+
+
+def build_radar(db, tenant_id, pipeline):
+    """Open deals ranked by commercial risk, with the summary the operator would otherwise count by hand."""
+    from .compliance import instant
+    moment = now()
+    stages = {stage["key"]: stage for stage in pipeline.data["stages"]}
+    items = []
+    for record in db.scalars(scoped(tenant_id, "deals").where(
+            Record.data["pipeline_id"].as_string() == pipeline.id)):
+        stage = stages.get(record.data.get("stage"))
+        if stage is None or stage["outcome"] != "open":
+            continue
+        activity = instant(record.data.get("last_activity_at")) or instant(record.updated_at)
+        action = instant(record.data.get("next_action_at"))
+        risk = classify_risk(activity, action, int(stage.get("expected_duration_hours", DEFAULT_STAGE_HOURS)), moment)
+        items.append({"id": record.id, "title": record.data.get("title"), "stage": stage["key"],
+                      "stage_label": stage["label"], "value_cents": record.data.get("value_cents", 0),
+                      "probability": record.data.get("probability", 0),
+                      "band": score_band(record.data.get("probability")),
+                      "contact_id": record.data.get("contact_id"), "owner_id": record.data.get("owner_id"),
+                      "last_activity_at": activity.isoformat() if activity else None,
+                      "next_action_at": record.data.get("next_action_at"), "version": record.version,
+                      "risk": risk, "needs_action": not action or action <= moment})
+    # Worst risk first, then the deal untouched for longest inside that bucket.
+    items.sort(key=lambda item: (-RISK_ORDER[item["risk"]["bucket"]], item["last_activity_at"] or ""))
+    summary = {bucket: sum(1 for item in items if item["risk"]["bucket"] == bucket) for bucket in RISK_ORDER}
+    summary["needs_action"] = sum(1 for item in items if item["needs_action"])
+    return {"pipeline_id": pipeline.id, "pipeline_name": pipeline.data["name"],
+            "items": items, "total": len(items), "summary": summary}
 
 
 def create_record(db, tenant_id, actor_id, kind, payload):
+    if kind == "contacts":
+        lock_contacts(db, tenant_id)
     data = validate(kind, payload)
+    if kind == "contacts":
+        data = normalize_contact_identifiers(data)
+        ensure_unique_contact(db, tenant_id, data)
     validate_relations(db, tenant_id, data)
     if kind == "automations":
         validate_flow(data)
@@ -155,8 +287,40 @@ def create_record(db, tenant_id, actor_id, kind, payload):
     return record
 
 
+def capture_lead(db, tenant_id, payload, attribution):
+    """Public resubmission enriches the existing contact instead of failing.
+
+    WEB-03 asks that a resend not duplicate, not that it error: a visitor filling the form twice must
+    not receive a conflict, which would also disclose that the address is already in the CRM. First-touch
+    attribution and the original consent instant are never overwritten by a later submission.
+    """
+    lock_contacts(db, tenant_id)
+    identifiers = normalize_contact_identifiers(validate("contacts", payload))
+    existing = find_contact_matches(db, tenant_id, identifiers)
+    if not existing:
+        record = create_record(db, tenant_id, None, "contacts", payload)
+        record.data = {**record.data, "attribution": attribution, "consented_at": now().isoformat()}
+        return record
+    record = existing[0]
+    entry = f"{now().date().isoformat()} · {payload['notes']}".strip()
+    history = str(record.data.get("notes") or "").strip()
+    merged = {**record.data, "consent": True,
+              "notes": f"{history}\n\n{entry}"[-20000:] if history else entry[:20000]}
+    merged.setdefault("attribution", attribution)
+    merged.setdefault("consented_at", now().isoformat())
+    db.execute(update(Record).where(Record.id == record.id, Record.tenant_id == tenant_id)
+               .values(data=merged, version=record.version + 1, updated_at=now()))
+    audit_event(db, tenant_id, None, "contacts.recaptured", record.id, {"version": record.version + 1})
+    db.refresh(record)
+    return record
+
+
 def update_record(db, principal, kind, record_id, payload):
+    if kind == "contacts":
+        lock_contacts(db, principal.tenant_id)
     record = get_record(db, principal.tenant_id, kind, record_id, lock=True)
+    if kind == "contacts":
+        db.refresh(record)
     changes = dict(payload)
     version = changes.pop("version", None)
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
@@ -166,6 +330,9 @@ def update_record(db, principal, kind, record_id, payload):
     editable = {key: value for key, value in record.data.items() if key in RESOURCES[kind].model_fields}
     protected = {key: value for key, value in record.data.items() if key not in RESOURCES[kind].model_fields}
     data = {**validate(kind, {**editable, **changes}), **protected}
+    if kind == "contacts":
+        data = normalize_contact_identifiers(data)
+        ensure_unique_contact(db, principal.tenant_id, data, record_id)
     validate_relations(db, principal.tenant_id, data)
     if kind == "automations":
         validate_flow(data)
@@ -188,6 +355,8 @@ def update_record(db, principal, kind, record_id, payload):
 
 
 def delete_record(db, principal, kind, record_id, version):
+    if kind == "contacts":
+        lock_contacts(db, principal.tenant_id)
     get_record(db, principal.tenant_id, kind, record_id, lock=True)
     # Prevent dangling relationships rather than silently hiding parent records.
     for field, related_kind in {**RELATIONS, **SHARED_RELATIONS}.items():

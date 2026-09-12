@@ -54,8 +54,8 @@ Na resposta HTTP, o serializador expande os campos de `data` no objeto raiz e ac
 |---|---|---|
 | `contacts` | nome, e-mail, telefone, empresa textual e `company_id`, origem, tags, score, consentimento, notas, `owner_id` | `new`, `qualified`, `active`, `customer`, `inactive`, `lead` |
 | `companies` | nome, site, segmento, e-mail, telefone, documento, notas | `active`, `inactive`, `prospect` |
-| `pipelines` | nome, descrição, `is_default`, lista ordenada de etapas com `key`, `label`, `probability` e `outcome` | `active`, `inactive`; escrita restrita a proprietário/administrador |
-| `deals` | título, `contact_id`, `company_id`, `pipeline_id`, etapa, `value_cents`, probabilidade, previsão, responsável, `lost_reason`, notas | Etapas declaradas pelo funil do registro; `outcome` da etapa distingue aberto, ganho e perdido |
+| `pipelines` | nome, descrição, `is_default`, lista ordenada de etapas com `key`, `label`, `probability`, `outcome` e `expected_duration_hours` | `active`, `inactive`; escrita restrita a proprietário/administrador |
+| `deals` | título, `contact_id`, `company_id`, `pipeline_id`, etapa, `value_cents`, probabilidade, previsão, `next_action_at`, `position`, responsável, `lost_reason`, notas, e `last_activity_at` gravado pelo servidor | Etapas declaradas pelo funil do registro; `outcome` da etapa distingue aberto, ganho e perdido |
 | `tasks` | título, descrição, prioridade, prazo, contato/oportunidade/projeto, responsável | `todo`, `in_progress`, `done`; prioridade `low`, `medium`, `high`, `urgent` |
 | `conversations` | título, contato, canal, responsável, última mensagem, `last_inbound_at` | `open`, `pending`, `closed`; canais `internal`, `whatsapp`, `instagram`, `email` |
 | `messages` | `conversation_id`, corpo, direção e estado | Criação manual somente `outbound` + `draft` |

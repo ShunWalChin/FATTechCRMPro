@@ -33,6 +33,18 @@ Em Linux, o contrato equivalente é `PYTHONPATH=apps/api`, ambiente development,
 - A senha inicial fica somente no arquivo protegido. Entregar ao proprietário por canal privado
   ou permitir que ele consulte o arquivo no servidor. Nunca copiar para README ou commits.
 
+## Variáveis de envio e destino externo
+
+`FATTECH_EXTERNAL_SENDS_ENABLED` nasce em `false` e é a trava persistente de modo seguro: mesmo
+quando a avaliação de compliance libera a mensagem, nenhum efeito externo sai enquanto ela estiver
+desarmada. Armar exige decisão explícita do operador, depois de existir um adaptador homologado.
+
+`FATTECH_BLOCKED_TERMS` aceita termos separados por vírgula. A comparação normaliza o texto e remove
+caracteres invisíveis, de modo que um espaço de largura zero entre letras não contorna a lista.
+
+`FATTECH_N8N_OUTBOUND_URL` passa por checagem de faixa reservada quando é um endereço literal, e o
+worker recusa iniciar se o host resolver para rede privada ou reservada.
+
 ## Migrações e atualização
 
 As migrações são explícitas, não ocorrem implicitamente no início da API em produção.

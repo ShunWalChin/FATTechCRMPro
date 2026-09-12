@@ -37,7 +37,9 @@ O desenho mostra fronteiras; a saída tracejada do worker só é usada quando h�
 | `apps/web/content/` | Conteúdo público transformado da referência FAT Tech |
 | `apps/api/fattech/main.py` | Registro concreto de rotas, sessões, captação, dashboard, integrações e ações especiais |
 | `apps/api/fattech/schemas.py` | Validação de entrada, tipos de recurso e estados permitidos |
-| `apps/api/fattech/services.py` | CRUD, referências, concorrência, auditoria/outbox e simulação de DAG |
+| `apps/api/fattech/services.py` | CRUD, referências, concorrência, auditoria/outbox, radar de risco e simulação de DAG |
+| `apps/api/fattech/compliance.py` | Elegibilidade de envio determinística, sem rede nem banco |
+| `apps/api/fattech/outbound.py` | Política de destino externo: esquema, credenciais e faixas reservadas |
 | `apps/api/fattech/security.py` | Argon2, sessões, chaves com escopo, papéis, CSRF e rate limit |
 | `apps/api/fattech/db.py` | Engine, sessões SQLAlchemy e contexto Postgres por transação |
 | `apps/api/fattech/models.py` | Modelo físico persistente, índices e unicidade |

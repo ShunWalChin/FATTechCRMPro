@@ -8,6 +8,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Contrato interativo da API](https://fattechcrmpro.64.181.178.125.nip.io/api/docs)
 - [Estado da entrega, provas e pendências](docs/releases/2026-09-11.md)
 - [Funis configuráveis e motivo de perda, publicado em 11/09](docs/releases/2026-09-11-funis-configuraveis.md)
+- [Compliance de envio, radar comercial e destino externo, publicado em 12/09](docs/releases/2026-09-12-compliance-e-radar.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.
@@ -19,8 +20,12 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
 - Formulário público que grava contato, consentimento, atribuição UTM e auditoria no CRM.
 - Login privado, sessões revogáveis, troca de senha, papéis e administração da equipe.
 - Contatos, empresas, tarefas, projetos, produtos e conhecimento.
-- Funis configuráveis por etapa, com rótulo, probabilidade e resultado definidos pela equipe;
-  oportunidades em kanban com motivo de perda obrigatório e previsão ponderada no dashboard.
+- Funis configuráveis por etapa, com rótulo, probabilidade, resultado e duração esperada definidos
+  pela equipe; oportunidades em kanban com motivo de perda obrigatório e previsão ponderada.
+- Radar de risco comercial: oportunidades paradas classificadas contra a duração da etapa, com
+  sumário por faixa e destaque para quem está sem próxima ação marcada.
+- Decisão de envio determinística e auditável antes de qualquer mensagem: consentimento, opt-out,
+  janela do canal, blocklist e cooldown avaliados no instante do envio, com trava de modo seguro.
 - Lançamentos financeiros internos, solicitações de aprovação, cadastro de campanhas,
   conversas/rascunhos, configurações de agentes e simulação estrutural de automações.
 - Dashboard calculado no banco, busca, filtros, exportação da página atual, versionamento
