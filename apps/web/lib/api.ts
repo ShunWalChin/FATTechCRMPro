@@ -10,7 +10,21 @@ export function setCsrf(token:string) { csrfToken=token }
 const isObject=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const hasId=(value:unknown)=>isObject(value)&&typeof value.id==='string'&&value.id.length>0;
 const nonemptyString=(value:unknown)=>typeof value==='string'&&value.length>0;
+const nonnegativeInteger=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0;
+const proposalRecord=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isInteger(value.version)&&
+  nonemptyString(value.title)&&nonemptyString(value.deal_id)&&['draft','issued','accepted','rejected'].includes(String(value.status))&&
+  ['subtotal_cents','discount_cents','total_cents'].every(key=>nonnegativeInteger(value[key]))&&
+  Array.isArray(value.items)&&value.items.length>0&&value.items.every(line=>isObject(line)&&nonemptyString(line.product_id)&&
+    nonemptyString(line.name)&&Number.isInteger(line.quantity)&&Number(line.quantity)>0&&
+    nonnegativeInteger(line.unit_price_cents)&&nonnegativeInteger(line.line_total_cents));
+const goalRecord=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isInteger(value.version)&&
+  nonemptyString(value.owner_id)&&typeof value.period==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(value.period)&&nonnegativeInteger(value.target_cents);
 function validResponse(data:Record<string,unknown>,path:string,method:string):boolean {
+  if(/^\/sales\/(proposals|goals)(\/[^/]+)?$/.test(path)){
+    const check=path.startsWith('/sales/proposals')?proposalRecord:goalRecord;
+    return method==='GET'&&path.split('/').length===3?
+      Array.isArray(data.items)&&data.items.every(check)&&nonnegativeInteger(data.total):check(data);
+  }
   if(path==='/auth/login'||path==='/auth/me') {
     const user=data.user;
     if(!isObject(user)||!isObject(user.permissions))return false;

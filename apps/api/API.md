@@ -112,3 +112,14 @@ Webhook ingestion: `POST /webhooks/n8n` with scoped bearer key (`webhooks:write`
 All date fields accept ISO date `YYYY-MM-DD` or ISO datetime; invalid calendar dates return 422. Optional email fields accept omitted/null values, not an empty string. Public lead attribution and consent timestamp are server-owned and survive contact edits. Amounts are strict nonnegative integer cents up to 100,000,000,000; database aggregates use 64-bit integers.
 
 Production requires PostgreSQL, an HTTPS origin list, a 32+ character webhook secret and explicitly provisioned users. `python -m fattech.seed` requires `FATTECH_BOOTSTRAP_PASSWORD` (12+ chars); development demo data only with `--demo`, never implicitly in production.
+# Operação comercial na interface (0.2.2)
+
+`/crm/propostas` usa as rotas `/api/v1/sales/proposals` e
+`/api/v1/sales/proposals/{id}`. Criações enviam `Idempotency-Key`; a interface mantém
+a chave ao repetir o mesmo corpo após uma resposta incerta. Emissão e decisões usam
+`version` e os estados `issued`, `accepted` e `rejected`. Não executam envios externos.
+
+`/crm/metas` usa `/api/v1/sales/goals`: cadastro por administrador, consulta conforme
+papel e atualização versionada do valor. O relatório conserva a base temporal
+`deal_created_at_utc`. Veja o registro da versão em
+`docs/releases/2026-09-12-versao-0.2.2.md` para limites e evidências.

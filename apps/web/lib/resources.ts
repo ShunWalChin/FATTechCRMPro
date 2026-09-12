@@ -1,4 +1,4 @@
-export type RelationshipResource='contacts'|'companies'|'projects'|'deals'|'conversations'|'team';
+export type RelationshipResource='contacts'|'companies'|'projects'|'deals'|'conversations'|'team'|'products';
 export type Field={key:string;label:string;type?:'text'|'email'|'tel'|'url'|'date'|'textarea'|'number'|'money'|'tags'|'checkbox'|'select'|'json';required?:boolean;options?:string[];help?:string;relationship?:RelationshipResource};
 export type Option={value:string;label:string};
 export type Stage={key:string;label:string;probability:number;outcome:'open'|'won'|'lost';expected_duration_hours?:number};

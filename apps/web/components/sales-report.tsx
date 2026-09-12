@@ -53,7 +53,7 @@ export function SalesReport(){
    [],['Motivo da perda','Oportunidades'],...losses.map(([reason,count])=>[reason,String(count)])],
    `fattech-relatorio-${applied.date_from||'tudo'}.csv`)}
  return <><PageHeader eyebrow="RESULTADO COMERCIAL" title="Relatórios" description="O recorte que você escolher, com o que está em aberto, o que fechou e por que se perdeu."
-   action={<><Button variant="secondary" isDisabled={!data} onPress={exportReport}><Download size={16}/>Exportar recorte</Button>
+   action={<><Link href="/crm/metas" className="panel-link">Gerenciar metas</Link><Button variant="secondary" isDisabled={!data} onPress={exportReport}><Download size={16}/>Exportar recorte</Button>
    <Link href="/crm/radar" className="panel-link">Ver radar <ArrowUpRight size={15}/></Link></>}/>
   <form className="crm-panel report-filters" onSubmit={event=>{event.preventDefault();setApplied(form)}}>
    <div className="report-presets">{presets().map(([label,range])=><button type="button" key={label}
@@ -116,7 +116,8 @@ export function SalesReport(){
         {percent===null
          ?<button type="button" className="text-button" onClick={()=>apply({owner_id:goal.owner_id,...monthRange(goal.period)})}>
            <CircleAlert size={13}/>Alinhar o recorte para comparar</button>
-         :<span className={`goal-attainment ${percent>=100?'is-reached':''}`}>{percent}% · {money(data.won_cents)}</span>}
+         :<div><span className={`goal-attainment ${percent>=100?'is-reached':''}`}>{percent}% · {money(data.won_cents)}</span>
+          <small>Previsão ponderada do recorte: {money(data.weighted_pipeline_cents)} ({Math.round(data.weighted_pipeline_cents/goal.target_cents*100)}% da meta)</small></div>}
        </li>})}</ul>}
     </div>
    </div>

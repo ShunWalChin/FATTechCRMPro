@@ -48,6 +48,11 @@ def test_proposal_prices_are_server_snapshots_and_acceptance_is_immutable(sales_
     assert client.patch(url, json={"version": 3, "status": "accepted", "items": []}).status_code == 422
     assert client.get("/api/v1/deals/" + payload["deal_id"]).json()["stage"] == "lead"
     assert client.get("/api/v1/sales/proposals", params={"status": "accepted"}).json()["total"] == 1
+    assert client.delete(f"/api/v1/deals/{payload['deal_id']}?version=1").status_code == 409
+    audit = client.get("/api/v1/audit").json()["items"]
+    decision = next(event for event in audit if event["action"] == "sales_proposals.accepted")
+    assert decision["label"] == "Registrou o aceite da proposta"
+    assert decision["resource_name"] == payload["title"]
     with factory() as db:
         assert db.scalar(select(func.count()).select_from(Audit).where(Audit.action == "sales_proposals.accepted")) == 1
 

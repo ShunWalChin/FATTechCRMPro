@@ -32,15 +32,19 @@ from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.2.1"
+APP_VERSION = "0.2.2"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
                   "messages": ("mensagem", "a"), "campaigns": ("campanha", "a"), "automations": ("automação", "a"),
                   "knowledge": ("documento", "o"), "approvals": ("solicitação", "a"), "agents": ("agente", "o"),
-                  "projects": ("projeto", "o"), "invoices": ("lançamento", "o"), "products": ("produto", "o")}
+                  "projects": ("projeto", "o"), "invoices": ("lançamento", "o"), "products": ("produto", "o"),
+                  "sales_proposals": ("proposta", "a"), "sales_goals": ("meta", "a")}
 ACTION_VERBS = {"created": "Criou", "updated": "Alterou", "deleted": "Excluiu"}
 ACTION_LABELS = {
+    "sales_proposals.issued": "Emitiu a proposta internamente",
+    "sales_proposals.accepted": "Registrou o aceite da proposta",
+    "sales_proposals.rejected": "Registrou a recusa da proposta",
     "auth.login": "Entrou no sistema", "auth.logout": "Saiu do sistema",
     "auth.password_changed": "Alterou a própria senha", "auth.session_revoked": "Encerrou uma sessão",
     "team.created": "Cadastrou um integrante", "team.updated": "Alterou um integrante",

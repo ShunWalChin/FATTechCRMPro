@@ -16,7 +16,7 @@ function relationshipLabel(record:RecordData){
  const detail=textValue(record.email||record.company||record.channel);
  return `${name}${detail?' · '+detail:''}${record.active===false?' (inativo)':''}`;
 }
-function RelationshipField({field,initialValue}:{field:Field;initialValue:string}){
+export function RelationshipField({field,initialValue}:{field:Field;initialValue:string}){
  const id=useId(),source=field.relationship!;
  const [value,setValue]=useState(initialValue),[search,setSearch]=useState(''),[items,setItems]=useState<RecordData[]>([]),[selected,setSelected]=useState<RecordData|null>(null);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[selectedError,setSelectedError]=useState(''),[total,setTotal]=useState(0),[retry,setRetry]=useState(0);
