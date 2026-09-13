@@ -88,7 +88,7 @@ def require_auth(request: Request, db=Depends(get_db)) -> Principal:
         if origin is not None:
             if origin.rstrip("/") not in request.app.state.settings.origins:
                 raise HTTPException(403, "Origem não autorizada")
-        elif not csrf or not hmac.compare_digest(csrf, session.csrf_token):
+        elif not csrf or not hmac.compare_digest(csrf.encode(), session.csrf_token.encode()):
             raise HTTPException(403, "Token CSRF obrigatório")
     set_tenant(db, user.tenant_id)
     return Principal(user.tenant_id, user.id, user.role, user, session=session)

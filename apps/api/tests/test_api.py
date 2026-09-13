@@ -211,8 +211,9 @@ def test_rate_limit_and_seed_repeatability(system):
         before = db.get(User, owner_id).password_hash
         bootstrap(db, slug="fattech", email="owner@example.com", password="Different-Test-Password!", demo=True)
         assert db.get(User, owner_id).password_hash == before
-        # Ten identical submissions leave one contact, one opportunity and one next action, plus the funnel.
-        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 4
+        # One contact/deal/task and funnel; each submission keeps its own immutable activity.
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id)) == 14
+        assert db.scalar(select(func.count()).select_from(Record).where(Record.tenant_id == tenant_id, Record.kind == "activities")) == 10
 
 
 def test_production_config_fails_closed():
@@ -570,15 +571,20 @@ def test_contact_import_previews_before_it_writes(system):
     # The preview writes nothing at all.
     assert client.get("/api/v1/contacts").json()["total"] == 1
 
-    committed = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}).json()
+    headers = {"Idempotency-Key": "import-example-batch"}
+    failed = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}, headers=headers)
+    assert failed.status_code == 422
+    assert client.get("/api/v1/contacts").json()["total"] == 1
+    rows = rows[:3]
+    committed = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}, headers=headers).json()
     assert committed["created"] == 1 and committed["committed"] is True
     listed = client.get("/api/v1/contacts").json()
     assert listed["total"] == 2
     imported = next(item for item in listed["items"] if item["name"] == "Nova Pessoa")
     assert imported["source"] == "import"
     # Re-running the same file creates nothing more.
-    again = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}).json()
-    assert again["created"] == 0 and client.get("/api/v1/contacts").json()["total"] == 2
+    again = client.post("/api/v1/contacts/import", json={"rows": rows, "commit": True}, headers=headers).json()
+    assert again == committed and client.get("/api/v1/contacts").json()["total"] == 2
 
 
 def test_contact_import_refuses_an_oversized_batch(system):

@@ -128,3 +128,15 @@ Cada ampliação exige migration incremental, rollback/compatibilidade e teste d
 ## Verificação
 
 Esta documentação foi confrontada com os arquivos de modelo/schema/serviço; não constitui resultado de teste executado. Antes de dados reais: aplicar schema em banco vazio, repetir migration sem perda, testar constraints/RLS com dois tenants, concorrência e rollback, criar/editar/excluir pela API e UI, restaurar dump em banco descartável e registrar o resultado. SQLite não prova comportamento de RLS, JSON e locking de PostgreSQL.
+# Refinamentos da versão 0.3
+
+Não há nova tabela ou migração. `records(kind=activities)` também preserva cada
+captação pelo site, com `contact_id`, `body`, `type=note`, `source=website`,
+`author_name=Site FAT Tech`, `author_id=null` e atribuição. O campo de notas do contato
+permanece um resumo limitado; as atividades mantêm o conteúdo integral recebido.
+
+Recibos de confirmação de importação usam a estrutura existente `idempotency_keys`,
+com namespace lógico `contact_import` por tenant e credencial. Um recibo bem-sucedido
+é confirmado junto dos contatos e eventos de auditoria; um lote inválido não deixa
+recibo parcial. Regras e compatibilidade estão em
+`docs/releases/2026-09-13-versao-0.3.md`.

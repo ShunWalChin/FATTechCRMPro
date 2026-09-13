@@ -10,7 +10,8 @@ from uuid import NAMESPACE_URL, uuid5
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import Field, StringConstraints, model_validator
-from sqlalchemy import func, select, text, update
+from sqlalchemy import BigInteger, and_, cast, func, select, text, update
+from sqlalchemy.orm import aliased
 from sqlalchemy.exc import IntegrityError
 
 from .db import get_db
@@ -241,33 +242,39 @@ def sales_report(owner_id: str | None = None, source: str | None = Query(None, m
         if date_to == date.max:
             raise HTTPException(422, "Data final fora do intervalo permitido")
         query = query.where(Record.created_at < datetime.combine(date_to + timedelta(days=1), datetime.min.time(), timezone.utc))
-    contacts = {record.id: record.data for record in db.scalars(scoped(principal.tenant_id, "contacts"))}
+    if source is not None:
+        contact = aliased(Record)
+        query = query.outerjoin(contact, and_(contact.id == Record.data["contact_id"].as_string(),
+            contact.tenant_id == principal.tenant_id, contact.kind == "contacts", contact.deleted.is_(False)))
+        query = query.where(func.coalesce(func.nullif(Record.data["source"].as_string(), ""),
+                            func.nullif(contact.data["source"].as_string(), ""), "unknown") == source)
+    referenced = query.with_only_columns(Record.data["pipeline_id"].as_string()).distinct().correlate(None)
     pipelines = {record.id: {stage["key"]: stage["outcome"] for stage in record.data["stages"]}
-                 for record in db.scalars(scoped(principal.tenant_id, "pipelines"))}
+                 for record in db.scalars(scoped(principal.tenant_id, "pipelines").where(Record.id.in_(referenced)))}
     result = {"deal_count": 0, "open_count": 0, "won_count": 0, "lost_count": 0,
               "pipeline_cents": 0, "weighted_pipeline_cents": 0, "won_cents": 0, "lost_reasons": {}}
     weighted_hundredths = 0
-    # ponytail: iterate the filtered cohort; move aggregation into SQL when measured reporting latency warrants it.
-    for record in db.scalars(query):
-        data = record.data
-        contact = contacts.get(data.get("contact_id"), {})
-        channel = str(data.get("source") or contact.get("source") or "unknown")
-        if source is not None and channel != source:
-            continue
-        outcome = pipelines.get(data.get("pipeline_id"), {}).get(data.get("stage"), "open")
-        value = data.get("value_cents", 0)
-        result["deal_count"] += 1
+    pipeline_id, stage = Record.data["pipeline_id"].as_string(), Record.data["stage"].as_string()
+    reason = Record.data["lost_reason"].as_string()
+    amount = func.coalesce(cast(Record.data["value_cents"].as_string(), BigInteger), 0)
+    probability = func.coalesce(cast(Record.data["probability"].as_string(), BigInteger), 0)
+    grouped = query.with_only_columns(pipeline_id, stage, reason, func.count(), func.sum(amount),
+                                     func.sum(amount * probability)).group_by(pipeline_id, stage, reason)
+    for funnel, stage_key, lost_reason, count, value, weighted in db.execute(grouped):
+        outcome = pipelines.get(funnel, {}).get(stage_key, "open")
+        value, weighted = int(value), int(weighted)
+        result["deal_count"] += count
         if outcome == "won":
-            result["won_count"] += 1
+            result["won_count"] += count
             result["won_cents"] += value
         elif outcome == "lost":
-            result["lost_count"] += 1
-            reason = data.get("lost_reason") or "Não informado"
-            result["lost_reasons"][reason] = result["lost_reasons"].get(reason, 0) + 1
+            result["lost_count"] += count
+            label = lost_reason or "Não informado"
+            result["lost_reasons"][label] = result["lost_reasons"].get(label, 0) + count
         else:
-            result["open_count"] += 1
+            result["open_count"] += count
             result["pipeline_cents"] += value
-            weighted_hundredths += value * data.get("probability", 0)
+            weighted_hundredths += weighted
     result["weighted_pipeline_cents"] = (weighted_hundredths + 50) // 100
     goals = scoped(principal.tenant_id, "sales_goals")
     if owner_id is not None:

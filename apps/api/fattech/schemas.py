@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator, model_validator
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Text = Annotated[str, StringConstraints(max_length=20000)]
@@ -38,7 +38,7 @@ class Contact(StrictModel):
     status: Literal["new", "qualified", "active", "customer", "inactive", "lead"] = "new"
     source: str = Field(default="manual", max_length=100)
     tags: list[Name] = Field(default_factory=list, max_length=30)
-    score: int = Field(default=0, ge=0, le=100)
+    score: int = Field(default=0, strict=True, ge=0, le=100)
     consent: bool = False
     notes: Text = ""
     owner_id: Identifier | None = None
@@ -58,10 +58,16 @@ class Company(StrictModel):
 class PipelineStage(StrictModel):
     key: StageKey
     label: Name
-    probability: int = Field(default=0, ge=0, le=100)
+    probability: int = Field(default=0, strict=True, ge=0, le=100)
     outcome: Literal["open", "won", "lost"] = "open"
     # How long a deal is expected to sit here; the radar measures staleness against this, not a global constant.
-    expected_duration_hours: int = Field(default=DEFAULT_STAGE_HOURS, ge=1, le=8760)
+    expected_duration_hours: int = Field(default=DEFAULT_STAGE_HOURS, strict=True, ge=1, le=8760)
+
+    @model_validator(mode="after")
+    def terminal_probability(self):
+        if self.outcome != "open":
+            self.probability = 100 if self.outcome == "won" else 0
+        return self
 
 
 class Pipeline(StrictModel):
@@ -71,6 +77,13 @@ class Pipeline(StrictModel):
     is_default: bool = False
     stages: list[PipelineStage] = Field(min_length=1, max_length=40)
     loss_reasons: list[Name] = Field(default_factory=list, max_length=50)
+
+    @field_validator("stages")
+    @classmethod
+    def unique_stage_keys(cls, stages):
+        if len({stage.key for stage in stages}) != len(stages):
+            raise ValueError("Chaves de etapas devem ser únicas no funil")
+        return stages
 
     @field_validator('loss_reasons')
     @classmethod
@@ -108,10 +121,10 @@ class Deal(StrictModel):
     pipeline_id: Identifier | None = None
     stage: StageKey = "lead"
     value_cents: Cents = 0
-    probability: int = Field(default=0, ge=0, le=100)
+    probability: int = Field(default=0, strict=True, ge=0, le=100)
     expected_close: DateText | None = None
     next_action_at: DateText | None = None
-    position: int = Field(default=0, ge=0, le=1_000_000_000)
+    position: int = Field(default=0, strict=True, ge=0, le=1_000_000_000)
     owner_id: Identifier | None = None
     lost_reason: str = Field(default="", max_length=500)
     notes: Text = ""

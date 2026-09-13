@@ -28,6 +28,15 @@ def lock_contacts(db, tenant_id):
                    .values(version=Record.version).execution_options(synchronize_session=False))
 
 
+def lock_pipeline_configuration(db, tenant_id):
+    """Acquire before pipeline row locks, including first/default creation in an empty tenant."""
+    if db.bind.dialect.name == "postgresql":
+        key = int.from_bytes(hashlib.sha256(f"fattech:pipelines:{tenant_id}".encode()).digest()[:8], "big", signed=True)
+        db.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": key})
+    else:
+        db.execute(update(Record).where(Record.id == "").values(version=Record.version))
+
+
 def find_contact_matches(db, tenant_id, data, exclude_id=None):
     """Caller holds lock_contacts. Returns only this tenant's active matches; never merges historical rows."""
     identifiers = normalize_contact_identifiers(data)
@@ -94,7 +103,7 @@ def get_record(db: Session, tenant_id: str, kind: str, record_id: str, *, lock=F
     if lock or share:
         # FOR SHARE lets concurrent deals read the same pipeline while still blocking its removal.
         statement = statement.with_for_update(read=share and not lock)
-    record = db.scalar(statement)
+    record = db.scalar(statement.execution_options(populate_existing=lock or share))
     if record is None:
         raise HTTPException(404, "Registro não encontrado")
     return record
@@ -167,21 +176,24 @@ def promote_default_pipeline(db, tenant_id, record_id):
     """One default funnel per tenant; demoting the previous one keeps its version and audit trail honest."""
     for other in db.scalars(scoped(tenant_id, "pipelines").where(Record.id != record_id).with_for_update()):
         if other.data.get("is_default"):
+            next_version = other.version + 1
             db.execute(update(Record).where(Record.id == other.id, Record.tenant_id == tenant_id)
-                       .values(data={**other.data, "is_default": False}, version=other.version + 1, updated_at=now()))
+                       .values(data={**other.data, "is_default": False}, version=next_version, updated_at=now()))
+            audit_event(db, tenant_id, None, "pipelines.default_replaced", other.id,
+                        {"replacement_id": record_id, "version": next_version})
 
 
 def guard_stage_removal(db, tenant_id, pipeline_id, before, after):
     """A stage still holding deals cannot be renamed away or dropped without orphaning them."""
-    remaining = {stage["key"] for stage in after}
+    remaining = {stage["key"]: stage for stage in after}
     for stage in before:
-        if stage["key"] in remaining:
+        if stage["key"] in remaining and remaining[stage["key"]]["outcome"] == stage["outcome"]:
             continue
         occupied = db.scalar(select(Record.id).where(Record.tenant_id == tenant_id, Record.kind == "deals",
             Record.deleted.is_(False), Record.data["pipeline_id"].as_string() == pipeline_id,
             Record.data["stage"].as_string() == stage["key"]).limit(1))
         if occupied:
-            raise HTTPException(409, f"A etapa {stage['label']} possui oportunidades ativas; mova-as antes de removê-la")
+            raise HTTPException(409, f"A etapa {stage['label']} possui oportunidades ativas; mova-as antes de removê-la ou mudar seu desfecho")
 
 
 def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previous_reason=None):
@@ -195,6 +207,9 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previ
         pipeline = default_pipeline(db, tenant_id)
         if pipeline is None:
             raise HTTPException(409, "Cadastre um funil ativo antes de registrar oportunidades")
+        pipeline = get_record(db, tenant_id, "pipelines", pipeline.id, share=True)
+        if pipeline.data.get("status") != "active":
+            raise HTTPException(409, "O funil padrão foi desativado; atualize e escolha outro funil")
         data["pipeline_id"] = pipeline.id
     stage = next((item for item in pipeline.data["stages"] if item["key"] == data["stage"]), None)
     if stage is None:
@@ -207,7 +222,9 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previ
         raise HTTPException(422, "Escolha um motivo de perda configurado no funil")
     if stage["outcome"] != "lost":
         data["lost_reason"] = ""
-    if not keep_probability:
+    if stage["outcome"] != "open":
+        data["probability"] = 100 if stage["outcome"] == "won" else 0
+    elif not keep_probability:
         data["probability"] = stage["probability"]
     # Server-owned and deliberately outside the schema, so it survives edits and no client can forge it.
     data["last_activity_at"] = now().isoformat()
@@ -270,94 +287,36 @@ def build_radar(db, tenant_id, pipeline):
             "items": items, "total": len(items), "summary": summary}
 
 
-MAX_IMPORT_ROWS = 500
-
-
-def contact_identifier_index(db, tenant_id):
-    """One pass over the base instead of a scan per row; a 500-row import must not be quadratic."""
-    index = {}
-    for record in db.scalars(scoped(tenant_id, "contacts")):
-        try:
-            identifiers = normalize_contact_identifiers(record.data)
-        except HTTPException:
-            identifiers = normalize_contact_identifiers({**record.data, "phone": ""})
-        for field in ("email", "phone"):
-            if identifiers.get(field):
-                index.setdefault(identifiers[field], (record.id, record.data.get("name", "")))
-    return index
-
-
-def import_contacts(db, tenant_id, actor_id, rows, commit):
-    """Dry run by default: an import nobody can preview is an import nobody should trust.
-
-    The advisory lock is held across the whole batch, so the preview a person approves is still the
-    state being written when they confirm it.
-    """
-    if len(rows) > MAX_IMPORT_ROWS:
-        raise HTTPException(422, f"Importe no máximo {MAX_IMPORT_ROWS} linhas por vez")
-    lock_contacts(db, tenant_id)
-    index = contact_identifier_index(db, tenant_id)
-    report = {"total": len(rows), "ready": 0, "created": 0, "invalid": [], "duplicates": [], "committed": commit}
-    for line, row in enumerate(rows, start=1):
-        if not isinstance(row, dict):
-            report["invalid"].append({"line": line, "errors": "Linha inválida"})
-            continue
-        try:
-            data = normalize_contact_identifiers(validate("contacts", {**row, "source": row.get("source") or "import"}))
-        except HTTPException as exc:
-            report["invalid"].append({"line": line, "errors": exc.detail})
-            continue
-        keys = [data[field] for field in ("email", "phone") if data.get(field)]
-        clash = next((index[key] for key in keys if key in index), None)
-        if clash is not None:
-            report["duplicates"].append({"line": line, "contact_id": clash[0], "contact_name": clash[1],
-                                         "reason": "Identificador já cadastrado"})
-            continue
-        if not keys:
-            report["invalid"].append({"line": line, "errors": "Informe e-mail ou telefone para evitar duplicatas"})
-            continue
-        report["ready"] += 1
-        if commit:
-            record = Record(tenant_id=tenant_id, kind="contacts", data=data)
-            db.add(record)
-            db.flush()
-            audit_event(db, tenant_id, actor_id, "contacts.imported", record.id, {"line": line})
-            report["created"] += 1
-            reserved = (record.id, data.get("name", ""))
-        else:
-            reserved = ("", data.get("name", ""))
-        # Reserving the identifiers reports a row repeated inside the same file instead of allowing it twice.
-        for key in keys:
-            index[key] = reserved
-    return report
-
-
 NOTICE_ORDER = {"critical": 3, "attention": 2, "info": 1}
 
 
-def build_notifications(db, tenant_id, limit=25):
+def build_notifications(db, tenant_id, limit=25, allowed=None):
     """Derived at read time from the records themselves.
 
     A stored notification goes stale the moment someone resolves the thing it points at, and nobody
     reconciles it. Deriving means a closed task or a scheduled next action simply stops appearing.
     """
-    today = now().date().isoformat()
+    from .compliance import instant
+    allowed = {"tasks", "approvals", "deals"} if allowed is None else allowed
+    moment = now()
+    today = moment.date().isoformat()
     items = []
-    for record in db.scalars(scoped(tenant_id, "tasks")):
+    for record in (db.scalars(scoped(tenant_id, "tasks")) if "tasks" in allowed else []):
         due = record.data.get("due_date")
-        if record.data.get("status") != "done" and due and due < today:
+        expired = bool(due and (due < today if len(due) == 10 else instant(due) and instant(due) < moment))
+        if record.data.get("status") != "done" and expired:
             items.append({"kind": "task_overdue", "severity": "critical", "id": record.id,
                           "title": record.data.get("title", ""), "detail": f"Prazo venceu em {due}",
                           "href": f"/crm/tarefas?abrir={record.id}", "at": due})
-    for record in db.scalars(scoped(tenant_id, "approvals")):
-        if record.data.get("status") == "pending":
+    for record in (db.scalars(scoped(tenant_id, "approvals")) if "approvals" in allowed else []):
+        expires = instant(record.data.get("expires_at"))
+        if record.data.get("status") == "pending" and expires and expires > moment:
             items.append({"kind": "approval_pending", "severity": "attention", "id": record.id,
                           "title": record.data.get("title", ""),
                           "detail": f"Aguarda decisão no gate {record.data.get('gate', '')}".strip(),
                           "href": f"/crm/aprovacoes?abrir={record.id}",
                           "at": record.data.get("expires_at", "")})
-    pipeline = default_pipeline(db, tenant_id)
-    if pipeline is not None:
+    for pipeline in (db.scalars(scoped(tenant_id, "pipelines")) if "deals" in allowed else []):
         for entry in build_radar(db, tenant_id, pipeline)["items"]:
             bucket = entry["risk"]["bucket"]
             if bucket not in ("critico", "em_risco"):
@@ -375,6 +334,8 @@ def build_notifications(db, tenant_id, limit=25):
 
 
 def create_record(db, tenant_id, actor_id, kind, payload):
+    if kind == "pipelines":
+        lock_pipeline_configuration(db, tenant_id)
     if kind == "contacts":
         lock_contacts(db, tenant_id)
     data = validate(kind, payload)
@@ -385,7 +346,7 @@ def create_record(db, tenant_id, actor_id, kind, payload):
     if kind == "automations":
         validate_flow(data)
     if kind == "deals":
-        apply_deal_rules(db, tenant_id, data, bool(payload.get("probability")))
+        apply_deal_rules(db, tenant_id, data, "probability" in payload)
         if not data.get("position"):
             data["position"] = next_position(db, tenant_id, data["pipeline_id"], data["stage"])
     if kind == "approvals":
@@ -406,9 +367,10 @@ def open_stage_keys(db, tenant_id):
 
 def next_position(db, tenant_id, pipeline_id, stage):
     """New cards land at the bottom of their column; gaps of 1000 leave room to drop between neighbours."""
-    positions = [int(record.data.get("position") or 0) for record in db.scalars(scoped(tenant_id, "deals").where(
-        Record.data["pipeline_id"].as_string() == pipeline_id, Record.data["stage"].as_string() == stage))]
-    return (max(positions) + 1000) if positions else 1000
+    maximum = db.scalar(select(func.max(cast(Record.data["position"].as_string(), Integer))).where(
+        Record.tenant_id == tenant_id, Record.kind == "deals", Record.deleted.is_(False),
+        Record.data["pipeline_id"].as_string() == pipeline_id, Record.data["stage"].as_string() == stage)) or 0
+    return min(maximum + 1000, 1_000_000_000)
 
 
 def promote_lead(db, tenant_id, contact, interest):
@@ -450,6 +412,8 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
     an unauthenticated submission cannot undo a refusal or an opt-out.
     """
     lock_contacts(db, tenant_id)
+    submitted_notes = payload.get("notes", "")
+    payload = {**payload, "notes": submitted_notes[:20000]}
     identifiers = normalize_contact_identifiers(validate("contacts", payload))
     existing = find_contact_matches(db, tenant_id, identifiers)
     if len(existing) > 1:
@@ -457,6 +421,7 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
     if not existing:
         record = create_record(db, tenant_id, None, "contacts", payload)
         record.data = {**record.data, "attribution": attribution, "consented_at": now().isoformat()}
+        capture_activity(db, tenant_id, record.id, submitted_notes, attribution)
         if promote:
             promote_lead(db, tenant_id, record, payload.get("notes", ""))
         return record
@@ -464,7 +429,7 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
     entry = f"{now().date().isoformat()} · {payload['notes']}".strip()
     history = str(record.data.get("notes") or "").strip()
     merged = {**record.data,
-              "notes": f"{history}\n\n{entry}"[-20000:] if history else entry[:20000]}
+              "notes": (f"{history}\n\n{entry}" if history else entry)[:20000]}
     merged.setdefault("attribution", attribution)
     if merged.get("consent") and not merged.get("opted_out_at"):
         merged.setdefault("consented_at", now().isoformat())
@@ -472,12 +437,26 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
                .values(data=merged, version=record.version + 1, updated_at=now()))
     audit_event(db, tenant_id, None, "contacts.recaptured", record.id, {"version": record.version + 1})
     db.refresh(record)
+    capture_activity(db, tenant_id, record.id, submitted_notes, attribution)
     if promote:
         promote_lead(db, tenant_id, record, payload.get("notes", ""))
     return record
 
 
+def capture_activity(db, tenant_id, contact_id, body, attribution):
+    """Keep each submission separately; the legacy notes field is only a bounded summary."""
+    activity = Record(tenant_id=tenant_id, kind="activities", data={"type": "note", "body": body,
+        "contact_id": contact_id, "author_id": None, "author_name": "Site FAT Tech", "source": "website",
+        "attribution": attribution})
+    db.add(activity)
+    db.flush()
+    audit_event(db, tenant_id, None, "activities.created", activity.id,
+                {"parent_kind": "contacts", "parent_id": contact_id, "source": "website"})
+
+
 def update_record(db, principal, kind, record_id, payload):
+    if kind == "pipelines":
+        lock_pipeline_configuration(db, principal.tenant_id)
     if kind == "contacts":
         lock_contacts(db, principal.tenant_id)
     record = get_record(db, principal.tenant_id, kind, record_id, lock=True)
@@ -487,6 +466,8 @@ def update_record(db, principal, kind, record_id, payload):
     version = changes.pop("version", None)
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
         raise HTTPException(422, "version inteira obrigatória")
+    if record.version != version:
+        raise HTTPException(409, "O registro foi alterado por outra pessoa. Atualize e tente novamente.")
     if kind == "approvals":
         raise HTTPException(409, "Intenções são imutáveis; use a decisão ou crie nova solicitação")
     editable = {key: value for key, value in record.data.items() if key in RESOURCES[kind].model_fields}
@@ -499,7 +480,8 @@ def update_record(db, principal, kind, record_id, payload):
     if kind == "automations":
         validate_flow(data)
     if kind == "deals":
-        apply_deal_rules(db, principal.tenant_id, data, "probability" in changes,
+        same_stage = data.get("pipeline_id") == record.data.get("pipeline_id") and data["stage"] == record.data["stage"]
+        apply_deal_rules(db, principal.tenant_id, data, "probability" in changes or same_stage,
                          record.data.get("pipeline_id"), record.data.get("lost_reason"))
     if kind == "pipelines":
         guard_stage_removal(db, principal.tenant_id, record_id, record.data["stages"], data["stages"])
@@ -518,6 +500,8 @@ def update_record(db, principal, kind, record_id, payload):
 
 
 def delete_record(db, principal, kind, record_id, version):
+    if kind == "pipelines":
+        lock_pipeline_configuration(db, principal.tenant_id)
     if kind == "contacts":
         lock_contacts(db, principal.tenant_id)
     get_record(db, principal.tenant_id, kind, record_id, lock=True)

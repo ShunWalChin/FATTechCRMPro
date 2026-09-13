@@ -73,7 +73,7 @@ Fields (defaults omitted in examples are supplied by the server):
 
 Stage vocabulary is tenant configuration, not a fixed enum. Each tenant is provisioned with one default funnel (`lead`, `qualified`, `proposal`, `negotiation`, `won`, `lost`) by migration `0002` and by owner bootstrap.
 
-A deal without `pipeline_id` adopts the tenant default funnel and stores that id, so a later default change does not move existing deals. `stage` must be a key declared by the deal's funnel; an unknown key returns 422. When the request omits `probability`, the deal adopts the probability declared by its stage; an explicit value is kept.
+A deal without `pipeline_id` adopts the tenant default funnel and stores that id, so a later default change does not move existing deals. `stage` must be a unique key declared by the funnel; unknown keys return 422. For open stages, creation without `probability` adopts the stage value, and explicit zero is preserved. An update staying in the same stage preserves probability unless supplied. Changing stage adopts its probability unless explicitly supplied. Won/lost outcomes always use 100/0 on new writes. Occupied stages cannot change outcome. Configuration writes serialize per tenant, including concurrent default selection.
 
 Moving a deal to a stage whose `outcome` is `lost` requires a non-empty `lost_reason` (422 otherwise). Moving it back to any other stage clears the reason. Stage keys match `^[a-z][a-z0-9_-]{0,39}$` and are unique per funnel.
 
@@ -81,7 +81,9 @@ Removing or renaming a stage that still holds active deals returns 409, as does 
 
 `GET /notifications` derives what needs attention from the records themselves: overdue tasks, pending approvals and deals the radar ranks as `critico` or `em_risco`. It returns `{items:[{kind,severity,id,title,detail,href,at}],total,counts}` ordered by severity. Nothing is stored: resolving the underlying record is what makes an entry disappear, because no background job reconciles a stored notice.
 
-`POST /contacts/import {rows:[{...}],commit:false}` previews a batch of up to 500 rows and writes nothing. It answers `{total,ready,created,committed,invalid:[{line,errors}],duplicates:[{line,contact_id,contact_name,reason}]}`. Rows are validated against the contact schema and their identifiers normalized; a row colliding with an existing contact, or with an earlier row of the same file, is reported rather than written. `commit:true` writes exactly the rows the preview listed as ready, under the same per-tenant lock, so the state a person approved is the state that gets written.
+`POST /contacts/import {rows:[{...}],commit:false}` previews up to 500 rows and writes nothing. Response: `{total,ready,created,committed,invalid:[{line,errors}],duplicates:[{line,contact_id,contact_name,reason}]}`. Version 0.3 accepts only `name,email,phone,company,source,notes`; the authenticated actor is owner and consent starts false. API keys require both `contacts:read` and `contacts:write`.
+
+`commit:true` requires `Idempotency-Key`. It revalidates the current database under the tenant contact lock; duplicates that appeared since preview are skipped. **Any invalid row rejects the whole batch with 422 and `detail.report`**, without committed contacts or receipt. Repeat the same key/content to recover the original successful report; changed content returns 409. Preview and confirmation are separate transactions, never a lock held while the user reviews.
 
 `POST /sales/proposals`, `GET|PATCH /sales/proposals/{id}`, `POST|GET|PATCH /sales/goals` and `GET /sales/report` are mounted under the sales router: proposals snapshot catalogue prices at issue time, goals are per-owner targets, and the report describes the current outcome of a creation-date cohort.
 

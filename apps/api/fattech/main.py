@@ -16,23 +16,25 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
 from .models import ApiKey, Audit, Idempotency, LoginSession, Outbox, Record, Tenant, User, now, uid
-from .schemas import (RESOURCES, ContactImport, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
+from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
                       Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
 from .security import (DUMMY_HASH, digest, hasher, rate_limit, require_auth, user_dict, utc,
                        verify_password)
 from .permissions import ADMIN_ROLES, ELEVATED_ROLES, RANK, can_manage
 from .idempotency import creation_receipt
+from .imports import contact_import
+from .json_input import validate_json_body
 from .record_views import register_record_views
 from .sales_operations import router as sales_router
 from . import compliance
 from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications, build_radar,
-                       capture_lead, create_record, import_contacts,
+                       capture_lead, create_record,
                        default_pipeline, delete_record, get_record, list_records, serialize, simulate,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.2.2"
+APP_VERSION = "0.3.0"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
@@ -42,6 +44,8 @@ RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "
                   "sales_proposals": ("proposta", "a"), "sales_goals": ("meta", "a")}
 ACTION_VERBS = {"created": "Criou", "updated": "Alterou", "deleted": "Excluiu"}
 ACTION_LABELS = {
+    "pipelines.default_replaced": "Substituiu o funil padrão",
+    "activities.created": "Registrou uma atividade",
     "sales_proposals.issued": "Emitiu a proposta internamente",
     "sales_proposals.accepted": "Registrou o aceite da proposta",
     "sales_proposals.rejected": "Registrou a recusa da proposta",
@@ -134,26 +138,34 @@ def create_app(settings: Settings | None = None, engine=None):
     async def protection(request, call_next):
         trace = uid()
         request.state.trace_id = trace
+        def protected(response):
+            response.headers.update({"X-Request-ID": trace, "X-Content-Type-Options": "nosniff",
+                "Referrer-Policy": "strict-origin-when-cross-origin", "Cache-Control": "no-store"})
+            return response
         try:
             length = int(request.headers.get("content-length", "0"))
+            if length < 0:
+                raise ValueError
         except ValueError:
-            return JSONResponse({"detail": "Content-Length inválido"}, 400)
+            return protected(JSONResponse({"detail": "Content-Length inválido"}, 400))
         if length > settings.max_body_bytes:
-            return JSONResponse({"detail": "Corpo excede o limite"}, 413)
+            return protected(JSONResponse({"detail": "Corpo excede o limite"}, 413))
         # Count actual chunks too; Content-Length is attacker-controlled.
         if request.method in ("POST", "PATCH", "PUT"):
             body = bytearray()
             async for chunk in request.stream():
                 body.extend(chunk)
                 if len(body) > settings.max_body_bytes:
-                    return JSONResponse({"detail": "Corpo excede o limite"}, 413)
+                    return protected(JSONResponse({"detail": "Corpo excede o limite"}, 413))
             request._body = bytes(body)
+            media_type = request.headers.get("content-type", "application/json").split(";")[0].strip().lower()
+            if body and (media_type == "application/json" or media_type.endswith("+json")):
+                try:
+                    validate_json_body(bytes(body))
+                except (ValueError, RecursionError):
+                    return protected(JSONResponse({"detail": "JSON inválido: use chaves únicas, valores finitos e estrutura de até 64 níveis"}, 422))
         response = await call_next(request)
-        response.headers["X-Request-ID"] = trace
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Cache-Control"] = "no-store"
-        return response
+        return protected(response)
 
     @app.exception_handler(SQLAlchemyError)
     async def database_failure(request, exc):
@@ -481,11 +493,18 @@ def create_app(settings: Settings | None = None, engine=None):
         signature = request.headers.get("x-fattech-signature", "")
         expected = "sha256=" + hmac.new(settings.webhook_secret.encode(), timestamp.encode() + b"." + raw,
                                          hashlib.sha256).hexdigest()
-        if not valid_time or not hmac.compare_digest(expected, signature):
+        if not valid_time or not hmac.compare_digest(expected.encode(), signature.encode()):
             raise HTTPException(401, "Assinatura ou timestamp inválido")
         idempotency_key = request.headers.get("idempotency-key", "")
         if not 8 <= len(idempotency_key) <= 200:
             raise HTTPException(422, "Idempotency-Key de 8 a 200 caracteres obrigatória")
+        if idempotency_key.startswith("create:"):
+            raise HTTPException(422, "Prefixo reservado de Idempotency-Key")
+        # Validate even on replay: a CRUD receipt is never a valid webhook envelope.
+        try:
+            payload = Webhook.model_validate_json(raw)
+        except ValidationError as exc:
+            raise HTTPException(422, "Envelope de evento inválido") from exc
         rate_limit(db, f"webhook:{principal.key.id}", 120, 60)
         body_hash = hashlib.sha256(raw).hexdigest()
         previous = db.scalar(select(Idempotency).where(Idempotency.tenant_id == principal.tenant_id,
@@ -494,10 +513,6 @@ def create_app(settings: Settings | None = None, engine=None):
             if previous.body_hash != body_hash:
                 raise HTTPException(409, "Chave idempotente reutilizada com outro conteúdo")
             return {**previous.response, "duplicate": True}
-        try:
-            payload = Webhook.model_validate_json(raw)
-        except ValidationError as exc:
-            raise HTTPException(422, "Envelope de evento inválido") from exc
         event_id = uid()
         result = {"id": event_id, "status": "accepted", "duplicate": False}
         db.add(Idempotency(tenant_id=principal.tenant_id, key=idempotency_key, body_hash=body_hash, response=result))
@@ -582,20 +597,14 @@ def create_app(settings: Settings | None = None, engine=None):
             raise HTTPException(503, "Envios externos estão desarmados neste ambiente; nenhuma mensagem saiu.")
         raise HTTPException(503, "Provedor de envio não configurado. A mensagem permanece como rascunho.")
 
-    @app.post("/api/v1/contacts/import")
-    def contact_import(payload: ContactImport, principal=Depends(require_auth), db=Depends(get_db)):
-        principal.require("contacts:write")
-        report = import_contacts(db, principal.tenant_id, principal.actor_id, payload.rows, payload.commit)
-        if payload.commit:
-            db.commit()
-        else:
-            db.rollback()
-        return report
+    app.add_api_route("/api/v1/contacts/import", contact_import, methods=["POST"])
 
     @app.get("/api/v1/notifications")
     def notifications(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("dashboard:read")
-        return build_notifications(db, principal.tenant_id)
+        allowed = {kind for kind in ("tasks", "approvals", "deals")
+                   if not principal.key or f"{kind}:read" in principal.key.scopes}
+        return build_notifications(db, principal.tenant_id, allowed=allowed)
 
     @app.get("/api/v1/crm/radar")
     def radar(principal=Depends(require_auth), db=Depends(get_db), pipeline_id: str | None = None):
@@ -715,15 +724,20 @@ def register_resource(app, kind, schema):
         if kind in PRIVILEGED and kind != "approvals":
             principal.admin()
         data = payload.model_dump(mode="json")
+        # Keep legacy receipt hashes for omitted defaults; explicit zero now has its own meaning.
+        explicit_zero = kind == "deals" and "probability" in payload.model_fields_set and data["probability"] == 0
+        receipt_data = {**data, "_explicit_probability_zero": True} if explicit_zero else data
         key = idempotency_key
         receipt = None
         if key is not None:
-            receipt, replayed = creation_receipt(db, principal, kind, key, data)
+            receipt, replayed = creation_receipt(db, principal, kind, key, receipt_data)
             response.headers["Idempotency-Replayed"] = str(replayed).lower()
             if replayed:
                 result = receipt.response
                 db.commit()
                 return result
+        if kind == "deals" and "probability" not in payload.model_fields_set:
+            data = {name: value for name, value in data.items() if name != "probability"}
         record = create_record(db, principal.tenant_id, principal.actor_id, kind, data)
         result = serialize(record)
         if receipt is not None:

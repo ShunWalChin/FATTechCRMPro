@@ -198,6 +198,8 @@ test('the bell surfaces overdue work and the import previews before writing', as
   await expect(panel).toContainText('Tarefa vencida');
 
   await page.goto('/crm/importar');
+  await page.getByLabel('Conteúdo do CSV').fill('nome;email\n"Aspas abertas;teste@example.com');
+  await expect(page.getByRole('alert').filter({hasText:'aspas não fechadas'})).toBeVisible();
   await page.getByLabel('Conteúdo do CSV').fill(
     `nome;email\nPessoa Importada ${stamp};import${stamp}@example.com\nSem identificador ${stamp};`);
   await page.getByRole('button', {name: /Conferir 2 linhas/}).click();
@@ -206,6 +208,15 @@ test('the bell surfaces overdue work and the import previews before writing', as
   const before = await (await page.request.get(`/api/v1/contacts?q=import${stamp}`)).json();
   expect(before.total).toBe(0);
 
+  await expect(page.getByRole('button', {name: /Gravar 1 contato/})).toBeDisabled();
+  await page.getByLabel('Conteúdo do CSV').fill(`\uFEFF"nome; completo";email\nPessoa Importada ${stamp};import${stamp}@example.com`);
+  await page.getByRole('button', {name: /Conferir 1 linha/}).click();
+  await page.route('**/api/v1/contacts/import',async route=>{
+    const response=await route.fetch();expect(response.status()).toBe(200);
+    await route.fulfill({status:200,contentType:'text/html',body:'<html>Resposta perdida</html>'});
+  },{times:1});
+  await page.getByRole('button', {name: /Gravar 1 contato/}).click();
+  await expect(page.getByRole('alert').filter({hasText:'Resposta inválida do servidor'})).toBeVisible();
   await page.getByRole('button', {name: /Gravar 1 contato/}).click();
   await expect(page.getByRole('status')).toContainText('1 contato gravado');
   const after = await (await page.request.get(`/api/v1/contacts?q=import${stamp}`)).json();
