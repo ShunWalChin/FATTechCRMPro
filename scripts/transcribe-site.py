@@ -290,6 +290,35 @@ def head_links(head: str, page_dir: pathlib.PurePosixPath) -> str:
     return "\n".join(rendered)
 
 
+def head_assets(head: str, page_dir: pathlib.PurePosixPath) -> str:
+    """Carry the <head>'s own <style> and <script> across.
+
+    Forty-eight of the forty-nine pages keep page-specific CSS inline in the head -- up to 22KB of it,
+    and it is what builds the grids and cards. Reading only the body dropped every byte of it, which
+    left pages wearing the shared shell with their content unstyled underneath.
+    """
+    rendered = []
+    for tag, body in re.findall(r"(<style[^>]*>)(.*?)</style>", head, re.S | re.I):
+        if body.strip():
+            rendered.append(f"<style dangerouslySetInnerHTML={{{{__html:{json.dumps(body)}}}}} />")
+    for tag, body in re.findall(r"(<script[^>]*>)(.*?)</script>", head, re.S | re.I):
+        kind = re.search(r'type="([^"]+)"', tag, re.I)
+        source = re.search(r'src="([^"]+)"', tag, re.I)
+        if kind and "ld+json" in kind.group(1).lower():
+            # Structured data is read from the DOM, never executed, so it travels as markup.
+            rendered.append('<script type="application/ld+json" '
+                            f"dangerouslySetInnerHTML={{{{__html:{json.dumps(body)}}}}} />")
+        elif source:
+            resolved = resolve_reference(html.unescape(source.group(1)), page_dir)
+            attrs = f'src={json.dumps(resolved)} strategy="afterInteractive"'
+            rendered.append(f"<Script id={json.dumps('s-' + str(abs(hash(resolved)) % 10**8))} {attrs} />")
+        elif body.strip():
+            # A <script> React renders as markup never runs, so anything executable goes through next/script.
+            rendered.append(f"<Script id={json.dumps('i-' + str(abs(hash(body)) % 10**8))} "
+                            f"strategy=\"afterInteractive\" dangerouslySetInnerHTML={{{{__html:{json.dumps(body)}}}}} />")
+    return "\n".join(rendered)
+
+
 def route_for(relative: str) -> str:
     if relative == "index.html":
         return ""
@@ -309,12 +338,13 @@ def transcribe(path: pathlib.Path) -> tuple[str, str]:
     route = KEEP_URL.get(relative, '').lstrip('/') or route_for(relative)
     component = "".join(parser.out)
     page = (
-        "import type {Metadata, Viewport} from 'next';\n"
+        "import type {Metadata, Viewport} from 'next';\nimport Script from 'next/script';\n"
         f"// Transcrita do site original ({relative}) por scripts/transcribe-site.py.\n"
         "// Conteudo e marcacao sao os do original; o que mudou foi apenas a stack em volta.\n"
         f"{head_metadata(head, route)}\n"
         "export default function Page(){\n  return <>\n"
         f"{head_links(head, relative_dir)}"
+        f"{head_assets(head, relative_dir)}"
         f"{component}\n"
         "  </>;\n}\n"
     )

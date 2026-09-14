@@ -90,6 +90,19 @@ def read(markup: str, whole_document: bool = False) -> tuple[list[str], list[str
     return reader.text, reader.outline, reader.sheets
 
 
+def inline_payloads(markup: str) -> tuple[list[str], list[str]]:
+    """The CSS and scripts a page carries inline.
+
+    Excluding <style> and <script> from the comparison is what let a release ship 48 pages stripped of
+    their page-specific CSS while the check reported them faithful. Content is not only what is visible.
+    """
+    def normalise(blocks):
+        return sorted(" ".join(b.split()) for b in blocks if b.strip())
+    styles = normalise(re.findall(r"<style[^>]*>(.*?)</style>", markup, re.S | re.I))
+    scripts = normalise(body for tag, body in re.findall(r"(<script[^>]*>)(.*?)</script>", markup, re.S | re.I))
+    return styles, scripts
+
+
 def declared_meta(markup: str) -> dict[str, str]:
     """Every meta the original states, by name. Losing or changing one is a failure; the framework
     mirroring Open Graph into extra Twitter tags adds nothing the original denied."""
@@ -156,6 +169,23 @@ def main() -> int:
                        if rendered_meta(response.text).get(k) != v]
             if missing:
                 problems.append(("meta perdido", missing))
+            want_styles, want_scripts = inline_payloads(original)
+            got_styles, got_scripts = inline_payloads(response.text)
+            lost_css = [b for b in want_styles if b not in got_styles]
+            if lost_css:
+                problems.append(("css embutido perdido", [f"{len(b)} bytes: {b[:70]}" for b in lost_css]))
+            # next/script hands executable code to the client instead of printing a <script> block, and
+            # escapes it into the payload, so presence is checked by the identifiers it carries.
+            lost_js = []
+            for block in want_scripts:
+                if block in got_scripts:
+                    continue
+                tokens = {t for t in re.findall(r"[A-Za-z_][A-Za-z0-9_]{4,}", block)}
+                missing = {t for t in tokens if t not in response.text}
+                if not tokens or len(missing) > len(tokens) * 0.2:
+                    lost_js.append(f"{len(block)} bytes, ausentes {sorted(missing)[:4]}: {block[:60]}")
+            if lost_js:
+                problems.append(("script embutido perdido", lost_js))
             expected_sheets = [resolve_reference(href, page_dir) for href in want_sheets]
             if expected_sheets != got_sheets:
                 problems.append(("folhas", [f"-{h}" for h in expected_sheets] + [f"+{h}" for h in got_sheets]))
