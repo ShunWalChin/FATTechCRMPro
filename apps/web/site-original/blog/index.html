@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="no-js">
+<!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║         FAT TECH — Blog · v4.0                          ║
+  ║         IA, Automação & Marketing Digital               ║
+  ║─────────────────────────────────────────────────────────║
+  ║  Arquitetura : HTML + CSS + JS puro (sem frameworks)    ║
+  ║  Design      : Cyberpunk Dark com neons (FAT Tech v4.0) ║
+  ║  Mobile      : Totalmente responsivo (320px–4K)          ║
+  ╚══════════════════════════════════════════════════════════╝
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Blog FAT Tech | IA, Automação e Marketing Digital</title>
+  <meta name="description" content="Conteúdo de referência sobre Inteligência Artificial, Automação de Vendas, CRM, WhatsApp API e Marketing Digital para PMEs brasileiras." />
+  <meta name="author" content="FAT Tech — Walfredo Figueiredo" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://fattech.com.br/blog/" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fattech.com.br/blog/" />
+  <meta property="og:title" content="Blog FAT Tech | IA, Automação e Marketing Digital" />
+  <meta property="og:description" content="Conteúdo de referência sobre IA, automação de vendas e marketing digital para PMEs brasileiras." />
+  <meta property="og:site_name" content="FAT Tech" />
+
+  <link rel="icon" href="../dist/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="../dist/favicon.png" />
+  <meta name="theme-color" content="#06060e" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <style>
+/* ══════════════════════════════════════════════════════
+   FAT TECH — BLOG INDEX — Design System
+   1. Variáveis CSS
+   2. Reset & Base
+   3. Navbar
+   4. Blog Hero
+   5. Filtros de Categoria
+   6. Grid de Artigos
+   7. Card de Artigo
+   8. Paginação / CTA
+   9. Footer
+   10. Responsivo
+══════════════════════════════════════════════════════ */
+
+/* ── 1. Variáveis CSS ── */
+:root {
+  --bg-base:    #06060e;
+  --bg-1:       #0a0a18;
+  --bg-2:       #0e0e22;
+  --bg-card:    #0f0f1e;
+  --bg-glass:   rgba(15,15,30,0.7);
+  --cyan:       #00f0ff;
+  --cyan-dim:   #00b8cc;
+  --pink:       #ff2d78;
+  --purple:     #a855f7;
+  --green:      #00ff88;
+  --gold:       #f5c518;
+  --text:       #e2e8f0;
+  --text-muted: #8892a4;
+  --text-dim:   #4a5568;
+  --border:     rgba(0,240,255,0.12);
+  --border-hot: rgba(0,240,255,0.40);
+  --glow-cyan:  0 0 20px rgba(0,240,255,0.4);
+  --glow-pink:  0 0 20px rgba(255,45,120,0.4);
+  --glow-soft:  0 0 40px rgba(0,240,255,0.12);
+  --font-display: 'Orbitron', monospace;
+  --font-body:    'Rajdhani', sans-serif;
+  --font-mono:    'Share Tech Mono', monospace;
+  --radius:    6px;
+  --radius-lg: 12px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── 2. Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
+body {
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; height: auto; display: block; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: var(--radius); }
+
+/* Scanlines decorativas */
+.scanlines {
+  position: fixed; inset: 0; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none;
+}
+
+/* ── 3. Navbar ── */
+#navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(6,6,14,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+#navbar.scrolled { background: rgba(6,6,14,0.97); box-shadow: 0 2px 24px rgba(0,240,255,0.08); }
+.nav-container {
+  max-width: 1200px; margin: 0 auto; padding: 0 24px;
+  height: 68px; display: flex; align-items: center; gap: 32px;
+}
+.nav-logo {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 900;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+.logo-bracket { color: var(--cyan-dim); }
+.logo-fat { color: var(--cyan); text-shadow: var(--glow-cyan); }
+.logo-tech { color: var(--text); }
+.nav-links {
+  display: flex; align-items: center; gap: 4px; margin-left: auto; flex-wrap: wrap;
+}
+.nav-link {
+  font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.05em;
+  padding: 8px 14px; border-radius: var(--radius); color: var(--text-muted);
+  transition: var(--transition);
+}
+.nav-link:hover, .nav-link.active { color: var(--cyan); background: rgba(0,240,255,0.07); }
+.nav-link.active { color: var(--cyan); }
+
+/* ── Container ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ── 4. Blog Hero ── */
+.blog-hero {
+  padding: 140px 0 80px;
+  background: linear-gradient(180deg, rgba(0,240,255,0.04) 0%, transparent 60%);
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.blog-hero::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+.blog-hero-tag {
+  font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 16px; opacity: 0.8;
+}
+.blog-hero-title {
+  font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900; line-height: 1.1; letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+.blog-hero-title .neon-cyan { color: var(--cyan); text-shadow: var(--glow-cyan); }
+.blog-hero-sub {
+  font-size: 1.05rem; color: var(--text-muted); max-width: 560px; line-height: 1.7;
+}
+
+/* ── 5. Filtros de Categoria ── */
+.blog-filters {
+  padding: 40px 0 0;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-label {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim);
+  letter-spacing: 0.08em; margin-right: 6px;
+}
+.filter-btn {
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  transition: var(--transition); white-space: nowrap;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.07);
+}
+
+/* ── 6. Grid de Artigos ── */
+.blog-grid-section { padding: 48px 0 80px; }
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+
+/* ── 7. Card de Artigo ── */
+.article-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 14px;
+  transition: var(--transition);
+  position: relative; overflow: hidden;
+}
+.article-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0; transition: var(--transition);
+}
+.article-card:hover {
+  border-color: var(--border-hot);
+  box-shadow: var(--glow-soft);
+  transform: translateY(-4px);
+}
+.article-card:hover::before { opacity: 1; }
+.article-card:focus-within { border-color: var(--cyan); }
+
+.card-category {
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+  color: var(--cyan); text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.card-category::before { content: '//'; opacity: 0.5; }
+
+.card-title {
+  font-family: var(--font-display); font-size: 0.92rem; font-weight: 700;
+  line-height: 1.35; letter-spacing: 0.01em; color: var(--text);
+  transition: var(--transition);
+}
+.article-card:hover .card-title { color: var(--cyan); }
+
+.card-excerpt {
+  font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;
+  flex: 1;
+}
+
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}
+.card-meta {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+}
+.card-link {
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan);
+  letter-spacing: 0.06em; transition: var(--transition);
+  display: flex; align-items: center; gap: 4px;
+}
+.card-link:hover { text-shadow: var(--glow-cyan); gap: 8px; }
+
+/* Tag de destaque */
+.card-featured {
+  position: absolute; top: 14px; right: 14px;
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.08em;
+  background: var(--pink); color: #fff; padding: 3px 8px; border-radius: 3px;
+  text-transform: uppercase; font-weight: 700;
+}
+
+/* ── 8. CTA Newsletter/WhatsApp ── */
+.blog-cta {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px 40px;
+  text-align: center;
+  position: relative; overflow: hidden;
+  margin-top: 72px;
+  margin-bottom: 80px;
+  animation: cta-border-pulse 4s ease-in-out infinite;
+}
+.blog-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0,240,255,0.06), transparent 70%);
+  pointer-events: none;
+}
+.blog-cta-tag {
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--cyan);
+  letter-spacing: 0.12em; margin-bottom: 16px;
+}
+.blog-cta h2 {
+  font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900; margin-bottom: 12px; line-height: 1.2;
+}
+.blog-cta p {
+  color: var(--text-muted); max-width: 480px; margin: 0 auto 28px; font-size: 0.95rem;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  color: #000; font-family: var(--font-display); font-weight: 700;
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px 32px; border-radius: var(--radius); border: none;
+  cursor: pointer; transition: var(--transition); min-height: 44px;
+  text-decoration: none; position: relative; overflow: hidden;
+}
+.btn-primary:hover {
+  box-shadow: var(--glow-cyan); transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
+}
+
+/* ── 9. Footer ── */
+.footer {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 40px 0;
+}
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  font-size: 0.83rem; color: var(--text-muted);
+}
+.footer-bottom a { color: var(--text-muted); transition: var(--transition); }
+.footer-bottom a:hover { color: var(--cyan); }
+
+/* ── 10. Responsivo ── */
+@media (max-width: 1024px) {
+  .blog-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .blog-grid { grid-template-columns: 1fr; }
+  .blog-hero { padding: 120px 0 60px; }
+  .blog-cta { padding: 36px 20px; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+  .nav-links { gap: 2px; }
+  .nav-link { padding: 6px 10px; font-size: 0.72rem; }
+}
+@media (max-width: 480px) {
+  .nav-container { gap: 16px; }
+  .blog-filters { gap: 8px; }
+}
+
+/* ── Separador visual garantido antes do CTA ── */
+.blog-cta-separator {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 0 0 72px;
+}
+
+/* ── Card: shimmer sweep no hover ── */
+.article-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -80%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.04), transparent);
+  pointer-events: none;
+  opacity: 0;
+}
+.article-card:hover::after {
+  opacity: 1;
+  animation: card-shimmer 0.75s ease-in-out forwards;
+}
+@keyframes card-shimmer {
+  0%   { left: -80%; }
+  100% { left: 130%; }
+}
+
+/* ── Card: orb glow que segue o mouse ── */
+.card-orb {
+  position: absolute;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.article-card:hover .card-orb { opacity: 1; }
+
+/* ── CTA: borda pulsante ── */
+@keyframes cta-border-pulse {
+  0%,100% { border-color: var(--border); box-shadow: none; }
+  50%      { border-color: rgba(0,240,255,0.35); box-shadow: 0 0 40px rgba(0,240,255,0.07); }
+}
+
+/* ── CTA: scan line no hover ── */
+.blog-cta::after {
+  content: '';
+  position: absolute;
+  top: -100%; left: 0; right: 0;
+  height: 35%;
+  background: linear-gradient(180deg, transparent, rgba(0,240,255,0.04), transparent);
+  pointer-events: none;
+}
+.blog-cta:hover::after {
+  animation: cta-scan 1.4s ease-in-out;
+}
+@keyframes cta-scan {
+  0%   { top: -100%; }
+  100% { top: 200%; }
+}
+
+/* ── CTA button: shimmer sweep ── */
+.btn-primary {
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  animation: btn-shimmer 0.6s ease-in-out forwards;
+}
+@keyframes btn-shimmer {
+  0%   { left: -60%; }
+  100% { left: 120%; }
+}
+  </style>
+  <link rel="stylesheet" href="../site-unified.css">
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+<body>
+
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Navbar -->
+  <nav id="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-container">
+      <a href="../index.html" class="nav-logo" aria-label="FAT Tech — voltar ao site">
+        <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="../index.html"         class="nav-link">Início</a></li>
+        <li><a href="index.html"            class="nav-link active">Blog</a></li>
+        <li><a href="../crm.html"           class="nav-link">CRM IA</a></li>
+        <li><a href="../index.html#servicos" class="nav-link">Serviços</a></li>
+        <li><a href="../index.html#contato"  class="nav-link">Contato</a></li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <!-- Blog Hero -->
+  <header class="blog-hero" aria-label="Blog FAT Tech">
+    <div class="container">
+      <div class="blog-hero-tag">// CONHECIMENTO EM IA &amp; AUTOMAÇÃO</div>
+      <h1 class="blog-hero-title">
+        Blog <span class="neon-cyan">FAT Tech</span>
+      </h1>
+      <p class="blog-hero-sub">
+        Conteúdo prático sobre Inteligência Artificial, Automação de Vendas, CRM,
+        WhatsApp API e Marketing Digital para quem quer crescer de verdade.
+      </p>
+
+      <!-- Filtros -->
+      <div class="blog-filters" role="navigation" aria-label="Filtros de categoria">
+        <span class="filter-label">Categorias:</span>
+        <button type="button" class="filter-btn active" aria-pressed="true" data-filter="todos">Todos</button>
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter="ia automacao">IA &amp; Automação</button>
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter="crm vendas">CRM &amp; Vendas</button>
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter="whatsapp">WhatsApp</button>
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter="marketing">Marketing</button>
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter="estrategia">Estratégia</button>
+      </div>
+      <p id="filterFeedback" class="blog-hero-sub" style="margin-top:18px;font-size:0.92rem;max-width:none;">
+        Exibindo todos os artigos em ordem de prioridade editorial e publicação.
+      </p>
+    </div>
+  </header>
+
+
+  <!-- Grade de Artigos -->
+  <main id="main-content" class="blog-grid-section">
+    <div class="container">
+
+      <div class="blog-grid" role="list" aria-label="Lista de artigos">
+
+        <!-- Artigo 1 -->
+        <article class="article-card" role="listitem" data-reveal data-published="2026-03-28">
+          <span class="card-featured" style="background:var(--pink)">Manifesto</span>
+          <div class="card-category">Estratégia</div>
+          <h2 class="card-title">
+            <a href="artigos/manifesto-marketing-devops.html">O Manifesto Marketing DevOps: A Engenharia de Sistemas Aplicada à Aquisição</a>
+          </h2>
+          <p class="card-excerpt">Marketing DevOps não é uso de ferramentas, mas mudança estrutural. Soberania de infraestrutura, orquestração lógica e IA agentica para construir uma fábrica proprietária de aquisição.</p>
+          <div class="card-footer">
+            <span class="card-meta">28 Mar 2026 · 11 min</span>
+            <a href="artigos/manifesto-marketing-devops.html" class="card-link" aria-label="Ler o Manifesto Marketing DevOps">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 2 -->
+        <article class="article-card" role="listitem" data-reveal data-published="2026-03-27">
+          <span class="card-featured" style="background:var(--purple)">Novo</span>
+          <div class="card-category">Estratégia</div>
+          <h2 class="card-title">
+            <a href="artigos/marketing-devops.html">Marketing DevOps: Construa Motores de Aquisição, Não Postezinhos</a>
+          </h2>
+          <p class="card-excerpt">O MarDev aplica a filosofia de DevOps no marketing: automação, mensuração e iteração rápida para construir infraestruturas invisíveis de caça a clientes.</p>
+          <div class="card-footer">
+            <span class="card-meta">27 Mar 2026 · 9 min</span>
+            <a href="artigos/marketing-devops.html" class="card-link" aria-label="Ler artigo sobre Marketing DevOps">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 3 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <span class="card-featured">Destaque</span>
+          <div class="card-category">IA &amp; Automação</div>
+          <h2 class="card-title">
+            <a href="artigos/agentes-ia-whatsapp.html">Agentes de IA no WhatsApp: Como Automatizar Seu Atendimento 24/7</a>
+          </h2>
+          <p class="card-excerpt">Descubra como Agentes Neurais de IA podem transformar seu WhatsApp em um vendedor incansável que atende, qualifica e fecha negócios enquanto você dorme.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 8 min</span>
+            <a href="artigos/agentes-ia-whatsapp.html" class="card-link" aria-label="Ler artigo sobre Agentes de IA no WhatsApp">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 2 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">CRM &amp; Vendas</div>
+          <h2 class="card-title">
+            <a href="artigos/crm-ia-vendas.html">CRM com Inteligência Artificial: A Revolução no Funil de Vendas</a>
+          </h2>
+          <p class="card-excerpt">Entenda como um CRM alimentado por IA elimina tarefas manuais, melhora o acompanhamento comercial e pode elevar a conversão com muito mais consistência.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 7 min</span>
+            <a href="artigos/crm-ia-vendas.html" class="card-link" aria-label="Ler artigo sobre CRM com IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 3 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Marketing</div>
+          <h2 class="card-title">
+            <a href="artigos/automacao-marketing-digital.html">Automação de Marketing Digital: Do Lead ao Cliente Sem Esforço Manual</a>
+          </h2>
+          <p class="card-excerpt">Como criar fluxos automatizados que capturam leads, nutrem com conteúdo relevante e os convertem em clientes sem você precisar fazer nada manualmente.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/automacao-marketing-digital.html" class="card-link" aria-label="Ler artigo sobre Automação de Marketing">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 4 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">IA &amp; Automação</div>
+          <h2 class="card-title">
+            <a href="artigos/chatbot-vs-agente-ia.html">Chatbot vs Agente de IA: Qual a Diferença e Por Que Importa?</a>
+          </h2>
+          <p class="card-excerpt">Chatbots seguem scripts. Agentes de IA pensam, adaptam e tomam decisões. Entenda por que essa diferença pode definir o sucesso do seu atendimento.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 5 min</span>
+            <a href="artigos/chatbot-vs-agente-ia.html" class="card-link" aria-label="Ler artigo sobre Chatbot vs Agente de IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 5 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">WhatsApp</div>
+          <h2 class="card-title">
+            <a href="artigos/whatsapp-api-oficial.html">WhatsApp API Oficial: Por Que Sua Empresa Precisa Migrar Agora</a>
+          </h2>
+          <p class="card-excerpt">A diferença entre WhatsApp Business e a API Oficial é enorme. Conheça os recursos exclusivos, limites de envio e como a migração pode escalar seu atendimento.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/whatsapp-api-oficial.html" class="card-link" aria-label="Ler artigo sobre WhatsApp API Oficial">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 6 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">CRM &amp; Vendas</div>
+          <h2 class="card-title">
+            <a href="artigos/funil-kanban-automatizado.html">Funil Kanban Automatizado com IA: Nunca Mais Perca um Lead</a>
+          </h2>
+          <p class="card-excerpt">Como um funil visual Kanban integrado com IA move leads automaticamente entre etapas, dispara follow-ups e avisa quando um negócio está esfriando.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 7 min</span>
+            <a href="artigos/funil-kanban-automatizado.html" class="card-link" aria-label="Ler artigo sobre Funil Kanban">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 7 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Estratégia</div>
+          <h2 class="card-title">
+            <a href="artigos/ia-pequenas-empresas.html">IA para Pequenas Empresas: Como Competir com os Grandes Gastando Pouco</a>
+          </h2>
+          <p class="card-excerpt">Ferramentas de IA que antes custavam milhões estão acessíveis a PMEs. Descubra como pequenas empresas estão usando IA para superar concorrentes maiores.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 8 min</span>
+            <a href="artigos/ia-pequenas-empresas.html" class="card-link" aria-label="Ler artigo sobre IA para pequenas empresas">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 8 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">LGPD &amp; Compliance</div>
+          <h2 class="card-title">
+            <a href="artigos/lgpd-atendimento-ia.html">LGPD e Atendimento com IA: Como Estar em Conformidade</a>
+          </h2>
+          <p class="card-excerpt">Implementar IA no atendimento exige cuidado com dados pessoais. Veja os requisitos da LGPD e como estruturar seu sistema com conformidade e governança.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/lgpd-atendimento-ia.html" class="card-link" aria-label="Ler artigo sobre LGPD e IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 9 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">CRM &amp; Vendas</div>
+          <h2 class="card-title">
+            <a href="artigos/roi-automacao-vendas.html">ROI da Automação de Vendas: Quanto Sua Empresa Pode Ganhar?</a>
+          </h2>
+          <p class="card-excerpt">Um guia prático para calcular o retorno sobre investimento da automação de vendas, com casos reais e fórmulas que você pode aplicar hoje mesmo.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 7 min</span>
+            <a href="artigos/roi-automacao-vendas.html" class="card-link" aria-label="Ler artigo sobre ROI de automação">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 10 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <span class="card-featured" style="background:var(--purple)">Tendência</span>
+          <div class="card-category">IA &amp; Automação</div>
+          <h2 class="card-title">
+            <a href="artigos/inteligencia-artificial-2026.html">Inteligência Artificial em 2026: Tendências que Vão Transformar os Negócios</a>
+          </h2>
+          <p class="card-excerpt">De agentes autônomos a modelos multimodais: as 7 tendências de IA que estão redefinindo como empresas operam, vendem e crescem em 2026.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 9 min</span>
+            <a href="artigos/inteligencia-artificial-2026.html" class="card-link" aria-label="Ler artigo sobre tendências de IA em 2026">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 11 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">CRM &amp; Vendas</div>
+          <h2 class="card-title">
+            <a href="artigos/qualificacao-leads-ia.html">Qualificação de Leads com IA: Foque Apenas em Quem Vai Comprar</a>
+          </h2>
+          <p class="card-excerpt">Como a IA analisa comportamentos, perfil e histórico de interação para pontuar leads e entregar apenas os prontos para compra para o seu time comercial.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/qualificacao-leads-ia.html" class="card-link" aria-label="Ler artigo sobre qualificação de leads com IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 12 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">WhatsApp</div>
+          <h2 class="card-title">
+            <a href="artigos/follow-up-automatico.html">Follow-Up Automático com IA: Como Recuperar Leads Perdidos</a>
+          </h2>
+          <p class="card-excerpt">Boa parte dos negócios exige vários contatos até amadurecer. Veja como automatizar follow-ups inteligentes para reativar leads frios sem parecer insistência vazia.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 5 min</span>
+            <a href="artigos/follow-up-automatico.html" class="card-link" aria-label="Ler artigo sobre follow-up automático">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 13 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">IA &amp; Automação</div>
+          <h2 class="card-title">
+            <a href="artigos/atendimento-omnichannel-ia.html">Atendimento Omnichannel com IA: Todos os Canais, Um Só Sistema</a>
+          </h2>
+          <p class="card-excerpt">WhatsApp, Instagram, e-mail, site — seus clientes estão em todos os canais. Como a IA unifica o atendimento para entregar uma experiência consistente em qualquer ponto de contato.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 7 min</span>
+            <a href="artigos/atendimento-omnichannel-ia.html" class="card-link" aria-label="Ler artigo sobre atendimento omnichannel">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 14 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Marketing</div>
+          <h2 class="card-title">
+            <a href="artigos/google-meu-negocio-ia.html">Google Meu Negócio + IA: Como Dominar Buscas Locais em 2026</a>
+          </h2>
+          <p class="card-excerpt">O Google Meu Negócio é a vitrine digital mais poderosa para negócios locais. Saiba como otimizá-lo com IA para aparecer sempre à frente dos concorrentes.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/google-meu-negocio-ia.html" class="card-link" aria-label="Ler artigo sobre Google Meu Negócio com IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 15 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">IA &amp; Automação</div>
+          <h2 class="card-title">
+            <a href="artigos/agendamento-automatico-ia.html">Agendamento Automático com IA: Elimine o Vai-e-Vem de Mensagens</a>
+          </h2>
+          <p class="card-excerpt">Quantas horas sua equipe perde confirmando horários? A IA agenda, confirma, reenvia lembretes e reagenda cancelamentos — sozinha, sem intervenção humana.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 5 min</span>
+            <a href="artigos/agendamento-automatico-ia.html" class="card-link" aria-label="Ler artigo sobre agendamento automático">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 16 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Estratégia</div>
+          <h2 class="card-title">
+            <a href="artigos/analise-dados-ia-negocios.html">Análise de Dados com IA para Negócios: Decisões Baseadas em Números</a>
+          </h2>
+          <p class="card-excerpt">Intuição não é estratégia. Descubra como dashboards com IA transformam dados de vendas, atendimento e marketing em insights acionáveis para crescer mais rápido.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 8 min</span>
+            <a href="artigos/analise-dados-ia-negocios.html" class="card-link" aria-label="Ler artigo sobre análise de dados com IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 17 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">CRM &amp; Vendas</div>
+          <h2 class="card-title">
+            <a href="artigos/scripts-vendas-ia.html">Scripts de Vendas com IA: Como Criar Roteiros que Convertem</a>
+          </h2>
+          <p class="card-excerpt">A IA pode criar, testar e otimizar scripts de vendas personalizados para cada segmento de cliente. Veja como implementar isso no seu processo comercial.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/scripts-vendas-ia.html" class="card-link" aria-label="Ler artigo sobre scripts de vendas com IA">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 18 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Segmentos</div>
+          <h2 class="card-title">
+            <a href="artigos/ia-setor-imobiliario.html">IA no Setor Imobiliário: Qualifique Leads e Agende Visitas 24h</a>
+          </h2>
+          <p class="card-excerpt">Corretores que usam IA fecham mais negócios com menos esforço. Veja como automatizar a qualificação de leads, agendamento de visitas e follow-up no mercado imobiliário.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 7 min</span>
+            <a href="artigos/ia-setor-imobiliario.html" class="card-link" aria-label="Ler artigo sobre IA no setor imobiliário">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 19 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <div class="card-category">Marketing</div>
+          <h2 class="card-title">
+            <a href="artigos/marketing-ia-instagram.html">Marketing com IA no Instagram: Conteúdo, Anúncios e Conversão</a>
+          </h2>
+          <p class="card-excerpt">Como usar IA para criar conteúdo, segmentar anúncios, responder DMs automaticamente e converter seguidores em clientes pagantes direto pelo Instagram.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 6 min</span>
+            <a href="artigos/marketing-ia-instagram.html" class="card-link" aria-label="Ler artigo sobre marketing com IA no Instagram">Ler →</a>
+          </div>
+        </article>
+
+        <!-- Artigo 20 -->
+        <article class="article-card" role="listitem" data-reveal>
+          <span class="card-featured" style="background:var(--gold);color:#000">Guia</span>
+          <div class="card-category">Estratégia</div>
+          <h2 class="card-title">
+            <a href="artigos/transformacao-digital-pme.html">Transformação Digital para PMEs: O Guia Completo para 2026</a>
+          </h2>
+          <p class="card-excerpt">Do diagnóstico inicial à implementação completa de IA e automação. O roteiro passo a passo para PMEs brasileiras que querem digitalizar sem desperdício de dinheiro.</p>
+          <div class="card-footer">
+            <span class="card-meta">Mar 2026 · 10 min</span>
+            <a href="artigos/transformacao-digital-pme.html" class="card-link" aria-label="Ler guia de transformação digital para PMEs">Ler →</a>
+          </div>
+        </article>
+
+
+      </div><!-- /blog-grid -->
+      <div id="filterEmpty" class="blog-cta" aria-live="polite" hidden style="margin-top:40px;">
+        <div class="blog-cta-tag">// NENHUM ARTIGO NESTA CATEGORIA</div>
+        <h2>Não encontramos posts para esse filtro.</h2>
+        <p>Você pode voltar para todos os artigos ou navegar para o CRM IA para ver a aplicação prática da estratégia no site principal.</p>
+        <a href="index.html" class="btn-primary">Ver todos os artigos</a>
+      </div>
+
+      <span class="blog-cta-separator" aria-hidden="true"></span>
+
+      <!-- CTA -->
+      <div class="blog-cta" aria-label="Chamada para ação">
+        <div class="blog-cta-tag">// PRÓXIMO PASSO</div>
+        <h2>Quer implementar <span style="color:var(--cyan)">IA no seu negócio?</span></h2>
+        <p>A FAT Tech transforma PMEs em máquinas de vendas com agentes de IA, WhatsApp API Oficial e CRM inteligente. Fale com um especialista.</p>
+        <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Li%20o%20blog%20da%20FAT%20Tech%20e%20quero%20saber%20como%20implementar%20IA%20no%20meu%20neg%C3%B3cio."
+           class="btn-primary" target="_blank" rel="noopener noreferrer">
+          Falar com Especialista no WhatsApp
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 FAT Tech — Todos os direitos reservados. | <a href="../privacidade.html">Política de Privacidade</a> | <a href="../crm.html">CRM IA</a> | <a href="../index.html">Site Principal</a></p>
+        <p>Desenvolvido com IA pela <a href="../index.html">FAT Tech</a></p>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    /* ══════════════════════════════════════════════════════
+       FAT Tech Blog — JavaScript
+       1. Navbar scroll effect
+       2. Scroll reveal (IntersectionObserver)
+       3. Filtros de categoria com ordenação e URL integrada
+    ══════════════════════════════════════════════════════ */
+
+    // 1. Navbar scroll
+    (function() {
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', function() {
+        navbar.classList.toggle('scrolled', window.scrollY > 20);
+      }, { passive: true });
+    })();
+
+    // 2. Scroll reveal
+    (function() {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('[data-reveal]').forEach(function(el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(24px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+      });
+    })();
+
+    // 3. Filtros de categoria com integração via query string
+    (function() {
+      const btns = Array.from(document.querySelectorAll('.filter-btn'));
+      const grid = document.querySelector('.blog-grid');
+      const cards = Array.from(document.querySelectorAll('.article-card'));
+      const feedback = document.getElementById('filterFeedback');
+      const emptyState = document.getElementById('filterEmpty');
+      if (!grid || !cards.length) return;
+
+      function normalize(text) {
+        return (text || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/&/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+      }
+
+      cards
+        .sort(function(a, b) {
+          const aDate = a.dataset.published || '';
+          const bDate = b.dataset.published || '';
+          return bDate.localeCompare(aDate);
+        })
+        .forEach(function(card) {
+          grid.appendChild(card);
+        });
+
+      function applyFilter(filter) {
+        const selected = normalize(filter || 'todos');
+        let visible = 0;
+
+        btns.forEach(function(btn) {
+          const active = normalize(btn.dataset.filter) === selected;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+
+        cards.forEach(function(card) {
+          const category = normalize(card.querySelector('.card-category') ? card.querySelector('.card-category').textContent : '');
+          const matches = selected === 'todos' || category.includes(selected);
+          card.hidden = !matches;
+          if (matches) visible += 1;
+        });
+
+        emptyState.hidden = visible !== 0;
+        if (feedback) {
+          feedback.textContent = selected === 'todos'
+            ? 'Exibindo todos os artigos em ordem de prioridade editorial e publicação.'
+            : 'Exibindo ' + visible + ' artigo(s) da categoria ' + filter + '.';
+        }
+
+        const url = new URL(window.location.href);
+        if (selected === 'todos') {
+          url.searchParams.delete('categoria');
+        } else {
+          url.searchParams.set('categoria', filter);
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+
+      btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          applyFilter(btn.textContent.trim());
+        });
+      });
+
+      const initial = new URLSearchParams(window.location.search).get('categoria');
+      const found = btns.find(function(btn) { return normalize(btn.textContent) === normalize(initial); });
+      applyFilter(found ? found.textContent.trim() : 'Todos');
+    })();
+
+    // 4. Cards: 3D tilt + mouse-tracking glow orb
+    (function() {
+      var cards = document.querySelectorAll('.article-card');
+      cards.forEach(function(card) {
+        // inject orb
+        var orb = document.createElement('div');
+        orb.className = 'card-orb';
+        card.appendChild(orb);
+
+        card.addEventListener('mousemove', function(e) {
+          var r = card.getBoundingClientRect();
+          var x = e.clientX - r.left;
+          var y = e.clientY - r.top;
+          var cx = (x / r.width  - 0.5) * 10;
+          var cy = (y / r.height - 0.5) * -10;
+          card.style.transform = 'perspective(700px) rotateX('+cy+'deg) rotateY('+cx+'deg) translateY(-4px)';
+          orb.style.left = x + 'px';
+          orb.style.top  = y + 'px';
+        });
+        card.addEventListener('mouseleave', function() {
+          card.style.transform = '';
+        });
+      });
+    })();
+
+    // 5. CTA: 3D tilt suave
+    (function() {
+      var cta = document.querySelector('.blog-cta');
+      if (!cta) return;
+      cta.addEventListener('mousemove', function(e) {
+        var r = cta.getBoundingClientRect();
+        var x = ((e.clientX - r.left) / r.width  - 0.5) * 6;
+        var y = ((e.clientY - r.top)  / r.height - 0.5) * -6;
+        cta.style.transform = 'perspective(900px) rotateX('+y+'deg) rotateY('+x+'deg)';
+      });
+      cta.addEventListener('mouseleave', function() {
+        cta.style.transform = '';
+      });
+    })();
+  </script>
+  <script src="../global-particles.js"></script>
+</body>
+</html>
+
+
+
+

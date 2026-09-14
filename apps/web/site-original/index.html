@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="no-js">
+<!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║         FAT TECH — WEBSITE PRINCIPAL v2.1               ║
+  ║         Agência de Automação com Inteligência Artificial ║
+  ║─────────────────────────────────────────────────────────║
+  ║  Arquitetura : HTML + CSS + JS puro (sem frameworks)    ║
+  ║  Design      : Cyberpunk Dark com neons                  ║
+  ║  Mobile      : Totalmente responsivo (320px–4K)          ║
+  ║  Manutenção  : Ver MANUAL.md na raiz do projeto          ║
+  ║  Contato     : contato@fattech.com.br                   ║
+  ╚══════════════════════════════════════════════════════════╝
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- ── SEO Primário ── -->
+  <title>FAT Tech | Automação com IA para Negócios | Januária MG</title>
+  <meta name="description" content="Agência de IA em Januária MG. Estruture atendimento, vendas e marketing com IA para ganhar previsibilidade comercial, reduzir gargalos operacionais e acelerar a resposta ao lead. Primeira implantação em até 45 dias." />
+  <meta name="keywords" content="automação com IA, agentes de IA, chatbot WhatsApp Business, marketing digital IA, CRM inteligente, automação de vendas, Google Meu Negócio, Meta Ads, tráfego pago, Januária MG, Norte de Minas Gerais, FAT Tech, Walfredo Figueiredo" />
+  <meta name="author" content="FAT Tech — Walfredo Figueiredo" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://fattech.com.br" />
+
+  <!-- ── Open Graph (WhatsApp, Facebook, LinkedIn) ── -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fattech.com.br" />
+  <meta property="og:title" content="FAT Tech | Automação com IA para Negócios | Januária MG" />
+  <meta property="og:description" content="Automatize atendimento, vendas e marketing com IA de forma plausível, estruturada e orientada a resultado real. Agência de IA em Januária MG." />
+  <meta property="og:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png" />
+  <meta property="og:site_name" content="FAT Tech" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FAT Tech — IA para Negócios" />
+  <meta name="twitter:description" content="Agentes de IA que trabalham 24/7 pelo seu negócio." />
+  <meta name="twitter:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="dist/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="dist/favicon.png" />
+  <meta name="theme-color" content="#06060e" />
+
+  <!-- ── Security Meta Tags (fallback para CSP via .htaccess) ── -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <!-- ── Fontes Google (Cyberpunk Design System) ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- ── CSS Principal ── -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ── Fallback: sem JS, mostra tudo visível ── -->
+  <noscript>
+    <style>
+      [data-reveal] { opacity: 1 !important; transform: none !important; }
+      .cursor-trail { display: none !important; }
+    </style>
+  </noscript>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://fattech.com.br/#business",
+      "name": "FAT Tech",
+      "legalName": "Figueiredo & Aoki Technology",
+      "description": "Agência especializada em automação com Inteligência Artificial para pequenas e médias empresas. Implementamos Ecossistemas Comerciais com Agentes de IA, WhatsApp Business API e CRM inteligente.",
+      "url": "https://fattech.com.br",
+      "telephone": "+55-35-99849-1017",
+      "email": "contato@fattech.com.br",
+      "foundingDate": "2022",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Januária",
+        "addressRegion": "MG",
+        "postalCode": "39480-000",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "-15.4876",
+        "longitude": "-44.3619"
+      },
+      "areaServed": [
+        { "@type": "City", "name": "Januária" },
+        { "@type": "State", "name": "Minas Gerais" },
+        { "@type": "Country", "name": "Brasil" }
+      ],
+      "priceRange": "R$357 – Sob consulta",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+          "opens": "08:00",
+          "closes": "18:00"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/_fat.tech/",
+        "https://www.linkedin.com/company/94845466/",
+        "https://www.facebook.com/Fat.Tech42"
+      ],
+      "founder": {
+        "@type": "Person",
+        "@id": "https://fattech.com.br/#walfredo",
+        "name": "Walfredo Figueiredo Neto",
+        "jobTitle": "CEO & Fundador",
+        "alumniOf": "UFLA — Universidade Federal de Lavras",
+        "knowsAbout": [
+          "Inteligência Artificial",
+          "Automação de Marketing",
+          "Tráfego Pago",
+          "CRM",
+          "WhatsApp Business API"
+        ]
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Planos FAT Tech",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "name": "Protocolo Start",
+            "description": "Fundação digital: Google Meu Negócio, Meta Business Manager, Pixel e Landing Page de Alta Conversão.",
+            "price": "357",
+            "priceCurrency": "BRL",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "billingIncrement": "P1M"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Tração Estratégica",
+            "description": "Gestão de tráfego pago Meta Ads e Google Ads com otimização contínua e relatórios de ROI.",
+            "price": "717",
+            "priceCurrency": "BRL",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "billingIncrement": "P1M"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "S.Y.N.A.P.S.E. — CRM IA",
+            "description": "Ecossistema completo: Agentes Neurais RAG, WhatsApp API Oficial Meta, CRM Kanban autônomo. Taxa de implantação R$3.260 + mensalidade R$497.",
+            "price": "497",
+            "priceCurrency": "BRL",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "billingIncrement": "P1M"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Board BPO Omni-IA",
+            "description": "Marketing consultivo BPO completo com diretoria de marketing terceirizada e acesso C-Level direto com o CEO.",
+            "price": "2997",
+            "priceCurrency": "BRL",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "billingIncrement": "P1M"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://fattech.com.br/#website",
+      "url": "https://fattech.com.br",
+      "name": "FAT Tech",
+      "description": "Agência de automação com IA para negócios locais e B2B — Januária MG",
+      "publisher": { "@id": "https://fattech.com.br/#business" }
+    }
+  ]
+}
+</script>
+
+  <!--
+    ── Google Analytics ────────────────────────────────────────────
+    Descomente SOMENTE após:
+    1. Obter consentimento do usuário (banner LGPD já implementado)
+    2. Substituir G-XXXXXXXXXX pelo ID real do GA4
+    O script abaixo é carregado condicionalmente pelo script.js
+    após o usuário aceitar cookies.
+    ──────────────────────────────────────────────────────────────── -->
+  <!-- GA4: substituir G-XXXXXXXXXX pelo ID real obtido em analytics.google.com -->
+  <script id="ga-config" type="application/json" data-ga-id="">
+  </script>
+  <!-- Meta Pixel: substituir PIXEL_ID pelo ID real do Gerenciador de Negócios Meta -->
+  <!-- Alterar data-pixel-enabled para "true" somente após configurar o pixel_id -->
+  <script id="meta-pixel-config" type="application/json"
+          data-pixel-id="PIXEL_ID_AQUI"
+          data-pixel-enabled="false">
+  </script>
+  <link rel="stylesheet" href="site-unified.css">
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════════
+       OVERLAYS VISUAIS (pointer-events: none)
+       Camadas decorativas do efeito cyberpunk.
+       Não interferem em cliques ou interações.
+  ════════════════════════════════════════════════ -->
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- ════════════════════════════════════════════════
+       NAVBAR — Barra de navegação fixa
+       Torna-se sólida ao rolar (classe .scrolled via JS)
+       Menu mobile ativado pelo hamburger (classe .open via JS)
+  ════════════════════════════════════════════════ -->
+  <nav id="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-container">
+
+      <!-- Logo -->
+      <a href="#inicio" class="nav-logo" aria-label="FAT Tech — ir ao início">
+        <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+      </a>
+
+      <!-- Links de navegação (desktop) -->
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="#inicio"   class="nav-link active">Início</a></li>
+        <li><a href="#sobre"    class="nav-link">Sobre</a></li>
+        <li><a href="#servicos" class="nav-link">Serviços</a></li>
+        <li><a href="#solucoes" class="nav-link">Soluções</a></li>
+        <li><a href="#cases"    class="nav-link">Cases</a></li>
+        <li><a href="#planos"   class="nav-link">Planos</a></li>
+        <li><a href="#contato"  class="nav-link">Contato</a></li>
+        <li><a href="crm.html"  class="nav-link nav-link-crm">CRM IA</a></li>
+        <li><a href="blog/index.html" class="nav-link">Blog</a></li>
+      </ul>
+
+      <!-- CTA do Navbar (oculto no mobile) -->
+      <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20automa%C3%A7%C3%A3o%20com%20IA."
+         class="btn-primary nav-cta"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Falar no WhatsApp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        <span>WhatsApp</span>
+      </a>
+
+      <!-- Botão hamburger (mobile) -->
+      <button type="button" class="hamburger" id="hamburger" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+  </nav><!-- /navbar -->
+
+  <!-- Backdrop do menu mobile — fecha ao tocar fora -->
+  <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 1: HERO
+       Ponto de entrada principal. Canvas de partículas
+       no fundo com interação mouse. Título com glitch.
+       Contadores animados quando visíveis.
+  ════════════════════════════════════════════════ -->
+  <section id="inicio" class="hero hero--split" aria-label="Página inicial">
+
+    <!-- Canvas de partículas interativas (script.js) -->
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+    <!-- Grade decorativa de fundo -->
+    <div class="hero-grid" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="hero-content">
+
+       <div class="hero-text">
+        <!-- Badge animado -->
+        <div class="hero-badge" data-reveal>
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>// IA + AUTOMAÇÃO + RESULTADOS</span>
+        </div>
+
+        <!-- Título principal com efeito glitch -->
+        <h1 class="hero-title" data-reveal>
+          <span class="line1">Transforme Seu</span>
+          <span class="glitch-text" data-text="NEGÓCIO">NEGÓCIO</span>
+          <span class="line3">Com Agentes de IA</span>
+        </h1>
+
+        <!-- Subtítulo descritivo -->
+        <p class="hero-subtitle" data-reveal>
+          Automação inteligente que trabalha <strong>24 horas por dia</strong>,
+          responde mais rápido, ajuda sua operação a melhorar a conversão com consistência
+          e reduz gargalos manuais —
+          enquanto você foca no que importa.
+        </p>
+
+        <!-- Botões de chamada para ação -->
+        <div class="hero-actions" data-reveal>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20gratuita%20da%20FAT%20Tech%20para%20ver%20o%20sistema%20funcionando%20ao%20vivo."
+             class="btn-primary btn-lg"
+             target="_blank" rel="noopener noreferrer">
+            <span>Agendar Demo Gratuita</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#servicos" class="btn-outline btn-lg">
+            <span>Ver Como Funciona</span>
+          </a>
+        </div>
+       </div><!-- /hero-text -->
+
+        <!-- Mockup real de conversa do agente IA (produto, não ilustração) -->
+        <div class="hero-mockup" data-reveal aria-label="Exemplo de conversa do agente de IA no WhatsApp">
+          <figure class="wa-mockup">
+            <header class="wa-mockup__chrome">
+              <div class="wa-mockup__avatar" aria-hidden="true">FT</div>
+              <div>
+                <div class="wa-mockup__contact-name">Atendimento FAT Tech</div>
+                <div class="wa-mockup__contact-status">agente IA online · 24/7</div>
+              </div>
+            </header>
+            <div class="wa-mockup__chat">
+              <div class="wa-bubble wa-bubble--in">
+                Oi! Vi o anúncio de vocês. Vocês fazem automação pra clínica?
+                <span class="wa-bubble__meta">14:02</span>
+              </div>
+              <div class="wa-bubble wa-bubble--out">
+                Olá! Sim, fazemos. <strong>Em até 45 dias</strong> sua clínica passa a responder em segundos, qualificar lead e agendar consulta sozinha. Posso te mostrar como?
+                <span class="wa-bubble__meta">14:02</span>
+              </div>
+              <div class="wa-bubble wa-bubble--in">
+                Top. Quanto custa?
+                <span class="wa-bubble__meta">14:03</span>
+              </div>
+              <div class="wa-bubble wa-bubble--out">
+                Tem plano a partir de <strong>R$ 357/mês</strong>. Quer um diagnóstico gratuito de 15 min mostrando onde sua clínica perde lead hoje?
+                <span class="wa-bubble__meta">14:03</span>
+              </div>
+              <div class="wa-mockup__typing" aria-hidden="true"><span></span><span></span><span></span></div>
+            </div>
+            <footer class="wa-mockup__footer">
+              <span>conversa real anonimizada</span>
+              <span class="wa-mockup__live">ao vivo</span>
+            </footer>
+          </figure>
+          <p class="wa-mockup-caption">// resposta em &lt; 3s · 24h por dia · sem operador humano</p>
+        </div>
+
+        <!-- Barra de estatísticas com contadores animados -->
+        <div class="hero-stats" data-reveal aria-label="Resultados em números">
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="18" aria-label="18%">0</span>
+              <span class="stat-symbol" aria-hidden="true">%</span>
+            </div>
+            <div class="stat-label">Melhora de Conversão</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="30" aria-label="30%">0</span>
+              <span class="stat-symbol" aria-hidden="true">%</span>
+            </div>
+            <div class="stat-label">Menos Retrabalho</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="24" aria-label="24 horas por dia, 7 dias por semana">0</span>
+              <span class="stat-symbol" aria-hidden="true">/7</span>
+            </div>
+            <div class="stat-label">Automações Ativas</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="45" aria-label="45 dias">0</span>
+              <span class="stat-symbol" aria-hidden="true">dias</span>
+            </div>
+            <div class="stat-label">Para Primeira Implantação</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Indicador de scroll -->
+    <div class="hero-scroll" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span>SCROLL</span>
+    </div>
+
+  </section><!-- /hero -->
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 2: SOBRE
+       Apresentação da empresa, pilares e founder bio.
+  ════════════════════════════════════════════════ -->
+  <section id="sobre" class="section sobre-section" aria-label="Sobre a FAT Tech">
+    <div class="container">
+
+      <!-- Grid de 2 colunas: texto + cards -->
+      <div class="sobre-grid">
+
+        <!-- Coluna esquerda: textos e pilares -->
+        <div class="sobre-text">
+          <div class="section-tag" data-reveal>// QUEM SOMOS</div>
+          <h2 class="section-title" data-reveal>
+            A FAT Tech nasceu para<br>
+            <span class="neon-cyan">democratizar a IA</span>
+          </h2>
+          <p class="lead" data-reveal>
+            Somos uma agência especializada em inteligência artificial e automação,
+            com foco em levar tecnologia de ponta para pequenas e médias empresas do Brasil.
+          </p>
+          <div data-reveal>
+            <p style="color:var(--text-muted);margin-bottom:12px;line-height:1.7">
+              Acreditamos que toda empresa merece crescer com inteligência. Por isso criamos
+              soluções sob medida que integram IA conversacional, automação de WhatsApp e
+              marketing digital em um único ecossistema conectado.
+            </p>
+            <p style="color:var(--text-muted);line-height:1.7">
+              Nossa equipe combina expertise em tecnologia com profundo conhecimento do
+              mercado brasileiro — entendemos os desafios reais do empreendedor do interior.
+            </p>
+          </div>
+
+          <!-- Pilares da empresa -->
+          <div class="sobre-pillars" data-reveal>
+            <div class="pillar">
+              <span class="pillar-icon" aria-hidden="true">⚡</span>
+              <div>
+                <strong>Velocidade de Implementação</strong>
+                <span>Primeira implantação em até 45 dias. Sem promessas mágicas, com execução real.</span>
+              </div>
+            </div>
+            <div class="pillar">
+              <span class="pillar-icon" aria-hidden="true">🧠</span>
+              <div>
+                <strong>IA Treinada para o Seu Negócio</strong>
+                <span>Cada agente é personalizado com a voz e as regras da sua empresa.</span>
+              </div>
+            </div>
+            <div class="pillar">
+              <span class="pillar-icon" aria-hidden="true">📈</span>
+              <div>
+                <strong>Resultados Mensuráveis</strong>
+                <span>Dashboards em tempo real. Você vê cada resultado acontecer.</span>
+              </div>
+            </div>
+            <div class="pillar">
+              <span class="pillar-icon" aria-hidden="true">🛡️</span>
+              <div>
+                <strong>Suporte Contínuo</strong>
+                <span>Acompanhamento próximo. Nossa equipe cuida do sistema por você.</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /sobre-text -->
+
+        <!-- Coluna direita: cards de missão/visão/valores -->
+        <div class="sobre-cards">
+
+          <div class="mission-card" data-reveal>
+            <div class="card-accent"></div>
+            <span class="card-tag">// MISSÃO</span>
+            <h3 class="card-title">Transformar negócios com IA acessível</h3>
+            <p>Entregar automação inteligente de alta performance para empreendedores
+            brasileiros, eliminando processos manuais e multiplicando resultados —
+            com tecnologia que antes só as grandes corporações podiam ter.</p>
+          </div>
+
+          <div class="mission-card vision" data-reveal>
+            <div class="card-accent"></div>
+            <span class="card-tag">// VISÃO</span>
+            <h3 class="card-title">Ser a IA mais confiável do interior do Brasil</h3>
+            <p>Que toda empresa do interior, independente do tamanho, tenha acesso à
+            automação inteligente que gera vendas, reduz custos e libera o empreendedor
+            para crescer de verdade.</p>
+          </div>
+
+          <div class="mission-card valores" data-reveal>
+            <div class="card-accent"></div>
+            <span class="card-tag">// VALORES</span>
+            <div class="valores-tags">
+              <span class="valor-tag cyan">Inovação</span>
+              <span class="valor-tag purple">Transparência</span>
+              <span class="valor-tag pink">Resultados</span>
+              <span class="valor-tag green">Ética</span>
+              <span class="valor-tag cyan">Comprometimento</span>
+              <span class="valor-tag purple">Agilidade</span>
+            </div>
+          </div>
+
+        </div><!-- /sobre-cards -->
+      </div><!-- /sobre-grid -->
+
+      <!-- Bio do Fundador -->
+      <div class="founder-bio" data-reveal>
+        <div class="founder-photo-wrap">
+          <div class="founder-photo" aria-label="Foto do fundador Walfredo Figueiredo">
+            <img src="dist/walfredo.jpg" alt="Walfredo Figueiredo Neto — CEO &amp; Fundador FAT Tech" class="founder-img" loading="lazy" />
+            <div class="founder-photo-ring" aria-hidden="true"></div>
+          </div>
+          <span class="founder-photo-label" aria-hidden="true">Fundador</span>
+        </div>
+        <div class="founder-info">
+          <div class="founder-header">
+            <h3 class="founder-name">Walfredo Figueiredo Neto</h3>
+            <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Vi%20o%20perfil%20do%20fundador%20da%20FAT%20Tech%20e%20quero%20conversar%20sobre%20automa%C3%A7%C3%A3o%20com%20IA%20para%20o%20meu%20neg%C3%B3cio." class="founder-badge" target="_blank" rel="noopener noreferrer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              Falar com o Fundador
+            </a>
+          </div>
+          <div class="founder-social" aria-label="Redes do fundador">
+            <span class="founder-social-label">// WAL ON THE ROAD</span>
+            <div class="social-row founder-social-row">
+              <a href="https://www.instagram.com/walontheroad/" class="social-btn insta" target="_blank" rel="noopener noreferrer" aria-label="Instagram do fundador">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/WalOnTheRoad" class="social-btn facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook do fundador">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/in/walfredo-figueiredo-neto-2a04105b/" class="social-btn linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn do fundador">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <ul class="founder-credentials">
+            <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>Ciência da Computação pela UFLA</strong> — Base técnica sólida e rigorosa, com início de carreira no próprio DGTI da universidade.</span>
+            </li>
+             <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>15 Anos em TI e Infraestrutura</strong> — Mais de uma década de experiência profunda construindo e gerenciando redes de alta performance.</span>
+            </li>
+             <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>Especialista em IA Conversacional</strong> — mais de 5 anos desenvolvendo agentes de IA para negócios brasileiros</span>
+            </li>
+            <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>+40 empresas atendidas</strong> — nos setores de saúde, imóveis, advocacia, varejo e serviços</span>
+            </li>
+            <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>Fundador da FAT Tech</strong> — agência focada em levar automação de alto nível para o interior do Brasil, com sede em Januária/MG</span>
+            </li>
+            <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>O Elo entre TI e Marketing</strong> — Transição estratégica para unir a engenharia de software implacável com táticas avançadas de vendas.</span>
+            </li>
+             <li>
+              <span class="cred-icon" aria-hidden="true">▸</span>
+              <span><strong>Tecnologia Democratizada</strong> — Missão de vida em levar automação e inteligência de nível corporativo para pequenas e médias empresas do interior do Brasil.</span>
+            </li>
+          </ul>
+        </div>
+      </div><!-- /founder-bio -->
+
+    </div>
+  </section><!-- /sobre -->
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 3: SERVIÇOS
+       6 cards em grid de 3 colunas.
+       Card "Agente de IA" é destaque (featured).
+  ════════════════════════════════════════════════ -->
+  <section id="servicos" class="section servicos-section" aria-label="Nossos serviços">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// O QUE FAZEMOS</div>
+        <h2 class="section-title" data-reveal>
+          Soluções de IA para <span class="neon-pink">cada desafio</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Do atendimento automático ao marketing inteligente — temos a solução certa
+          para o seu momento de negócio.
+        </p>
+      </div>
+
+      <div class="services-grid">
+
+        <!-- Card 1: Consultoria Estratégica em IA (DESTAQUE) -->
+        <div class="service-card featured" data-reveal>
+          <span class="featured-badge">// CULTURA DE IA</span>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h3>Consultoria Estratégica em IA</h3>
+          <p>Leve a cultura de IA para dentro da empresa com diagnóstico de processos, plano prático de aplicação e capacitação do seu time de confiança para operar com mais produtividade.</p>
+          <ul class="service-features">
+            <li>Diagnóstico profundo dos processos internos</li>
+            <li>Roadmap de adoção de IA por prioridade e impacto</li>
+            <li>Treinamento da equipe para operar com IA na prática</li>
+            <li>Playbooks de produtividade e rotina operacional</li>
+            <li>Acompanhamento de implantação e ganho real</li>
+          </ul>
+          <a href="lp/consultoria-estrategica-ia.html" class="service-link">
+            Levar IA para meu time <span>→</span>
+          </a>
+        </div>
+
+        <!-- Card 2: Agentes de IA -->
+        <div class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+              <circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/>
+            </svg>
+          </div>
+          <h3>Agentes de IA Conversacionais</h3>
+          <p>IA treinada com a voz da sua empresa para conversar, vender, qualificar leads e resolver dúvidas automaticamente em todos os pontos críticos da jornada.</p>
+          <ul class="service-features">
+            <li>Atendimento 24/7 no WhatsApp e site</li>
+            <li>Qualificação automática de leads</li>
+            <li>Integração com CRM e sistemas</li>
+            <li>Respostas personalizadas por segmento</li>
+            <li>Relatórios e dashboards em tempo real</li>
+          </ul>
+          <a href="lp/agentes-ia-conversacionais.html" class="service-link">
+            Quero esse agente <span>→</span>
+          </a>
+        </div>
+
+        <!-- Card 3: WhatsApp Automático -->
+        <div class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </div>
+          <h3>Automação de WhatsApp</h3>
+          <p>Transforme seu WhatsApp Business em uma máquina de vendas e atendimento com disparo inteligente, follow-up e funil completo no app que seu cliente já usa.</p>
+          <ul class="service-features">
+            <li>Chatbot com IA no WhatsApp Business</li>
+            <li>Disparo segmentado em massa</li>
+            <li>Follow-up automático de leads frios</li>
+            <li>Catálogo de produtos integrado</li>
+            <li>Cobrança e PIX automatizados</li>
+          </ul>
+          <a href="lp/automacao-whatsapp.html" class="service-link">
+            Automatizar WhatsApp <span>→</span>
+          </a>
+        </div>
+
+        <!-- Card 4: Marketing Digital -->
+        <div class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
+          <h3>Marketing Digital com IA</h3>
+          <p>Campanhas que se otimizam no Meta e Google Ads com IA analisando dados, ajustando criativos e maximizando ROI sem depender de tentativa e erro manual.</p>
+          <ul class="service-features">
+            <li>Anúncios no Meta Ads e Google Ads</li>
+            <li>Copy e criativos gerados por IA</li>
+            <li>Segmentação e retargeting inteligente</li>
+            <li>A/B testing contínuo automático</li>
+            <li>Relatório de ROI em tempo real</li>
+          </ul>
+          <a href="lp/marketing-digital-ia.html" class="service-link">
+            Escalar meu marketing <span>→</span>
+          </a>
+        </div>
+
+        <!-- Card 5: CRM Inteligente -->
+        <div class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+          <h3>CRM Inteligente</h3>
+          <p>Gestão completa da jornada do cliente com automação de pipeline, scoring por IA e acompanhamento de cada oportunidade do primeiro contato ao fechamento.</p>
+          <ul class="service-features">
+            <li>Funil de vendas visual e automatizado</li>
+            <li>Scoring de leads por IA</li>
+            <li>Alertas e follow-up automáticos</li>
+            <li>Histórico completo de interações</li>
+            <li>Relatórios de conversão por etapa</li>
+          </ul>
+          <a href="crm.html" class="service-link">
+            Ver a LP do CRM <span>→</span>
+          </a>
+        </div>
+
+        <!-- Card 6: Sites e Landing Pages -->
+        <div class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h3>Sites e Landing Pages</h3>
+          <p>Páginas de alta conversão com copy estratégica, design profissional, integração com WhatsApp e performance técnica para transformar tráfego em conversa.</p>
+          <ul class="service-features">
+            <li>Design profissional e responsivo</li>
+            <li>Copy persuasiva gerada por IA</li>
+            <li>SEO técnico otimizado</li>
+            <li>Botão WhatsApp integrado</li>
+            <li>Velocidade máxima (Core Web Vitals)</li>
+          </ul>
+          <a href="lp/sites-landing-pages.html" class="service-link">
+            Criar meu site <span>→</span>
+          </a>
+        </div>
+
+      </div><!-- /services-grid -->
+    </div>
+  </section><!-- /servicos -->
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 4: SOLUÇÕES POR SEGMENTO
+       8 cards mostrando aplicação por nicho de mercado.
+       Grid 4x2 no desktop.
+  ════════════════════════════════════════════════ -->
+  <section id="solucoes" class="section solucoes-section" aria-label="Soluções por segmento">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// SEU SEGMENTO</div>
+        <h2 class="section-title" data-reveal>
+          IA personalizada para <span class="neon-purple">cada setor</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Soluções desenvolvidas para as realidades específicas do seu mercado.
+          Não é solução genérica — é feita para o seu negócio.
+        </p>
+      </div>
+
+      <div class="solucoes-grid solucoes-grid--8">
+
+        <!-- Imobiliárias -->
+        <div class="solucao-card solucao-card--imovel" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🏢</span>
+          </div>
+          <h3>Imobiliárias</h3>
+          <p>Capte e qualifique leads imobiliários 24/7. IA que agenda visitas e responde dúvidas automaticamente.</p>
+          <a href="lp/imobiliarias.html" class="solucao-link">Quero para minha imobiliária →</a>
+        </div>
+
+        <!-- Advocacia -->
+        <div class="solucao-card solucao-card--advogado" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">⚖️</span>
+          </div>
+          <h3>Advocacia</h3>
+          <p>Triagem automática de casos, agendamento de consultas e qualificação de clientes em potencial.</p>
+          <a href="lp/advocacia.html" class="solucao-link">Quero para meu escritório →</a>
+        </div>
+
+        <!-- Clínicas -->
+        <div class="solucao-card solucao-card--clinica" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🏥</span>
+          </div>
+          <h3>Clínicas</h3>
+          <p>Agendamentos, confirmações, lembretes e pós-consulta automatizados. Fim das faltas e ligações manuais.</p>
+          <a href="lp/clinicas.html" class="solucao-link">Quero para minha clínica →</a>
+        </div>
+
+        <!-- Veículos -->
+        <div class="solucao-card solucao-card--veiculo" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🚗</span>
+          </div>
+          <h3>Veículos</h3>
+          <p>Test drives agendados, propostas enviadas e follow-up de leads automático para concessionárias.</p>
+          <a href="lp/veiculos.html" class="solucao-link">Quero para minha revendedora →</a>
+        </div>
+
+        <!-- Restaurantes -->
+        <div class="solucao-card solucao-card--restaurante" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🍽️</span>
+          </div>
+          <h3>Restaurantes</h3>
+          <p>Pedidos, reservas, cardápio digital e programa de fidelidade no automático pelo WhatsApp.</p>
+          <a href="lp/restaurantes.html" class="solucao-link">Quero para meu restaurante →</a>
+        </div>
+
+        <!-- Varejo -->
+        <div class="solucao-card solucao-card--varejo" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🛍️</span>
+          </div>
+          <h3>Varejo</h3>
+          <p>Atendimento automático, recuperação de carrinho abandonado e fidelização para lojas físicas e e-commerce.</p>
+          <a href="lp/varejo.html" class="solucao-link">Quero para minha loja →</a>
+        </div>
+
+        <!-- Serviços -->
+        <div class="solucao-card solucao-card--servicos" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🔧</span>
+          </div>
+          <h3>Serviços</h3>
+          <p>Orçamentos, agendamentos, cobranças e reativação de clientes inativos no automático.</p>
+          <a href="lp/servicos.html" class="solucao-link">Quero para meu negócio →</a>
+        </div>
+
+        <!-- Construção -->
+        <div class="solucao-card solucao-card--construcao" data-reveal>
+          <div class="solucao-thumb">
+            <div class="solucao-thumb-bg" aria-hidden="true"></div>
+            <div class="solucao-thumb-lines" aria-hidden="true"></div>
+            <span class="solucao-emoji" aria-hidden="true">🏗️</span>
+          </div>
+          <h3>Construção</h3>
+          <p>Qualificação de compradores, gestão de obras e comunicação automatizada com clientes e fornecedores.</p>
+          <a href="lp/construcao.html" class="solucao-link">Quero para minha construtora →</a>
+        </div>
+
+      </div><!-- /solucoes-grid -->
+    </div>
+  </section><!-- /solucoes -->
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 5: CASES DE SUCESSO
+       Resultados reais de clientes. 6 cards com métricas.
+  ════════════════════════════════════════════════ -->
+  <section id="cases" class="section cases-section" aria-label="Cases de sucesso">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// RESULTADOS REAIS</div>
+        <h2 class="section-title" data-reveal>
+          Empresas que já <span class="neon-cyan">transformaram</span> com IA
+        </h2>
+        <p class="section-sub" data-reveal>
+          Contextos reais, ganhos plausíveis e operações que podem ser replicadas com método.
+        </p>
+      </div>
+
+      <div class="cases-grid cases-grid--wide">
+
+        <!-- Case 1: E-commerce -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Varejo / E-commerce</span>
+          <h3>DA Modas</h3>
+          <p>Implementamos um agente de IA que recupera carrinhos abandonados, faz upsell automático e mantém relacionamento pós-compra via WhatsApp.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">+22%</span>
+              <span>nas vendas mensais</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">-12%</span>
+              <span>no custo por cliente</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-purple">14%</span>
+              <span>carrinho recuperado</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Agente de IA no WhatsApp</li>
+            <li>Recuperação automática de carrinho</li>
+            <li>Upsell e cross-sell inteligente</li>
+          </ul>
+          <a href="lp/case-loja-moda-online.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+        <!-- Case 2: Clínica -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Saúde</span>
+          <h3>Clínica Odontológica</h3>
+          <p>Automação completa de agendamentos, confirmações 24h antes, lista de espera inteligente e reativação de pacientes que somem.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">-18%</span>
+              <span>nas faltas</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">+15%</span>
+              <span>mais agendamentos</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-purple">R$0</span>
+              <span>em recepcionista extra</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Agendamento automático 24/7</li>
+            <li>Confirmação e lembrete automático</li>
+            <li>Reativação de pacientes inativos</li>
+          </ul>
+          <a href="lp/case-clinica-odontologica.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+        <!-- Case 3: Imobiliária -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Imóveis</span>
+          <h3>Imobiliária Regional</h3>
+          <p>Agente de IA qualificando leads 24/7, respondendo sobre imóveis, agendando visitas e enviando propostas automaticamente.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">+15%</span>
+              <span>leads qualificados</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">+12%</span>
+              <span>mais visitas agendadas</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-purple">24/7</span>
+              <span>atendimento ativo</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Qualificação automática de leads</li>
+            <li>Envio de portfólio personalizado</li>
+            <li>Agendamento de visitas automático</li>
+          </ul>
+          <a href="lp/case-imobiliaria-regional.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+        <!-- Case 4: Restaurante -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Food &amp; Delivery</span>
+          <h3>Restaurante &amp; Delivery</h3>
+          <p>WhatsApp Business automatizado para pedidos, reservas e programa de fidelidade que traz clientes de volta automaticamente.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">+14%</span>
+              <span>retenção de clientes</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">+12%</span>
+              <span>pedidos recorrentes</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-purple">-28%</span>
+              <span>no tempo de atendimento</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Cardápio e pedidos no WhatsApp</li>
+            <li>Programa de fidelidade automático</li>
+            <li>Reativação de clientes inativos</li>
+          </ul>
+          <a href="lp/case-restaurante-delivery.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+        <!-- Case 5: Advocacia -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Jurídico</span>
+          <h3>Silva &amp; Rocha Advogados</h3>
+          <p>Escritório de advocacia tributária em operação ativa com a FAT Tech. A IA faz triagem de casos por urgência (CAPAG bloqueada, Simples Nacional), qualifica clientes e agenda consultas — o advogado só atende quem está pronto para contratar.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">+14%</span>
+              <span>mais contratos fechados</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">-22%</span>
+              <span>ligações não produtivas</span>
+            </div>
+            <div class="metric">
+                    <span class="metric-num neon-purple">85%</span>
+              <span>triagem com critério</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Triagem inteligente de casos</li>
+            <li>Qualificação de clientes por IA</li>
+            <li>Agendamento de consultas automático</li>
+          </ul>
+          <a href="lp/case-escritorio-advocacia.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+        <!-- Case 6: Concessionária -->
+        <div class="case-card" data-reveal>
+          <span class="case-tag">Automotivo</span>
+          <h3>Concessionária de Veículos</h3>
+          <p>Agente de IA que responde sobre estoque, agenda test drives, envia propostas personalizadas e faz follow-up com leads que sumiram.</p>
+          <div class="case-metrics">
+            <div class="metric">
+              <span class="metric-num neon-cyan">+16%</span>
+              <span>test drives agendados</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-pink">-15%</span>
+              <span>tempo de negociação</span>
+            </div>
+            <div class="metric">
+              <span class="metric-num neon-purple">12%</span>
+              <span>leads recuperados</span>
+            </div>
+          </div>
+          <ul class="case-features">
+            <li>Apresentação de estoque por IA</li>
+            <li>Agendamento de test drive 24/7</li>
+            <li>Proposta e follow-up automáticos</li>
+          </ul>
+          <a href="lp/case-concessionaria-veiculos.html" class="case-link">Quero esse resultado →</a>
+        </div>
+
+      </div><!-- /cases-grid -->
+
+      <!-- Nota e CTA -->
+      <div class="cases-note" data-reveal>
+        <span class="note-icon" aria-hidden="true">🔒</span>
+        <span>Trabalhamos com ganhos plausíveis e contexto operacional real. Alguns nomes podem ser adaptados por sigilo.</span>
+      </div>
+      <div class="cases-cta" data-reveal>
+        <a href="https://wa.me/5535998491017?text=Quero%20resultados%20como%20esses%20para%20meu%20neg%C3%B3cio"
+           class="btn-primary btn-lg"
+           target="_blank" rel="noopener noreferrer">
+          <span>Quero Resultados Assim</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </section><!-- /cases -->
+
+  <section id="provas" class="section proofs-section" aria-label="Provas sociais e relatos de clientes">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// PROVAS SOCIAIS</div>
+        <h2 class="section-title" data-reveal>
+          Relatos que parecem <span class="neon-pink">conversa de verdade</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Uma vitrine inspirada em mensagens reais de operação: mais humana, mais crível e alinhada com a forma como nossos clientes de fato percebem resultado.
+        </p>
+      </div>
+
+      <div class="proof-showcase">
+        <div class="proof-left-stack">
+          <article class="proof-phone" data-reveal>
+            <div class="proof-phone-header">
+              <div class="proof-phone-contact">
+                <div class="proof-avatar">T</div>
+                <div>
+                  <strong>Tupiná Fitness Coach</strong>
+                  <span>Cliente FAT Tech · Tráfego Pago</span>
+                </div>
+              </div>
+              <div class="proof-phone-meta">09:04</div>
+            </div>
+
+            <div class="proof-chat-area">
+              <div class="proof-day-chip">20 de março de 2026</div>
+
+              <div class="proof-message proof-message--out">
+                <p>Como ficou o balanço desses 15 dias de campanha?</p>
+                <span>09:03</span>
+              </div>
+
+              <div class="proof-message proof-message--in">
+                <p>Muito bom, amigo! Me surpreendi. Do tráfego mesmo, converteu 2 presenciais e tem uma que ficou de me dar a resposta hoje, mas só da galera estar me vendo nos anúncios, aumentou muito a procura.</p>
+                <span>09:04</span>
+              </div>
+
+              <div class="proof-message proof-message--in">
+                <p>Onde eu chego, as pessoas ficam me olhando e vendo a camisa do Team. Senti que a marca tá ganhando espaço e autoridade.</p>
+                <span>09:04</span>
+              </div>
+
+              <div class="proof-message proof-message--in">
+                <p>Acredito que agora as conversões vão ficando mais fáceis porque estamos aumentando o número de clientes. Isso aumenta o número de resultados e de pessoas fazendo a divulgação orgânica.</p>
+                <span>09:05</span>
+              </div>
+            </div>
+          </article>
+
+          <div class="proof-mini-grid">
+            <article class="proof-story-card proof-story-card--compact" data-reveal>
+              <div class="proof-story-top">
+                <span class="proof-tag">VAREJO · RECUPERAÇÃO</span>
+                <h3>DA Modas</h3>
+              </div>
+              <div class="proof-mini-chat">
+                <div class="proof-message proof-message--out">
+                  <p>O WhatsApp ajudou mesmo no carrinho parado?</p>
+                </div>
+                <div class="proof-message proof-message--in">
+                  <p>Sim. Voltou muita conversa boa e a loja parou de depender só do direct para fechar pedido.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="proof-story-card proof-story-card--compact" data-reveal>
+              <div class="proof-story-top">
+                <span class="proof-tag">SERVIÇOS · FOLLOW-UP</span>
+                <h3>Prime Resolve Assistência</h3>
+              </div>
+              <div class="proof-mini-chat">
+                <div class="proof-message proof-message--out">
+                  <p>E o pós-orçamento, destravou?</p>
+                </div>
+                <div class="proof-message proof-message--in">
+                  <p>Destravou. Agora o cliente recebe retorno no tempo certo e o time perdeu menos lead por esquecimento.</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="proof-cards-grid">
+          <article class="proof-story-card" data-reveal>
+            <div class="proof-story-top">
+              <span class="proof-tag">SAÚDE · AGENDA</span>
+              <h3>Clínica Horizonte Odonto</h3>
+            </div>
+            <div class="proof-mini-chat">
+              <div class="proof-message proof-message--out">
+                <p>Como a agenda reagiu depois da automação?</p>
+              </div>
+              <div class="proof-message proof-message--in">
+                <p>Parou de ficar tanto buraco. A recepção voltou a respirar e os pacientes começaram a confirmar com mais antecedência.</p>
+              </div>
+            </div>
+            <div class="proof-context-line">Automação de agenda, confirmação e reativação no WhatsApp.</div>
+          </article>
+
+          <article class="proof-story-card" data-reveal>
+            <div class="proof-story-top">
+              <span class="proof-tag">IMOBILIÁRIO · TRIAGEM</span>
+              <h3>Norte House Imobiliária</h3>
+            </div>
+            <div class="proof-mini-chat">
+              <div class="proof-message proof-message--out">
+                <p>O time sentiu diferença nas visitas?</p>
+              </div>
+              <div class="proof-message proof-message--in">
+                <p>Sentiu. Chega menos curioso perdido e mais gente já entendendo faixa, perfil e próximo passo para visita.</p>
+              </div>
+            </div>
+            <div class="proof-context-line">Qualificação, portfólio orientado e agendamento com IA.</div>
+          </article>
+
+          <article class="proof-story-card" data-reveal>
+            <div class="proof-story-top">
+              <span class="proof-tag">JURÍDICO · FILTRO</span>
+              <h3>Rocha &amp; Lima Advocacia</h3>
+            </div>
+            <div class="proof-mini-chat">
+              <div class="proof-message proof-message--out">
+                <p>A agenda ficou mais limpa mesmo?</p>
+              </div>
+              <div class="proof-message proof-message--in">
+                <p>Ficou. O advogado passou a entrar em casos com muito mais contexto e bem menos consulta improdutiva.</p>
+              </div>
+            </div>
+            <div class="proof-context-line">Triagem jurídica com perguntas-chave e agenda só para casos aderentes.</div>
+          </article>
+
+          <article class="proof-story-card" data-reveal>
+            <div class="proof-story-top">
+              <span class="proof-tag">INDÚSTRIA · CULTURA DE IA</span>
+              <h3>Atlas Estruturas Metálicas</h3>
+            </div>
+            <div class="proof-mini-chat">
+              <div class="proof-message proof-message--out">
+                <p>E a equipe aderiu à IA no dia a dia?</p>
+              </div>
+              <div class="proof-message proof-message--in">
+                <p>Agora cada área sabe onde usar. Parou a bagunça de ferramenta solta e começou a aparecer produtividade de verdade.</p>
+              </div>
+            </div>
+            <div class="proof-context-line">Consultoria estratégica, playbooks e capacitação do time-chave.</div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 6: PLANOS — CATÁLOGO 4 NÍVEIS
+       Nova esteira de produtos FAT Tech 2026
+  ════════════════════════════════════════════════ -->
+  <section id="planos" class="section planos-section" aria-label="Planos e preços">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// INVESTIMENTO</div>
+        <h2 class="section-title" data-reveal>
+          A esteira que <span class="neon-pink">escala seu negócio</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          4 níveis estratégicos. Cada um projetado para um estágio real.
+          Comece onde faz sentido — escale quando estiver pronto.
+        </p>
+      </div>
+
+      <!-- Journey Pathway -->
+      <div class="cat-journey" data-reveal aria-hidden="true">
+        <div class="cat-jstep cat-j1">
+          <div class="cat-jnum">01</div>
+          <div class="cat-jlabel">PROTOCOLO<br>START</div>
+        </div>
+        <div class="cat-jline"></div>
+        <div class="cat-jstep cat-j2">
+          <div class="cat-jnum">02</div>
+          <div class="cat-jlabel">TRAÇÃO<br>ESTRATÉGICA</div>
+        </div>
+        <div class="cat-jline"></div>
+        <div class="cat-jstep cat-j3">
+          <div class="cat-jnum">03</div>
+          <div class="cat-jlabel">S.Y.N.A.P.S.E.<br>★ BEST SELLER</div>
+        </div>
+        <div class="cat-jline"></div>
+        <div class="cat-jstep cat-j4">
+          <div class="cat-jnum">04</div>
+          <div class="cat-jlabel">BOARD BPO<br>OMNI-IA</div>
+        </div>
+      </div>
+
+      <!-- Cards Grid -->
+      <div class="cat-grid">
+
+        <!-- ── NÍVEL 01: PROTOCOLO START ── -->
+        <div class="cat-card cat-l1" data-reveal>
+          <div class="cat-card-glow"></div>
+          <div class="cat-lvl-tag">NÍVEL 01</div>
+          <div class="cat-name">PROTOCOLO START</div>
+          <div class="cat-sub">A Fundação</div>
+          <div class="cat-price-block">
+            <div class="cat-price-old">antes R$ 297/mês</div>
+            <div class="cat-price-new"><span>R$</span>357<em>/mês</em></div>
+          </div>
+          <div class="cat-obj">Tirar a empresa da invisibilidade digital e prepará-la para receber tráfego.</div>
+          <ul class="cat-features">
+            <li>Análise base de presença digital</li>
+            <li>Configuração Profissional do Google Meu Negócio</li>
+            <li>Configuração Meta Business Manager + Pixel + WhatsApp</li>
+                    <li>Operação pronta para iniciar tráfego pago</li>
+            <li class="cat-bonus">🎁 BÔNUS: Landing Page de Alta Conversão</li>
+          </ul>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20o%20Protocolo%20Start%20(R%24%20357%2Fm%C3%AAs).%20Podemos%20conversar%3F"
+             class="cat-cta" target="_blank" rel="noopener noreferrer">Ativar Protocolo Start →</a>
+        </div>
+
+        <!-- ── NÍVEL 02: TRAÇÃO ESTRATÉGICA ── -->
+        <div class="cat-card cat-l2" data-reveal>
+          <div class="cat-card-glow"></div>
+          <div class="cat-lvl-tag">NÍVEL 02</div>
+          <div class="cat-name">TRAÇÃO ESTRATÉGICA</div>
+          <div class="cat-sub">O Acelerador</div>
+          <div class="cat-price-block">
+            <div class="cat-price-old">antes R$ 597/mês</div>
+            <div class="cat-price-new"><span>R$</span>717<em>/mês</em></div>
+          </div>
+          <div class="cat-obj">Injetar leads qualificados na operação através de anúncios precisos.</div>
+          <ul class="cat-features">
+            <li>Tudo do Nível 01 (Protocolo Start)</li>
+            <li>Gestão de Tráfego Pago Estratégico (Meta Ads &amp; Google Ads)</li>
+            <li>Reunião de alinhamento de campanhas</li>
+            <li class="cat-alert">⚡ Geramos os leads — sua equipe precisa estar pronta para atender</li>
+          </ul>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20a%20Tra%C3%A7%C3%A3o%20Estrat%C3%A9gica%20(R%24%20717%2Fm%C3%AAs).%20Podemos%20conversar%3F"
+             class="cat-cta" target="_blank" rel="noopener noreferrer">Ativar Tração Estratégica →</a>
+        </div>
+
+        <!-- ── NÍVEL 03: S.Y.N.A.P.S.E. — BEST SELLER ── -->
+        <div class="cat-card cat-l3 cat-featured" data-reveal>
+          <div class="cat-card-glow"></div>
+          <div class="cat-featured-badge">★ BEST SELLER</div>
+          <div class="cat-lvl-tag">NÍVEL 03</div>
+          <div class="cat-name">S.Y.N.A.P.S.E.</div>
+          <div class="cat-sub">Máquina de Vendas — O Produto Ideal</div>
+          <div class="cat-price-block">
+            <div class="cat-price-setup-block">
+              <div class="cat-price-setup-label">Implantação VIP obrigatória</div>
+              <div class="cat-price-new cat-price-pink"><span>R$</span>3.260</div>
+              <div class="cat-price-note cat-price-note--setup">Taxa única de engenharia e implantação</div>
+            </div>
+            <div class="cat-price-new cat-price-pink"><span>R$</span>497<em>/mês</em></div>
+            <div class="cat-price-note">Licença &amp; Servidor</div>
+          </div>
+          <div class="cat-obj">Organiza atendimento, follow-up e CRM em uma operação única, ativa 24/7 e muito mais previsível.</div>
+          <ul class="cat-features">
+            <li>Sistema FAT Tech CRM Completo</li>
+            <li>Agentes Neurais de IA com conhecimento profundo (RAG)</li>
+            <li>CRM Kanban autônomo</li>
+            <li>Integração WhatsApp API Oficial da Meta</li>
+            <li>60 dias de acompanhamento VIP (suporte e refinamento)</li>
+            <li class="cat-footnote">* Tráfego pago vendido à parte ou como upgrade Nível 4</li>
+          </ul>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20ativar%20o%20S.Y.N.A.P.S.E.%20(Setup%20R%24%203.260%20%2B%20R%24%20497%2Fm%C3%AAs).%20Podemos%20conversar%3F"
+             class="cat-cta cat-cta-featured" target="_blank" rel="noopener noreferrer">⚔️ Ativar S.Y.N.A.P.S.E. →</a>
+          <a href="crm.html" class="cat-learn-more" target="_blank" rel="noopener noreferrer">Ver página completa do S.Y.N.A.P.S.E. ↗</a>
+        </div>
+
+        <!-- ── NÍVEL 04: BOARD BPO OMNI-IA ── -->
+        <div class="cat-card cat-l4" data-reveal>
+          <div class="cat-card-glow"></div>
+          <div class="cat-lvl-tag">NÍVEL 04</div>
+          <div class="cat-name">BOARD BPO OMNI-IA</div>
+          <div class="cat-sub">A Terceirização de Elite</div>
+          <div class="cat-price-block">
+            <div class="cat-price-old">antes R$ 2.495/mês</div>
+            <div class="cat-price-new cat-price-gold"><span>R$</span>2.997<em>/mês</em></div>
+            <div class="cat-price-note">+ Setup S.Y.N.A.P.S.E.</div>
+          </div>
+          <div class="cat-obj">Marketing consultivo, IA e tráfego operando juntos com a nossa diretoria.</div>
+          <ul class="cat-features">
+            <li>Tudo do Nível 02 (Tráfego) + Sistema S.Y.N.A.P.S.E.</li>
+            <li>Marketing Consultivo e Estratégico a nível BPO</li>
+            <li>Acompanhamento diário da operação</li>
+            <li>Reuniões estratégicas direto com o CEO (Walfredo)</li>
+          </ul>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Tenho%20interesse%20no%20Board%20BPO%20Omni-IA%20(R%24%202.997%2Fm%C3%AAs).%20Podemos%20agendar%20uma%20reuni%C3%A3o%3F"
+             class="cat-cta" target="_blank" rel="noopener noreferrer">Solicitar Proposta Board →</a>
+        </div>
+
+      </div><!-- /cat-grid -->
+
+      <!-- Serviços Avulsos -->
+      <div class="cat-avulsos" data-reveal>
+        <button type="button" class="cat-avulsos-toggle" aria-expanded="false">
+          <span class="cat-avulsos-icon">🛒</span>
+          <span>Serviços Avulsos — Soluções À La Carte</span>
+          <svg class="cat-toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="cat-avulsos-body">
+          <p class="cat-avulsos-intro">Para clientes que precisam de soluções pontuais fora dos planos de assinatura.</p>
+          <div class="avulsos-table-wrap">
+            <table class="avulsos-table">
+              <thead>
+                <tr><th>Serviço</th><th>Descrição</th><th>Valor</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="av-service">Landing Page</td>
+                  <td>Página de alta conversão com copy persuasiva e PNL.</td>
+                  <td class="av-price">R$ 300<small>+ R$ 30/mês hospedagem</small></td>
+                </tr>
+                <tr>
+                  <td class="av-service">Site Institucional</td>
+                  <td>Site responsivo com foco em SEO e autoridade regional.</td>
+                  <td class="av-price">A partir de R$ 677<small>+ R$ 50/mês hospedagem</small></td>
+                </tr>
+                <tr>
+                  <td class="av-service">Edição de Vídeo (Reels)</td>
+                  <td>Edição dinâmica com cortes, legendas e efeitos para redes sociais.</td>
+                  <td class="av-price">R$ 140<small>por vídeo</small></td>
+                </tr>
+                <tr>
+                  <td class="av-service">Media Day</td>
+                  <td>Diária presencial: 3 vídeos editados + 30 fotos tratadas.</td>
+                  <td class="av-price">R$ 400</td>
+                </tr>
+                <tr>
+                  <td class="av-service">Gestão de Redes Sociais</td>
+                  <td>Planejamento, design e postagens mensais.</td>
+                  <td class="av-price">R$ 660<small>/mês</small></td>
+                </tr>
+                <tr>
+                  <td class="av-service">Gestão de Tráfego Pago</td>
+                  <td>Setup e otimização contínua (Meta Ads &amp; Google Ads).</td>
+                  <td class="av-price">R$ 750<small>/mês</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20um%20servi%C3%A7o%20avulso%20da%20FAT%20Tech.%20Podemos%20conversar%3F"
+             class="cat-avulsos-cta" target="_blank" rel="noopener noreferrer">Solicitar Serviço Avulso →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <script>
+    (function(){
+      var tog = document.querySelector('.cat-avulsos-toggle');
+      var body = document.querySelector('.cat-avulsos-body');
+      if(tog && body){
+        tog.addEventListener('click', function(){
+          var open = body.classList.toggle('open');
+          tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+      var cards = document.querySelectorAll('.cat-card');
+      cards.forEach(function(card){
+        card.addEventListener('mousemove', function(e){
+          var r = card.getBoundingClientRect();
+          var x = ((e.clientX - r.left) / r.width - 0.5) * 12;
+          var y = ((e.clientY - r.top) / r.height - 0.5) * -12;
+          card.style.transform = 'perspective(700px) rotateX('+y+'deg) rotateY('+x+'deg) translateY(-8px)';
+        });
+        card.addEventListener('mouseleave', function(){
+          card.style.transform = '';
+        });
+      });
+    })();
+    </script>
+  </section><!-- /planos -->
+
+
+  <!-- ════════════════════════════════════════════════
+       SEÇÃO 7: CONTATO
+       Informações de contato + formulário que envia
+       mensagem formatada diretamente para o WhatsApp.
+  ════════════════════════════════════════════════ -->
+  <section id="contato" class="section contato-section" aria-label="Entre em contato">
+    <div class="container">
+
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// FALE CONOSCO</div>
+        <h2 class="section-title" data-reveal>
+          Pronto para <span class="neon-cyan">automatizar</span> seu negócio?
+        </h2>
+        <p class="section-sub" data-reveal>
+          Fale agora com nossa equipe. Resposta em até 2 horas.
+        </p>
+      </div>
+
+      <div class="contato-grid">
+
+        <!-- Coluna esquerda: informações de contato -->
+        <div class="contato-info">
+
+          <div class="info-item" data-reveal>
+            <span class="info-icon" aria-hidden="true">📱</span>
+            <div>
+              <strong>WhatsApp</strong>
+              <span>
+                <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20o%20site%20principal%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20automa%C3%A7%C3%A3o%20com%20IA." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a>
+              </span>
+            </div>
+          </div>
+
+          <div class="info-item" data-reveal>
+            <span class="info-icon" aria-hidden="true">📧</span>
+            <div>
+              <strong>E-mail</strong>
+              <span>
+                <a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a>
+              </span>
+            </div>
+          </div>
+
+          <div class="info-item" data-reveal>
+            <span class="info-icon" aria-hidden="true">📍</span>
+            <div>
+              <strong>Localização</strong>
+              <span>Januária, MG — Brasil</span>
+            </div>
+          </div>
+
+          <div class="info-item" data-reveal>
+            <span class="info-icon" aria-hidden="true">🕐</span>
+            <div>
+              <strong>Horário de Atendimento</strong>
+              <span>Seg–Sex das 8h às 18h<br><small style="color:var(--cyan)">Bot ativo 24/7</small></span>
+            </div>
+          </div>
+
+          <!-- Botões sociais -->
+          <div class="contato-social" data-reveal>
+            <span>// REDES SOCIAIS</span>
+            <div class="social-row">
+              <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20o%20site%20principal%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20automa%C3%A7%C3%A3o%20com%20IA." class="social-btn wpp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </a>
+              <a href="https://www.instagram.com/_fat.tech/" class="social-btn insta" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/company/94845466/" class="social-btn linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/Fat.Tech42" class="social-btn facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+        </div><!-- /contato-info -->
+
+        <!-- Coluna direita: formulário de contato -->
+        <form class="contato-form" id="contactForm" novalidate aria-label="Formulário de contato" data-reveal>
+          <div class="form-header">
+            <div class="section-tag" style="margin-bottom:8px">// ENVIE UMA MENSAGEM</div>
+            <p style="color:var(--text-muted);font-size:0.9rem">Preencha e clique em enviar. Você será redirecionado ao WhatsApp com tudo preenchido.</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nome">Nome Completo</label>
+              <input type="text" id="nome" name="nome" placeholder="Seu nome" required autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label for="whatsapp">Seu WhatsApp</label>
+              <input type="tel" id="whatsapp" name="whatsapp" placeholder="(00) 00000-0000" autocomplete="tel" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="interesse">Tenho interesse em</label>
+            <select id="interesse" name="interesse" required>
+              <option value="">Selecione um serviço...</option>
+              <option value="agentes">Agente de IA Conversacional</option>
+              <option value="whatsapp">Automação de WhatsApp</option>
+              <option value="marketing">Marketing Digital com IA</option>
+              <option value="crm">CRM Inteligente</option>
+              <option value="site">Site / Landing Page</option>
+              <option value="consultoria">Consultoria Estratégica</option>
+              <option value="outro">Outro / Não sei ainda</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="mensagem">Mensagem <span style="color:var(--text-dim)">(opcional)</span></label>
+            <textarea id="mensagem" name="mensagem" placeholder="Conte um pouco sobre seu negócio e o que você precisa..." rows="4"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            <span>Enviar pelo WhatsApp</span>
+          </button>
+        </form><!-- /contato-form -->
+
+      </div><!-- /contato-grid -->
+    </div>
+  </section><!-- /contato -->
+
+
+  <!-- ════════════════════════════════════════════════
+       PRE-FOOTER CTA BAND (escassez do pink-neon)
+       Único momento onde o pink ganha protagonismo
+       full-bleed na página. Inspirado no callout-card
+       coral da Claude.
+  ════════════════════════════════════════════════ -->
+  <aside class="cta-band cta-band--hot" aria-label="Chamada final para conversa">
+    <div class="cta-band__inner" data-reveal>
+      <span class="cta-band__tag">// SUA PRÓXIMA VENDA JÁ ESTÁ ESPERANDO</span>
+      <h2 class="cta-band__title">
+        Enquanto você lê isso, um lead seu<br>
+        está sendo respondido por <em>outro</em>.
+      </h2>
+      <p class="cta-band__sub">
+        Em 15 minutos ao vivo, mostramos onde sua operação está perdendo cliente —
+        e quanto isso já te custou esse mês. Sem compromisso. Sem enrolação.
+      </p>
+      <div class="cta-band__actions">
+        <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20o%20Diagn%C3%B3stico%20Gratuito%20da%20minha%20opera%C3%A7%C3%A3o%20comercial%20com%20a%20FAT%20Tech."
+           class="btn-primary btn-lg"
+           target="_blank" rel="noopener noreferrer">
+          <span>Quero meu Diagnóstico Gratuito</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="#planos" class="btn-outline btn-lg">
+          <span>Ver Planos Antes</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- ════════════════════════════════════════════════
+       FOOTER
+       4 colunas no desktop, 1 coluna no mobile.
+  ════════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <!-- Coluna 1: Marca -->
+        <div class="footer-brand">
+          <a href="#inicio" class="footer-logo nav-logo" aria-label="FAT Tech">
+            <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+          </a>
+          <p>Agência de automação com inteligência artificial para pequenas e médias empresas do Brasil.</p>
+          <div class="footer-social">
+            <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20o%20site%20principal%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20automa%C3%A7%C3%A3o%20com%20IA." class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/_fat.tech/" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            </a>
+            <a href="https://www.linkedin.com/company/94845466/" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <a href="https://www.facebook.com/Fat.Tech42" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Coluna 2: Navegação -->
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="#inicio">Início</a></li>
+            <li><a href="#sobre">Quem Somos</a></li>
+            <li><a href="#servicos">Serviços</a></li>
+            <li><a href="#solucoes">Soluções</a></li>
+            <li><a href="integracoes.html">Integrações</a></li>
+            <li><a href="#cases">Cases</a></li>
+            <li><a href="#planos">Planos</a></li>
+            <li><a href="crm.html">CRM IA <span class="fat-badge fat-badge--cyan" style="font-size:0.55rem;padding:2px 8px">v3</span></a></li>
+            <li><a href="blog/index.html">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 3: Serviços -->
+        <div class="footer-col">
+          <h4>Serviços</h4>
+          <ul>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20FAT%20Tech%20sobre%20Agentes%20de%20IA%20para%20atendimento%2C%20qualifica%C3%A7%C3%A3o%20e%20vendas." target="_blank" rel="noopener noreferrer">Agentes de IA</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20transformar%20meu%20WhatsApp%20em%20uma%20opera%C3%A7%C3%A3o%20comercial%20automatizada%20com%20a%20FAT%20Tech." target="_blank" rel="noopener noreferrer">Automação WhatsApp</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20saber%20como%20a%20FAT%20Tech%20pode%20acelerar%20meu%20marketing%20digital%20com%20IA." target="_blank" rel="noopener noreferrer">Marketing Digital</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20saber%20como%20implementar%20um%20CRM%20com%20IA%20para%20organizar%20meu%20funil%20comercial." target="_blank" rel="noopener noreferrer">CRM Inteligente</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20FAT%20Tech%20sobre%20cria%C3%A7%C3%A3o%20de%20site%2C%20landing%20page%20e%20integra%C3%A7%C3%A3o%20comercial." target="_blank" rel="noopener noreferrer">Sites e Landing Pages</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20uma%20consultoria%20estrat%C3%A9gica%20de%20IA%20para%20mapear%20oportunidades%20no%20meu%20neg%C3%B3cio." target="_blank" rel="noopener noreferrer">Consultoria em IA</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 4: Contato -->
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul class="footer-contact">
+            <li>
+              <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20o%20site%20principal%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20automa%C3%A7%C3%A3o%20com%20IA." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a>
+            </li>
+            <li>
+              <a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a>
+            </li>
+            <li>Januária, MG — Brasil</li>
+            <li style="margin-top:8px;color:var(--cyan);font-family:var(--font-mono);font-size:0.75rem">Bot ativo 24/7</li>
+          </ul>
+        </div>
+
+      </div><!-- /footer-grid -->
+
+      <!-- Rodapé inferior -->
+      <div class="footer-bottom">
+        <p>© 2026 FAT Tech — Todos os direitos reservados. | <a href="privacidade.html">Política de Privacidade</a> | <a href="integracoes.html">Integrações</a> | <a href="crm.html">CRM IA</a> | <a href="blog/index.html">Blog</a></p>
+        <p style="color:var(--cyan)">Desenvolvido com IA pela FAT Tech</p>
+      </div>
+
+    </div>
+  </footer><!-- /footer -->
+
+
+  <!-- ════════════════════════════════════════════════
+       BOTÃO FLUTUANTE WHATSAPP
+       Sempre visível. Bounce animation contínuo.
+  ════════════════════════════════════════════════ -->
+  <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Vi%20o%20site%20da%20FAT%20Tech%20e%20quero%20saber%20mais."
+     class="wa-float"
+     target="_blank"
+     rel="noopener noreferrer"
+     aria-label="Falar no WhatsApp agora">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  </a>
+
+  <!-- ════════════════════════════════════════════════
+       BANNER DE CONSENTIMENTO DE COOKIES — LGPD
+       Lei nº 13.709/2018 — Art. 7º, I (consentimento)
+       Exibido na primeira visita. Salvo em localStorage.
+       Analytics (GA4 / Meta Pixel) SÓ é carregado após
+       aceite explícito do usuário.
+  ════════════════════════════════════════════════ -->
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-modal="true" aria-label="Aviso de privacidade e cookies" aria-live="polite" hidden>
+    <div class="cookie-banner__inner">
+
+      <div class="cookie-banner__icon" aria-hidden="true">🍪</div>
+
+      <div class="cookie-banner__text">
+        <strong>Privacidade &amp; Cookies</strong>
+        <p>
+          Usamos cookies essenciais para o funcionamento do site e, com seu consentimento,
+          cookies analíticos (Google Analytics) e de marketing (Meta Pixel) para melhorar
+          sua experiência e nossos serviços. Seus dados são protegidos pela
+          <a href="privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+          conforme a <abbr title="Lei Geral de Proteção de Dados">LGPD</abbr>.
+        </p>
+      </div>
+
+      <div class="cookie-banner__actions">
+        <button id="cookieReject" class="cookie-btn cookie-btn--outline" type="button">
+          Apenas essenciais
+        </button>
+        <button id="cookieAccept" class="cookie-btn cookie-btn--primary" type="button">
+          Aceitar todos
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       EXIT-INTENT POPUP — Isca Digital / Diagnóstico Gratuito
+       Dispara 1× por sessão ao mover o mouse para o topo.
+       JS controlador no script.js (módulo EXIT-INTENT).
+  ════════════════════════════════════════════════ -->
+  <div id="exitPopup"
+       role="dialog"
+       aria-modal="true"
+       aria-label="Oferta: Diagnóstico Gratuito FAT Tech"
+       hidden
+       style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;
+              justify-content:center;background:rgba(0,0,0,0.78);
+              backdrop-filter:blur(5px);opacity:0;
+              transition:opacity .32s ease;pointer-events:none;">
+
+    <div style="background:var(--bg-1);border:1px solid rgba(0,240,255,0.35);
+                border-radius:14px;max-width:480px;width:92%;padding:36px 30px;
+                position:relative;box-shadow:0 0 60px rgba(0,240,255,0.1),
+                0 0 0 1px rgba(0,240,255,0.08);">
+
+      <button id="exitPopupClose"
+              type="button"
+              aria-label="Fechar popup"
+              class="exit-popup-close"
+              style="position:absolute;top:14px;right:16px;background:none;border:none;
+                     color:var(--text-muted);font-size:1.5rem;cursor:pointer;
+                     line-height:1;transition:color .2s;">×</button>
+
+      <div style="font-family:var(--font-mono);font-size:0.63rem;color:var(--cyan);
+                  letter-spacing:.1em;margin-bottom:14px;opacity:.8;">
+        // ESPERA — ANTES DE VOCÊ IR EMBORA
+      </div>
+
+      <h3 style="font-family:var(--font-display);font-size:1.45rem;color:var(--text);
+                 margin:0 0 12px;line-height:1.3;font-weight:700;">
+        Receba o <span style="color:var(--cyan)">Diagnóstico Gratuito</span><br>
+        da sua operação comercial
+      </h3>
+
+      <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.65;margin:0 0 24px;">
+        Em 15 minutos ao vivo, mostramos exatamente onde sua empresa está
+        perdendo leads e quanto isso custa por mês. Sem compromisso. Sem enrolação.
+      </p>
+
+      <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20o%20Diagn%C3%B3stico%20Gratuito%20da%20minha%20opera%C3%A7%C3%A3o%20comercial%20com%20a%20FAT%20Tech."
+         target="_blank"
+         rel="noopener noreferrer"
+         style="display:block;text-align:center;background:var(--cyan);color:#000;
+                font-family:var(--font-display);font-weight:700;padding:14px 24px;
+                border-radius:8px;text-decoration:none;font-size:0.95rem;
+                letter-spacing:.03em;transition:opacity .2s;"
+         class="exit-popup-cta">
+        Quero meu Diagnóstico Gratuito →
+      </a>
+
+      <p style="text-align:center;color:var(--text-muted);font-size:0.72rem;
+                margin:12px 0 0;opacity:.7;">
+        Resposta humana em até 2h · Sem spam · Cancele a qualquer momento
+      </p>
+    </div>
+  </div>
+
+  <!-- JavaScript principal -->
+  <script src="script.js" defer></script>
+  <script src="global-particles.js" defer></script>
+</body>
+</html>
+
+
+
+
+
+

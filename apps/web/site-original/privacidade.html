@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Política de Privacidade e LGPD | FAT Tech</title>
+  <meta name="description" content="Política de Privacidade e LGPD da FAT Tech com informações sobre dados coletados, cookies, bases legais, segurança e direitos do titular." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://fattech.com.br/privacidade.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fattech.com.br/privacidade.html" />
+  <meta property="og:title" content="Política de Privacidade e LGPD | FAT Tech" />
+  <meta property="og:description" content="Saiba como a FAT Tech trata dados pessoais e atende os direitos previstos na LGPD." />
+  <meta property="og:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png" />
+  <link rel="icon" href="dist/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="dist/favicon.png" />
+  <meta name="theme-color" content="#06060e" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .privacy-hero { padding: 132px 24px 60px; text-align: center; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); background: radial-gradient(circle at top, rgba(0,240,255,.14), transparent 35%), linear-gradient(180deg, var(--bg-base), var(--bg-1)); }
+    .privacy-hero::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,240,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,.05) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(circle at center, black 40%, transparent 82%); pointer-events: none; }
+    .privacy-hero > * { position: relative; z-index: 1; }
+    .privacy-subtitle { max-width: 760px; margin: 0 auto 24px; color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; }
+    .privacy-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+    .privacy-pill { min-height: 44px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--border); background: rgba(15,15,30,.75); color: var(--text); font-family: var(--font-mono); font-size: .75rem; display: inline-flex; align-items: center; }
+    .privacy-layout { max-width: 1120px; margin: 0 auto; padding: 40px 24px 96px; display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+    .privacy-card, .privacy-side { background: rgba(15,15,30,.88); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--glow-soft); }
+    .privacy-card { padding: 30px; margin-bottom: 18px; }
+    .privacy-card h2, .privacy-side h3 { font-family: var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
+    .privacy-card h2 { font-size: 1rem; color: var(--cyan); margin-bottom: 16px; }
+    .privacy-card h3 { font-family: var(--font-display); font-size: .84rem; color: var(--text); margin: 18px 0 10px; letter-spacing: .06em; text-transform: uppercase; }
+    .privacy-card p, .privacy-card li, .privacy-side p, .privacy-side li { color: var(--text-muted); line-height: 1.8; }
+    .privacy-card ul, .privacy-side ul { display: grid; gap: 10px; margin-top: 12px; }
+    .privacy-card li, .privacy-side li { position: relative; padding-left: 18px; }
+    .privacy-card li::before, .privacy-side li::before { content: ""; position: absolute; top: 12px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+    .privacy-card strong { color: var(--text); }
+    .privacy-side { padding: 24px; position: sticky; top: 100px; height: fit-content; }
+    .privacy-side nav a { display: block; padding: 8px 0; color: var(--text-muted); border-bottom: 1px solid rgba(0,240,255,.08); }
+    .privacy-side nav a:hover { color: var(--cyan); }
+    .privacy-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .privacy-note { margin-top: 18px; padding: 16px 18px; border-left: 3px solid var(--pink); background: rgba(255,45,120,.08); border-radius: var(--radius); color: var(--text); }
+    @media (max-width: 960px) { .privacy-layout { grid-template-columns: 1fr; } .privacy-side { position: static; } }
+    @media (max-width: 768px) { .privacy-hero { padding: 118px 20px 52px; } .privacy-layout { padding: 34px 20px 88px; } .privacy-card, .privacy-side { padding: 22px 20px; } }
+  </style>
+  <link rel="stylesheet" href="site-unified.css">
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <nav id="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-container">
+      <a href="index.html#inicio" class="nav-logo" aria-label="FAT Tech">
+        <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+      </a>
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html#inicio" class="nav-link">Início</a></li>
+        <li><a href="index.html#sobre" class="nav-link">Sobre</a></li>
+        <li><a href="index.html#servicos" class="nav-link">Serviços</a></li>
+        <li><a href="index.html#solucoes" class="nav-link">Soluções</a></li>
+        <li><a href="index.html#cases" class="nav-link">Cases</a></li>
+        <li><a href="index.html#planos" class="nav-link">Planos</a></li>
+        <li><a href="index.html#contato" class="nav-link">Contato</a></li>
+      </ul>
+      <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20falar%20sobre%20LGPD%20e%20privacidade." class="btn-primary nav-cta" target="_blank" rel="noopener noreferrer">Suporte LGPD</a>
+      <button type="button" class="hamburger" id="hamburger" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <!-- Backdrop compartilhado da navbar principal.
+       A página usa o mesmo drawer responsivo da home/CRM. -->
+  <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
+
+  <header class="privacy-hero">
+    <div class="hero-badge"><span class="badge-dot" aria-hidden="true"></span><span>Privacidade, transparência e conformidade</span></div>
+    <h1 class="section-title">Política de <span class="neon-text">Privacidade</span> e LGPD</h1>
+    <p class="privacy-subtitle">Esta página explica como a FAT Tech coleta, utiliza, compartilha, armazena e protege dados pessoais ao operar o site, atender contatos comerciais e prestar serviços de tecnologia, automação e inteligência artificial.</p>
+    <div class="privacy-meta">
+      <div class="privacy-pill">Atualizada em 23/03/2026</div>
+      <div class="privacy-pill">LGPD - Lei 13.709/2018</div>
+      <div class="privacy-pill">contato@fattech.com.br</div>
+    </div>
+    <div class="privacy-actions">
+      <a href="#politica" class="btn-primary">Ler política</a>
+      <a href="index.html#contato" class="btn-outline">Falar com a equipe</a>
+    </div>
+  </header>
+
+  <main id="politica" class="privacy-layout">
+    <div>
+      <section id="quem-somos" class="privacy-card">
+        <h2>1. Quem somos</h2>
+        <p>A <strong>FAT Tech</strong> atua com soluções de automação, marketing, dados e inteligência artificial para negócios. Esta política se aplica ao site <strong>fattech.com.br</strong>, aos formulários, aos canais de atendimento e às interações relacionadas aos nossos serviços.</p>
+        <p>Conforme o contexto do serviço, a FAT Tech pode atuar como <strong>controladora</strong> ou <strong>operadora</strong> de dados pessoais.</p>
+      </section>
+
+      <section id="dados" class="privacy-card">
+        <h2>2. Dados que podemos coletar</h2>
+        <h3>Informados por você</h3>
+        <ul>
+          <li>Nome, e-mail, telefone, WhatsApp, empresa e cargo.</li>
+          <li>Mensagens enviadas por formulários, e-mail, WhatsApp ou briefings comerciais.</li>
+        </ul>
+        <h3>Coletados automaticamente</h3>
+        <ul>
+          <li>IP, data e hora de acesso, páginas visitadas, origem do tráfego e dados de navegação.</li>
+          <li>Dispositivo, navegador, sistema operacional, idioma e preferências de cookies.</li>
+        </ul>
+      </section>
+
+      <section id="uso" class="privacy-card">
+        <h2>3. Como usamos os dados</h2>
+        <ul>
+          <li>Responder contatos, agendar reuniões e enviar propostas.</li>
+          <li>Executar contratos, projetos, campanhas, integrações e suporte técnico.</li>
+          <li>Garantir segurança, desempenho e melhoria contínua do site e dos serviços.</li>
+          <li>Mensurar resultados e realizar comunicações institucionais ou comerciais com base legal adequada.</li>
+        </ul>
+      </section>
+
+      <section id="bases-legais" class="privacy-card">
+        <h2>4. Bases legais</h2>
+        <p>O tratamento poderá ocorrer com base em <strong>consentimento</strong>, <strong>execução de contrato</strong>, <strong>cumprimento de obrigação legal</strong>, <strong>legítimo interesse</strong> e <strong>exercício regular de direitos</strong>, conforme a finalidade de cada operação.</p>
+      </section>
+
+      <section id="compartilhamento" class="privacy-card">
+        <h2>5. Compartilhamento</h2>
+        <p>A FAT Tech <strong>não vende dados pessoais</strong>. O compartilhamento pode ocorrer com provedores de hospedagem, analytics, CRM, automação, atendimento, meios de pagamento e parceiros técnicos, sempre quando necessário para operação do negócio, prestação do serviço ou cumprimento de obrigação legal.</p>
+      </section>
+
+      <section id="cookies" class="privacy-card">
+        <h2>6. Cookies e tecnologias de mensuração</h2>
+        <p>Utilizamos cookies essenciais para o funcionamento do site e, quando houver consentimento, cookies analíticos e de marketing para mensuração e melhoria da experiência.</p>
+        <ul>
+          <li><strong>Essenciais:</strong> funcionamento, segurança e preferências técnicas.</li>
+          <li><strong>Analíticos:</strong> entendimento de navegação e desempenho.</li>
+          <li><strong>Marketing:</strong> mensuração de campanhas e personalização de anúncios.</li>
+        </ul>
+        <p>Operamos com <strong>Google Consent Mode v2</strong>: por padrão, todas as categorias de armazenamento (analytics, marketing, personalização) iniciam em <em>denied</em> e só passam para <em>granted</em> mediante seu aceite explícito no banner de cookies.</p>
+        <p><strong>Operadores de mensuração utilizados (apenas após consentimento):</strong></p>
+        <ul>
+          <li><strong>Google Analytics 4 (GA4)</strong> — Google LLC. Finalidade: mensuração agregada de tráfego e engajamento. Base legal: consentimento (Art. 7º, I da LGPD). Retenção: até 14 meses. IP anonimizado, sem sinais de remarketing sem consentimento explícito.</li>
+          <li><strong>Meta Pixel (Facebook Pixel)</strong> — Meta Platforms, Inc. Finalidade: mensuração de campanhas, públicos personalizados e otimização de anúncios em Facebook/Instagram. Base legal: consentimento (Art. 7º, I da LGPD). Carregado apenas após o aceite no banner LGPD; bloqueado por padrão. Retenção: conforme política da Meta.</li>
+        </ul>
+        <p>Você pode revogar o consentimento a qualquer momento limpando os dados do site no seu navegador, ou solicitando exclusão pelos canais da seção 11.</p>
+      </section>
+
+      <section id="retencao" class="privacy-card">
+        <h2>7. Retenção e armazenamento</h2>
+        <p>Mantemos dados pessoais pelo tempo necessário para cumprir finalidades legítimas, atender exigências legais, preservar evidências e executar obrigações contratuais. Após esse período, os dados podem ser excluídos, anonimizados ou bloqueados, conforme a legislação aplicável.</p>
+      </section>
+
+      <section id="direitos" class="privacy-card">
+        <h2>8. Direitos do titular</h2>
+        <ul>
+          <li>Confirmação da existência de tratamento e acesso aos dados.</li>
+          <li>Correção de dados incompletos, inexatos ou desatualizados.</li>
+          <li>Anonimização, bloqueio, eliminação, portabilidade e oposição, quando cabível.</li>
+          <li>Informação sobre compartilhamento e revogação do consentimento.</li>
+          <li>Revisão de decisões tomadas exclusivamente por tratamento automatizado.</li>
+        </ul>
+        <div class="privacy-note">Para proteger sua privacidade, poderemos solicitar dados adicionais para confirmar sua identidade antes de atender requisições relacionadas a dados pessoais.</div>
+      </section>
+
+      <section id="seguranca" class="privacy-card">
+        <h2>9. Segurança</h2>
+        <p>Adotamos medidas técnicas e organizacionais compatíveis com a natureza das operações, incluindo controle de acesso, conexões seguras, monitoramento, backup e revisão de processos internos. Nenhum ambiente é totalmente invulnerável, mas buscamos reduzir riscos continuamente.</p>
+      </section>
+
+      <section id="transferencia" class="privacy-card">
+        <h2>10. Transferência internacional</h2>
+        <p>Alguns fornecedores de tecnologia podem processar dados fora do Brasil. Nesses casos, buscamos adotar mecanismos contratuais e práticas compatíveis com a LGPD.</p>
+      </section>
+
+      <section id="contato-lgpd" class="privacy-card">
+        <h2>11. Canal de atendimento LGPD</h2>
+        <ul>
+          <li><strong>E-mail:</strong> <a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a></li>
+          <li><strong>WhatsApp:</strong> <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20FAT%20Tech%20sobre%20privacidade%2C%20LGPD%20e%20prote%C3%A7%C3%A3o%20de%20dados." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a></li>
+          <li><strong>Responsável indicado:</strong> Walfredo Figueiredo Neto</li>
+          <li><strong>Localidade:</strong> Januária, MG - Brasil</li>
+        </ul>
+      </section>
+
+      <section id="alteracoes" class="privacy-card">
+        <h2>12. Alterações desta política</h2>
+        <p>Esta política poderá ser atualizada a qualquer momento para refletir mudanças legais, operacionais ou tecnológicas. A versão vigente estará sempre disponível em <a href="https://fattech.com.br/privacidade.html" target="_blank" rel="noopener noreferrer">fattech.com.br/privacidade.html</a>.</p>
+      </section>
+    </div>
+
+    <aside class="privacy-side" aria-label="Navegação da política">
+      <h3>Nesta página</h3>
+      <nav>
+        <a href="#quem-somos">Quem somos</a>
+        <a href="#dados">Dados coletados</a>
+        <a href="#uso">Uso dos dados</a>
+        <a href="#bases-legais">Bases legais</a>
+        <a href="#compartilhamento">Compartilhamento</a>
+        <a href="#cookies">Cookies</a>
+        <a href="#retencao">Retenção</a>
+        <a href="#direitos">Direitos do titular</a>
+        <a href="#seguranca">Segurança</a>
+        <a href="#transferencia">Transferência</a>
+        <a href="#contato-lgpd">Canal LGPD</a>
+      </nav>
+      <h3 style="margin-top:22px;">Resumo</h3>
+      <ul>
+        <li>Tratamento orientado por finalidade, necessidade e base legal.</li>
+        <li>Cookies não essenciais dependem de consentimento.</li>
+        <li>Pedidos de privacidade podem ser feitos por e-mail ou WhatsApp.</li>
+      </ul>
+    </aside>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html#inicio" class="footer-logo nav-logo" aria-label="FAT Tech">
+            <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+          </a>
+          <p>Transformando negócios com automação, inteligência artificial e estratégia digital.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="index.html#inicio">Início</a></li>
+            <li><a href="index.html#servicos">Serviços</a></li>
+            <li><a href="index.html#contato">Contato</a></li>
+            <li><a href="privacidade.html">Privacidade</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>LGPD</h4>
+          <ul>
+            <li><a href="#dados">Dados coletados</a></li>
+            <li><a href="#cookies">Cookies</a></li>
+            <li><a href="#direitos">Direitos</a></li>
+            <li><a href="#contato-lgpd">Canal de atendimento</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul class="footer-contact">
+            <li><a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a></li>
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Quero%20falar%20com%20a%20FAT%20Tech%20sobre%20privacidade%2C%20LGPD%20e%20prote%C3%A7%C3%A3o%20de%20dados." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a></li>
+            <li>Januária, MG - Brasil</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 FAT Tech. Todos os direitos reservados.</p>
+        <p class="footer-tagline">Política atualizada em <span class="neon-text">23/03/2026</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20tirar%20uma%20d%C3%BAvida%20sobre%20privacidade%20e%20LGPD." target="_blank" rel="noopener noreferrer" class="wa-float" aria-label="WhatsApp da FAT Tech">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/></svg>
+  </a>
+
+  <!-- script.js centraliza a navbar compartilhada e evita lógica duplicada -->
+  <script src="script.js" defer></script>
+  <script src="global-particles.js"></script>
+</body>
+</html>
+
+
+
+
+
+

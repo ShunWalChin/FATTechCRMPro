@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing digital com IA para acelerar criação, aprender mais rápido e transformar mídia em demanda melhor aproveitada. | FAT Tech</title>
+  <meta name="description" content="Marketing Digital com IA. A FAT Tech estrutura uma operação de marketing que usa IA para gerar copy, variar criativos, ler dados, alimentar retargeting e otim">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FAT Tech">
+  <meta property="og:title" content="Marketing digital com IA para acelerar criação, aprender mais rápido e transformar mídia em demanda melhor aproveitada. | FAT Tech">
+  <meta property="og:description" content="Marketing Digital com IA. A FAT Tech estrutura uma operação de marketing que usa IA para gerar copy, variar criativos, ler dados, alimentar retargeting e otim">
+  <meta property="og:url" content="https://fattech.com.br/lp/marketing-digital-ia">
+  <meta property="og:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png">
+  <meta property="og:locale" content="pt_BR">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Marketing digital com IA para acelerar criação, aprender mais rápido e transformar mídia em demanda melhor aproveitada. | FAT Tech">
+  <meta name="twitter:description" content="Marketing Digital com IA. A FAT Tech estrutura uma operação de marketing que usa IA para gerar copy, variar criativos, ler dados, alimentar retargeting e otim">
+  <meta name="twitter:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png">
+  <link rel="canonical" href="https://fattech.com.br/lp/marketing-digital-ia">
+  <link rel="icon" href="../dist/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../lp-showcase.css">
+  <link rel="stylesheet" href="../site-unified.css">
+
+  <style>
+    .showcase-radar,
+    .showcase-ops-grid,
+    .showcase-proof-stack,
+    .showcase-proof-metrics,
+    .showcase-closing-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .showcase-radar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .showcase-signal,
+    .showcase-ops-card,
+    .showcase-proof-note,
+    .showcase-proof-metric,
+    .showcase-closing-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 240, 255, 0.14);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(14, 19, 36, 0.92), rgba(8, 12, 24, 0.94));
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.3);
+      padding: 22px;
+    }
+
+    .showcase-signal::before,
+    .showcase-ops-card::before,
+    .showcase-proof-note::before,
+    .showcase-proof-metric::before,
+    .showcase-closing-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(0, 240, 255, 0.12), transparent 34%),
+        linear-gradient(135deg, rgba(255, 45, 120, 0.08), transparent 55%, rgba(168, 85, 247, 0.12));
+      pointer-events: none;
+    }
+
+    .showcase-signal > *,
+    .showcase-ops-card > *,
+    .showcase-proof-note > *,
+    .showcase-proof-metric > *,
+    .showcase-closing-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .showcase-signal strong,
+    .showcase-proof-metric strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2vw, 2.2rem);
+      color: var(--cyan);
+      text-shadow: 0 0 18px rgba(0, 240, 255, 0.2);
+      margin-bottom: 8px;
+    }
+
+    .showcase-signal span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .showcase-signal p,
+    .showcase-ops-card p,
+    .showcase-proof-note p,
+    .showcase-proof-metric p,
+    .showcase-closing-card p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .showcase-hero-card {
+      padding: 26px;
+    }
+
+    .showcase-ops-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 24px;
+    }
+
+    .showcase-ops-card h3,
+    .showcase-closing-card h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+    }
+
+    .showcase-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.18);
+      background: rgba(0, 240, 255, 0.08);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .showcase-proof-stack {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: stretch;
+      margin-top: 22px;
+    }
+
+    .showcase-proof-note {
+      display: grid;
+      gap: 16px;
+    }
+
+    .showcase-proof-chat {
+      display: grid;
+      gap: 10px;
+    }
+
+    .showcase-proof-bubble {
+      max-width: 92%;
+      padding: 14px 16px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+      font-size: 0.96rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .showcase-proof-bubble--out {
+      justify-self: end;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.06));
+      border-color: rgba(0, 240, 255, 0.18);
+    }
+
+    .showcase-proof-bubble--in {
+      justify-self: start;
+      background: linear-gradient(180deg, rgba(17, 27, 40, 0.98), rgba(12, 18, 30, 0.96));
+    }
+
+    .showcase-proof-bubble small {
+      display: block;
+      margin-top: 8px;
+      text-align: right;
+      color: rgba(226, 232, 240, 0.5);
+      font-size: 0.72rem;
+    }
+
+    .showcase-proof-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase-closing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 24px;
+    }
+
+    .showcase-cta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .showcase-cta-strip a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 240, 255, 0.16);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      font-family: var(--font-display);
+      transition: 0.25s ease;
+    }
+
+    .showcase-cta-strip a:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+
+    @media (max-width: 980px) {
+      .showcase-radar,
+      .showcase-ops-grid,
+      .showcase-proof-stack,
+      .showcase-closing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+<body data-fat-lp="marketing-digital-ia">
+  <div class="lp-shell">
+    <header class="lp-nav">
+      <div class="lp-nav-inner">
+        <a class="lp-brand" href="../index.html" aria-label="Voltar para a home da FAT Tech">
+          <img src="../dist/Logo_FATTech_Nova-B-ZGug9A.png" alt="Logo FAT Tech - Marketing Digital com IA" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(0,240,255,.18));">
+          <div>
+            <div class="lp-brand-mark">FAT Tech</div>
+            <div class="lp-brand-meta">Marketing Digital com IA</div>
+          </div>
+        </a>
+        <nav class="lp-nav-links" aria-label="Atalhos da landing page">
+          <a href="../index.html">Site Principal</a>
+          <a href="../crm.html">CRM IA</a>
+          <a href="#preco">Investimento</a>
+          <a href="https://wa.me/5535998491017?text=Quero+estruturar+meu+marketing+digital+com+IA+para+criar+melhor%2C+otimizar+campanhas+e+conectar+mais+resultado+com+vendas." target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="lp-section lp-section--hero">
+        <div class="lp-section-inner lp-hero">
+          <div class="lp-reveal">
+            <div class="lp-kicker">Tráfego e criação com feedback real</div>
+            <h1>Marketing digital com IA para acelerar criação, aprender mais rápido e transformar mídia em demanda melhor aproveitada.</h1>
+            <p class="lp-lead">A FAT Tech estrutura uma operação de marketing que usa IA para gerar copy, variar criativos, ler dados, alimentar retargeting e otimizar verba com base em sinal real de mercado e comportamento do lead.</p>
+            <div class="lp-hero-actions">
+              <a class="lp-btn" href="https://wa.me/5535998491017?text=Quero+estruturar+meu+marketing+digital+com+IA+para+criar+melhor%2C+otimizar+campanhas+e+conectar+mais+resultado+com+vendas." target="_blank" rel="noopener noreferrer">Quero escalar meu marketing</a>
+              <a class="lp-btn-secondary" href="#solucao">Ver a lógica da operação</a>
+            </div>
+            <div class="showcase-radar">
+
+            <article class="showcase-signal lp-reveal">
+              <strong>-25%</strong>
+              <span>tempo para testar</span>
+              <p>Cada campanha depende de ciclos longos para produzir copy, criativo, teste e ajuste.</p>
+            </article>
+
+            <article class="showcase-signal lp-reveal">
+              <strong>mais volume</strong>
+              <span>variacoes criativas</span>
+              <p>A empresa olha custo e clique, mas não conecta a campanha ao comportamento de venda e qualificação.</p>
+            </article>
+
+            <article class="showcase-signal lp-reveal">
+              <strong>em tempo real</strong>
+              <span>controle de ROI</span>
+              <p>Quem interage com a marca não recebe sequências coerentes de retomada e aprofundamento.</p>
+            </article>
+            </div>
+          </div>
+
+          <aside class="lp-hero-card showcase-hero-card lp-reveal">
+            <div class="lp-kicker">Operação de marketing guiada por sinal</div>
+            <h3>Não e anunciar mais. E aprender mais rápido, cortar desperdicio e criar melhor.</h3>
+            <p>A IA apoia criação, segmentação, testes e leitura de campanha para que o marketing pare de depender de tentativa e erro manual, criativo travado e decisão lenta.</p>
+            <ul class="lp-price-list">
+            <li>Criativos e copy orientados a público e oferta</li>
+            <li>Leitura de dados para ajuste de campanha</li>
+            <li>Retargeting e nutricao conectados a conversão</li>
+            </ul>
+            <div class="showcase-cta-strip">
+              <a href="#dor">O que esse serviço resolve primeiro</a>
+              <a href="#preco">Ver investimento</a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="lp-section" id="dor">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">O que esse serviço resolve primeiro</div>
+            <h2 class="lp-section-title">Muitas empresas anunciam, mas poucas constroem uma rotina de aprendizado contínuo.</h2>
+            <p class="lp-section-sub">Sem processo, o marketing fica preso em criativos repetidos, otimizacoes lentas e pouca leitura do que realmente gera demanda aproveitavel pelo comercial.</p>
+          </div>
+          <div class="lp-card-grid">
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 01</div>
+              <h3>Criação lenta demais</h3>
+              <p>Cada campanha depende de ciclos longos para produzir copy, criativo, teste e ajuste.</p>
+            </article>
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 02</div>
+              <h3>Leitura superficial dos dados</h3>
+              <p>A empresa olha custo e clique, mas não conecta a campanha ao comportamento de venda e qualificação.</p>
+            </article>
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 03</div>
+              <h3>Retargeting desconectado</h3>
+              <p>Quem interage com a marca não recebe sequências coerentes de retomada e aprofundamento.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="solucao">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">Como essa frente funciona na prática</div>
+            <h2 class="lp-section-title">Uma operação de marketing que combina criação acelerada, leitura de sinal e ajuste contínuo.</h2>
+            <p class="lp-section-sub">A FAT Tech posiciona IA dentro da rotina de mídia, criação e decisão para que sua verba seja alocada com mais inteligência, mais ritmo de teste e mais contexto comercial.</p>
+          </div>
+          <div class="lp-proof-grid">
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Módulo 01</div>
+              <h3>Criação e variação de campanhas</h3>
+              <p>Geramos novas abordagens, criativos e argumentos com base em oferta, público e estágio do funil.</p>
+            </article>
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Módulo 02</div>
+              <h3>Teste e ajuste orientado por dado</h3>
+              <p>As campanhas passam a responder mais rápido ao que está performando e ao que precisa ser cortado.</p>
+            </article>
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Módulo 03</div>
+              <h3>Conexão entre mídia e operação comercial</h3>
+              <p>O marketing deixa de trabalhar isolado e passa a alimentar o funil com mais visibilidade de qualidade.</p>
+            </article>
+          </div>
+          <div class="showcase-ops-grid">
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Módulo 01</div>
+              <h3>Criação e variação de campanhas</h3>
+              <p>Geramos novas abordagens, criativos e argumentos com base em oferta, público e estágio do funil.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Módulo 02</div>
+              <h3>Teste e ajuste orientado por dado</h3>
+              <p>As campanhas passam a responder mais rápido ao que está performando e ao que precisa ser cortado.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Módulo 03</div>
+              <h3>Conexão entre mídia e operação comercial</h3>
+              <p>O marketing deixa de trabalhar isolado e passa a alimentar o funil com mais visibilidade de qualidade.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Módulo 04</div>
+              <h3>Camada de entrega</h3>
+              <p>Estrutura de criação e variação com IA, Operação orientada para Meta Ads e Google Ads, Leitura de dados e ajustes por sinal de negócio.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="prova">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">O que muda quando essa camada entra</div>
+            <h2 class="lp-section-title">Quando a IA entra no marketing com método, a empresa ganha velocidade sem perder critério.</h2>
+            <p class="lp-section-sub">Mais volume de teste, mais leitura de comportamento e menos insistencia em campanha sem futuro.</p>
+          </div>
+          <div class="showcase-proof-stack">
+            <article class="showcase-proof-note lp-reveal">
+              <div class="lp-kicker">Conversa que transmite processo</div>
+              <div class="showcase-proof-chat">
+                <div class="showcase-proof-bubble showcase-proof-bubble--out">
+                  Como isso muda na prática para o time?
+                  <small>09:18</small>
+                </div>
+                <div class="showcase-proof-bubble showcase-proof-bubble--in">
+                  Sua operação consegue aprender mais por semana e tomar decisões com menos intuição vazia.
+                  <small>09:19</small>
+                </div>
+                <div class="showcase-proof-bubble showcase-proof-bubble--in">
+                  As campanhas passam a ser avaliadas pelo impacto na conversão e não só por vaidade de plataforma.
+                  <small>09:20</small>
+                </div>
+              </div>
+            </article>
+            <div class="showcase-proof-metrics">
+
+              <article class="showcase-proof-metric lp-reveal">
+                <strong>Mais capacidade de iteracao</strong>
+                <p>Sua operação consegue aprender mais por semana e tomar decisões com menos intuição vazia.</p>
+              </article>
+
+              <article class="showcase-proof-metric lp-reveal">
+                <strong>Mais alinhamento com vendas</strong>
+                <p>As campanhas passam a ser avaliadas pelo impacto na conversão e não só por vaidade de plataforma.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="decisao">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">O valor que o cliente percebe</div>
+            <h2 class="lp-section-title">Quando sua operação parece mais organizada, a confiança sobe. E quando a confiança sobe, a venda anda com menos atrito.</h2>
+            <p class="lp-section-sub">A IA apoia criação, segmentação, testes e leitura de campanha para que o marketing pare de depender de tentativa e erro manual, criativo travado e decisão lenta.</p>
+          </div>
+          <div class="showcase-closing-grid">
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>1</h3>
+              <p>Estrutura de criação e variação com IA</p>
+            </article>
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>2</h3>
+              <p>Operação orientada para Meta Ads e Google Ads</p>
+            </article>
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>3</h3>
+              <p>Leitura de dados e ajustes por sinal de negócio</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="preco">
+        <div class="lp-section-inner lp-price-grid">
+          <article class="lp-price lp-reveal">
+            <div class="lp-price-tag">Investimento de crescimento</div>
+            <h3>Marketing Digital com IA FAT Tech</h3>
+            <p class="lp-section-sub">Uma estrutura para acelerar criação, leitura e desempenho sem improviso operacional.</p>
+            <div class="lp-price-main">
+              <div class="lp-price-value">R$ 3.260</div>
+              <div class="lp-price-caption">implantação de estrutura, mensagens e trilha inicial</div>
+            </div>
+            <div class="lp-price-main">
+              <div class="lp-price-value">R$ 497/mês</div>
+              <div class="lp-price-caption">licença, acompanhamento e refinamento contínuo</div>
+            </div>
+            <div class="lp-price-disclaimer">Expectativas de ganho e payback variam conforme oferta, demanda, maturidade comercial e ritmo de execução.</div>
+          </article>
+
+          <article class="lp-price lp-reveal">
+            <div class="lp-price-tag">Inclui</div>
+            <h3>O que entra nessa entrega</h3>
+            <ul class="lp-price-list">
+            <li>Estrutura de criação e variação com IA</li>
+            <li>Operação orientada para Meta Ads e Google Ads</li>
+            <li>Leitura de dados e ajustes por sinal de negócio</li>
+            <li>Integração com CRM, WhatsApp e páginas de conversão</li>
+            </ul>
+            <div class="lp-hero-actions" style="margin-top:24px;">
+              <a class="lp-btn" href="https://wa.me/5535998491017?text=Quero+estruturar+meu+marketing+digital+com+IA+para+criar+melhor%2C+otimizar+campanhas+e+conectar+mais+resultado+com+vendas." target="_blank" rel="noopener noreferrer">Quero essa estrutura de marketing</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="lp-section" id="faq">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">FAQ comercial</div>
+            <h2 class="lp-section-title">Perguntas frequentes sobre marketing com IA</h2>
+          </div>
+          <div class="lp-faq-list">
+
+            <article class="lp-faq-item lp-reveal">
+              <h3>A IA substitui o estrategista?</h3>
+              <p>Não. Ela acelera criação, leitura e aprendizado, mas a estratégia continua sendo guiada por contexto de negócio.</p>
+            </article>
+
+            <article class="lp-faq-item lp-reveal">
+              <h3>Isso serve para empresa menor?</h3>
+              <p>Sim. A grande vantagem é ganhar produtividade e critério sem precisar inflar a operação logo de início.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="lp-footer">
+      <div class="lp-footer-inner">
+        <span>FAT Tech - IA aplicada ao comercial, atendimento e operação.</span>
+        <span><a href="../privacidade.html">Política de Privacidade</a> · <a href="../blog/index.html">Blog</a></span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="../global-particles.js"></script>
+</body>
+</html>

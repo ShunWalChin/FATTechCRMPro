@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="no-js">
+<!--
+  FAT Tech — Landing Page CRM IA v3.0 S.Y.N.A.P.S.E. Protocol
+  Usa style.css + script.js do site principal.
+  CSS inline apenas para componentes exclusivos da LP.
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FAT Tech CRM IA | Máquina de Vendas 24h | S.Y.N.A.P.S.E. Protocol</title>
+  <meta name="description" content="Implante Agentes Neurais de IA no seu WhatsApp Oficial. Atendimento em milissegundos, funil Kanban autônomo e operação comercial 24/7. Setup em 30 dias." />
+  <meta name="keywords" content="CRM com IA, agente neural WhatsApp, automação de vendas, funil kanban automatizado, WhatsApp API oficial Meta, FAT Tech, Januária MG" />
+  <meta name="author" content="FAT Tech — Walfredo Figueiredo" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://fattech.com.br/crm" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fattech.com.br/crm" />
+  <meta property="og:title" content="FAT Tech CRM IA | Máquina de Vendas 24h | S.Y.N.A.P.S.E." />
+  <meta property="og:description" content="Agentes Neurais de IA no WhatsApp API Oficial, CRM Kanban autônomo e operação comercial 24/7. Nunca mais perca um lead." />
+  <meta property="og:image" content="https://fattech.com.br/dist/favicon.png" />
+  <meta property="og:site_name" content="FAT Tech" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <link rel="icon" href="dist/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="dist/favicon.png" />
+  <meta name="theme-color" content="#06060e" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .bg-alt { background: var(--bg-1); }
+
+    /* ── Ticker ── */
+    .ticker-outer {
+      position: absolute; bottom: 0; left: 0; right: 0; overflow: hidden;
+      background: rgba(0,240,255,0.04); border-top: 1px solid var(--border);
+      padding: 11px 0; z-index: 3;
+      -webkit-mask-image: linear-gradient(90deg,transparent,black 7%,black 93%,transparent);
+      mask-image: linear-gradient(90deg,transparent,black 7%,black 93%,transparent);
+    }
+    .ticker-inner { display: flex; white-space: nowrap; animation: ticker 30s linear infinite; width: max-content; }
+    .ticker-outer:hover .ticker-inner { animation-play-state: paused; }
+    .ticker-item  { font-family: var(--font-mono); font-size: 0.74rem; color: var(--cyan); letter-spacing: 0.08em; padding: 0 28px; opacity: 0.75; transition: opacity 0.2s; }
+    .ticker-item:hover { opacity: 1; text-shadow: 0 0 12px var(--cyan); }
+    .ticker-item::after { content: '//'; margin-left: 28px; opacity: 0.35; }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .ticker-inner { animation: none; } }
+
+    /* ── Font boost LP ── */
+    .section-sub { font-size: 1.03rem; line-height: 1.75; }
+    .service-card p, .pillar span, .cyberv-item span, .invest-feat, .cta-final-box p { font-size: 0.96rem; }
+    .section-title { font-size: clamp(1.7rem, 4.5vw, 3.2rem); }
+    .hero-subtitle { font-size: clamp(1rem, 2vw, 1.15rem); }
+
+    /* ── Pain cards ── */
+    .dor-quote { font-style: italic; font-size: 0.86rem; color: var(--text-muted); padding: 10px 14px; border-left: 2px solid var(--pink); background: rgba(255,45,120,0.04); border-radius: 0 var(--radius) var(--radius) 0; margin-top: 14px; line-height: 1.6; }
+    .feature-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; color: var(--cyan); background: rgba(0,240,255,0.07); border: 1px solid rgba(0,240,255,0.2); padding: 3px 10px; border-radius: 50px; margin-top: 12px; }
+
+    /* ── Diagnóstico 2×2 ── */
+    #diagnostico .services-grid { grid-template-columns: repeat(2, 1fr); }
+    #diagnostico .service-card { border-color: rgba(255,45,120,0.12); }
+    #diagnostico .service-card:hover { border-color: rgba(255,45,120,0.5); background: rgba(255,45,120,0.04); transform: translateY(-6px); box-shadow: 0 20px 40px rgba(255,45,120,0.1), 0 0 0 1px rgba(255,45,120,0.25); }
+    #diagnostico .service-icon { background: rgba(255,45,120,0.12); border-color: rgba(255,45,120,0.25); }
+    #diagnostico .service-card:hover .service-icon { box-shadow: 0 0 16px rgba(255,45,120,0.35); }
+
+    /* ── Synapse Architecture Block ── */
+    .synapse-architecture {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .synapse-manifesto,
+    .synapse-stack,
+    .synapse-flow {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .synapse-manifesto {
+      padding: 36px 32px;
+      min-height: 100%;
+    }
+    .synapse-manifesto::before,
+    .synapse-stack::before,
+    .synapse-flow::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink));
+      opacity: 0.9;
+    }
+    .synapse-manifesto .section-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .synapse-manifesto h3 {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      line-height: 1.18;
+      margin-bottom: 14px;
+    }
+    .synapse-manifesto p {
+      color: var(--text-muted);
+      line-height: 1.8;
+      font-size: 0.96rem;
+      margin-bottom: 0;
+    }
+    .synapse-side {
+      display: grid;
+      gap: 24px;
+    }
+    .synapse-stack {
+      padding: 24px;
+    }
+    .synapse-stack-item + .synapse-stack-item {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .synapse-stack-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .synapse-stack strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+    .synapse-stack p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      margin: 0;
+    }
+    .synapse-flow {
+      padding: 24px;
+    }
+    .synapse-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .synapse-flow-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+    }
+    .synapse-flow-card span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .synapse-flow-card strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .synapse-flow-card p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+    @media (max-width: 900px) {
+      .synapse-architecture { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .synapse-manifesto,
+      .synapse-stack,
+      .synapse-flow { padding: 22px 18px; }
+      .synapse-flow-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cyber VS Comparison ── */
+    @keyframes blink-red   { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    @keyframes blink-green { 0%,100%{opacity:1} 60%{opacity:0.6} }
+    .cyber-vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
+    .cyberv-col { border-radius: var(--radius-lg); padding: 36px 28px; position: relative; overflow: hidden; }
+    .cyberv-bad  { background: rgba(255,45,120,0.03); border: 1px solid rgba(255,45,120,0.25); animation: bad-pulse 3s ease-in-out infinite; }
+    .cyberv-good { background: rgba(0,240,255,0.03);  border: 1px solid rgba(0,240,255,0.25);  animation: good-pulse 2.5s ease-in-out infinite; }
+    @keyframes bad-pulse  { 0%,100%{box-shadow:0 0 20px rgba(255,45,120,0.05)} 50%{box-shadow:0 0 50px rgba(255,45,120,0.2),inset 0 0 40px rgba(255,45,120,0.04)} }
+    @keyframes good-pulse { 0%,100%{box-shadow:0 0 15px rgba(0,240,255,0.05)} 50%{box-shadow:0 0 60px rgba(0,240,255,0.25),inset 0 0 30px rgba(0,240,255,0.04)} }
+    .cyberv-status { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 50px; margin-bottom: 14px; }
+    .cyberv-status.bad  { background: rgba(255,45,120,0.1); border: 1px solid rgba(255,45,120,0.3); color: var(--pink); }
+    .cyberv-status.bad::before  { content: '● '; color: var(--pink); animation: blink-red 1.2s infinite; }
+    .cyberv-status.good { background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.3); color: var(--cyan); }
+    .cyberv-status.good::before { content: '◉ '; color: #00ff88; animation: blink-green 1.5s infinite; }
+    .cyberv-col h3 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; margin-bottom: 24px; }
+    .cyberv-bad  h3 { color: var(--pink); }
+    .cyberv-good h3 { color: var(--cyan); }
+    .cyberv-list { display: flex; flex-direction: column; gap: 11px; margin-bottom: 20px; }
+    .cyberv-item { display: flex; gap: 10px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+    .cyberv-bullet { flex-shrink: 0; }
+    .cyberv-result { padding: 12px 16px; border-radius: var(--radius); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.04em; text-align: center; }
+    .cyberv-bad  .cyberv-result { background: rgba(255,45,120,0.06); color: var(--pink); border: 1px solid rgba(255,45,120,0.2); }
+    .cyberv-good .cyberv-result { background: rgba(0,240,255,0.06); color: var(--cyan); border: 1px solid rgba(0,240,255,0.2); }
+    .cyberv-sep { display: flex; align-items: center; justify-content: center; padding: 0 20px; }
+    .cyberv-vs-badge { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan)); background-size: 200% 200%; animation: vs-spin 3s linear infinite; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 0.8rem; font-weight: 900; color: #fff; box-shadow: 0 0 24px rgba(168,85,247,0.5); }
+    @keyframes vs-spin { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .cyber-roi { grid-column: 1 / -1; margin-top: 28px; background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.25); border-radius: var(--radius-lg); padding: 24px 32px; }
+    .cyber-roi-inner { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center; }
+    .cyber-roi-num { font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.4rem); font-weight: 900; color: var(--purple); white-space: nowrap; }
+    .cyber-roi-sub { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .cyber-roi-text { color: var(--text-muted); font-size: 0.91rem; line-height: 1.6; }
+    @media (max-width: 768px) { .cyber-vs { grid-template-columns: 1fr; } .cyberv-sep { padding: 16px 0; } }
+
+    /* ── Investment Section ── */
+    .invest-section { padding: 100px 0; }
+    .invest-card { max-width: 840px; margin: 0 auto; position: relative; border-radius: 20px; padding: 3px; background: linear-gradient(135deg,var(--pink),var(--purple),var(--cyan),var(--purple),var(--pink)); background-size: 300% 300%; animation: holo-border 5s linear infinite; box-shadow: 0 0 60px rgba(0,240,255,0.12),0 0 120px rgba(168,85,247,0.08),0 40px 80px rgba(0,0,0,0.3); }
+    @keyframes holo-border { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .invest-bg { background: #08080f; border-radius: 18px; padding: 52px 48px; position: relative; overflow: hidden; }
+    .invest-bg::after { content: ''; position: absolute; top: -2px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent); animation: invest-scan 5s linear infinite; pointer-events: none; z-index: 0; }
+    @keyframes invest-scan { 0%{transform:translateY(0);opacity:.7} 85%{opacity:.3} 100%{transform:translateY(900px);opacity:0} }
+    #investCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.3; }
+    .invest-inner { position: relative; z-index: 2; }
+    .invest-corner { position: absolute; top: 18px; right: 20px; font-family: var(--font-mono); font-size: 0.52rem; color: rgba(0,240,255,0.25); letter-spacing: 0.06em; line-height: 1.8; z-index: 3; text-align: right; }
+    .invest-badge { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,rgba(255,45,120,0.15),rgba(168,85,247,0.15)); border: 1px solid rgba(255,45,120,0.4); color: #fff; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; padding: 6px 18px; border-radius: 50px; margin-bottom: 20px; }
+    .invest-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff4444; animation: blink-red 1s infinite; flex-shrink: 0; }
+    .invest-title { font-family: var(--font-display); font-size: clamp(1.4rem,3.5vw,2.1rem); font-weight: 900; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+    .invest-sub { color: var(--text-muted); font-size: 0.95rem; line-height: 1.65; margin-bottom: 40px; }
+    .invest-prices { display: flex; align-items: center; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .invest-price { flex: 1; min-width: 210px; max-width: 280px; text-align: center; padding: 28px 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; }
+    .invest-price.setup    { background: rgba(255,45,120,0.07); border: 1px solid rgba(255,45,120,0.4); }
+    .invest-price.recurring{ background: rgba(0,240,255,0.07);  border: 1px solid rgba(0,240,255,0.4);  }
+    .ip-tag { display: block; font-family: var(--font-mono); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 12px; }
+    .ip-val { font-family: var(--font-display); font-size: clamp(2rem,5vw,3.2rem); font-weight: 900; line-height: 1; margin-bottom: 8px; }
+    .invest-price.setup .ip-val    { color: var(--pink); text-shadow: 0 0 30px rgba(255,45,120,0.5); }
+    .invest-price.recurring .ip-val{ color: var(--cyan); text-shadow: 0 0 30px rgba(0,240,255,0.5); }
+    .ip-note { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); }
+    .invest-plus { font-family: var(--font-display); font-size: 2.4rem; font-weight: 900; color: var(--purple); text-shadow: 0 0 20px rgba(168,85,247,0.6); flex-shrink: 0; }
+    .invest-roi { background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); border-radius: var(--radius); padding: 14px 22px; font-family: var(--font-mono); font-size: 0.76rem; color: rgba(168,85,247,0.9); text-align: center; margin-bottom: 36px; }
+    .invest-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; margin-bottom: 28px; }
+    .invest-feat { display: flex; gap: 10px; font-size: 0.91rem; color: var(--text-muted); align-items: flex-start; line-height: 1.45; }
+    .invest-feat-check { color: var(--cyan); flex-shrink: 0; font-size: 1.1rem; }
+    .invest-bonus { background: linear-gradient(135deg,rgba(245,197,24,0.1),rgba(245,197,24,0.04)); border: 1px solid rgba(245,197,24,0.4); border-radius: var(--radius); padding: 16px 22px; color: #f5c518; font-size: 0.91rem; font-weight: 600; text-align: center; margin-bottom: 36px; animation: bonus-pulse 2.5s ease-in-out infinite; }
+    @keyframes bonus-pulse { 0%,100%{box-shadow:0 0 15px rgba(245,197,24,0.05)} 50%{box-shadow:0 0 35px rgba(245,197,24,0.22)} }
+    .invest-cta { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; padding: 22px 32px; border-radius: var(--radius); text-decoration: none; background: linear-gradient(135deg,var(--pink),var(--purple)); color: #fff; font-family: var(--font-display); font-size: clamp(0.85rem,2vw,1.05rem); font-weight: 700; letter-spacing: 0.06em; position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(255,45,120,0.4); animation: cta-glow 2.5s ease-in-out infinite; transition: transform 0.2s; }
+    .invest-cta:hover { transform: translateY(-3px); }
+    .invest-cta::before { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent); transition: left 0.4s; }
+    .invest-cta:hover::before { left: 150%; }
+    @keyframes cta-glow { 0%,100%{box-shadow:0 8px 30px rgba(255,45,120,0.35)} 50%{box-shadow:0 8px 50px rgba(255,45,120,0.65),0 0 80px rgba(168,85,247,0.2)} }
+    .invest-note { font-family: var(--font-mono); font-size: 0.67rem; color: var(--text-dim); text-align: center; margin-top: 18px; }
+    @media (max-width: 768px) {
+      .invest-bg { padding: 32px 20px; }
+      .invest-prices { flex-direction: column; align-items: stretch; }
+      .invest-price { min-width: unset; }
+      .invest-plus { transform: rotate(90deg); align-self: center; margin: 4px 0; }
+      .invest-features { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HERO VHS GLITCH — Power Surge + Strip Corruption + Decode
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* Wrapper para posicionamento absoluto das strips */
+    #hero-swap-wrap {
+      display: block;
+      position: relative;
+    }
+
+    /* Texto principal */
+    #hero-swap {
+      display: block;
+      position: relative;
+      white-space: nowrap;
+      font-size: clamp(2rem, 5.5vw, 5rem);
+      color: var(--cyan);
+      text-shadow:
+        0 0 20px rgba(0,240,255,0.55),
+        0 0 45px rgba(0,240,255,0.25),
+        0 0 90px rgba(0,240,255,0.08);
+      animation: neon-breathe 3.5s ease-in-out infinite;
+      transition: opacity 0.04s, color 0.04s;
+    }
+    /* Neon breathing — estado de repouso */
+    @keyframes neon-breathe {
+      0%,100% {
+        text-shadow:
+          0 0 18px rgba(0,240,255,0.5),
+          0 0 40px rgba(0,240,255,0.2),
+          0 0 80px rgba(0,240,255,0.06);
+      }
+      50% {
+        text-shadow:
+          0 0 28px rgba(0,240,255,0.9),
+          0 0 60px rgba(0,240,255,0.5),
+          0 0 120px rgba(0,240,255,0.18),
+          0 0 200px rgba(0,240,255,0.06);
+      }
+    }
+
+    /* Power surge flash */
+    #hero-swap.surge {
+      animation: none;
+      color: #fff !important;
+      text-shadow:
+        0 0 20px #fff,
+        0 0 60px var(--cyan),
+        0 0 120px rgba(0,240,255,0.6) !important;
+      filter: brightness(2.5);
+    }
+
+    /* Post-glow — acende neon no novo texto */
+    #hero-swap.post-glow {
+      animation: post-glow-settle 0.5s ease-out forwards;
+    }
+    @keyframes post-glow-settle {
+      0%   { color:#fff; text-shadow:0 0 60px #fff,0 0 120px var(--cyan),0 0 200px rgba(0,240,255,0.5); filter:brightness(2); }
+      40%  { color:var(--cyan); text-shadow:0 0 40px rgba(0,240,255,0.9),0 0 80px rgba(0,240,255,0.5); filter:brightness(1.3); }
+      100% { color:var(--cyan); text-shadow:0 0 18px rgba(0,240,255,0.5),0 0 40px rgba(0,240,255,0.2); filter:none; }
+    }
+
+    /* RGB split — pseudo-elementos ativos durante .glitching */
+    #hero-swap::before,
+    #hero-swap::after {
+      content: attr(data-text);
+      position: absolute; top: 0; left: 0; right: 0;
+      pointer-events: none; opacity: 0;
+      font-size: inherit; font-weight: inherit;
+      font-family: inherit; white-space: nowrap;
+    }
+    #hero-swap.glitching::before {
+      opacity: 1; color: var(--pink); text-shadow: none;
+      animation: rgb-split-L 0.48s steps(1) forwards;
+    }
+    #hero-swap.glitching::after {
+      opacity: 1; color: #00f0ff; text-shadow: none;
+      animation: rgb-split-R 0.48s steps(1) forwards;
+    }
+    @keyframes rgb-split-L {
+      0%   { clip-path:inset(0 0 100% 0); transform:translateX(0);    opacity:0; }
+      6%   { clip-path:inset(8%  0 72% 0); transform:translateX(-10px);opacity:1; }
+      13%  { clip-path:inset(62% 0 4%  0); transform:translateX(-7px); opacity:0.9; }
+      20%  { clip-path:inset(28% 0 38% 0); transform:translateX(-13px);opacity:1; }
+      28%  { clip-path:inset(3%  0 78% 0); transform:translateX(-6px); opacity:0.7; }
+      36%  { clip-path:inset(74% 0 3%  0); transform:translateX(-10px);opacity:0.9; }
+      44%  { clip-path:inset(18% 0 55% 0); transform:translateX(-5px); opacity:0.6; }
+      56%  { clip-path:inset(48% 0 18% 0); transform:translateX(-4px); opacity:0.4; }
+      70%  { clip-path:inset(82% 0 0%  0); transform:translateX(-2px); opacity:0.2; }
+      100% { opacity:0; transform:translateX(0); }
+    }
+    @keyframes rgb-split-R {
+      0%   { clip-path:inset(100% 0 0 0);  transform:translateX(0);   opacity:0; }
+      6%   { clip-path:inset(72% 0 4%  0); transform:translateX(10px);opacity:1; }
+      13%  { clip-path:inset(4%  0 68% 0); transform:translateX(7px); opacity:0.9; }
+      20%  { clip-path:inset(52% 0 12% 0); transform:translateX(13px);opacity:1; }
+      28%  { clip-path:inset(82% 0 0%  0); transform:translateX(6px); opacity:0.7; }
+      36%  { clip-path:inset(8%  0 65% 0); transform:translateX(10px);opacity:0.9; }
+      44%  { clip-path:inset(38% 0 35% 0); transform:translateX(5px); opacity:0.6; }
+      56%  { clip-path:inset(14% 0 72% 0); transform:translateX(4px); opacity:0.4; }
+      70%  { clip-path:inset(0%  0 88% 0); transform:translateX(2px); opacity:0.2; }
+      100% { opacity:0; transform:translateX(0); }
+    }
+
+    /* VHS strips — injetados via JS */
+    .gstrip {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+    }
+    .gstrip-inner {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(2rem, 5.5vw, 5rem);
+      white-space: nowrap;
+      text-align: center;
+      color: var(--cyan);
+      text-shadow: 0 0 24px currentColor;
+      transform: translateX(var(--sx, 0px));
+      will-change: transform;
+      line-height: 1.2;
+      position: absolute;
+      top: 50%; left: 0; right: 0;
+      translate: 0 -50%;
+    }
+    .gstrip-inner.pink { color: var(--pink); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #hero-swap { animation: none !important; }
+      #hero-swap.surge, #hero-swap.post-glow { animation: none !important; filter: none; }
+      #hero-swap.glitching::before,
+      #hero-swap.glitching::after { animation: none; opacity: 0; }
+    }
+
+    /* CTA Final */
+    .cta-final-section { padding: 80px 0; }
+    .cta-final-box { text-align: center; max-width: 720px; margin: 0 auto; background: var(--bg-card); border: 1px solid rgba(0,240,255,0.2); border-radius: var(--radius-lg); padding: 60px 48px; position: relative; overflow: hidden; }
+    .cta-final-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink)); }
+    .cta-final-box p { color: var(--text-muted); margin-bottom: 36px; line-height: 1.7; }
+    .cta-sub-line { display: flex; justify-content: center; flex-wrap: wrap; margin-top: 20px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+    .cta-sub-line span { padding: 0 12px; border-right: 1px solid var(--border); }
+    .cta-sub-line span:last-child { border-right: none; }
+    @media (max-width: 600px) { .cta-final-box { padding: 40px 20px; } .cta-sub-line { flex-direction: column; align-items: center; gap: 6px; } .cta-sub-line span { border: none; } }
+  </style>
+
+  <noscript><style>[data-reveal] { opacity: 1 !important; transform: none !important; }</style></noscript>
+
+  <script id="ga-config" type="application/json" data-ga-id=""></script>
+  <!-- Meta Pixel: substituir PIXEL_ID pelo ID real do Gerenciador de Negócios Meta -->
+  <!-- Alterar data-pixel-enabled para "true" somente após configurar o pixel_id -->
+  <script id="meta-pixel-config" type="application/json"
+          data-pixel-id="PIXEL_ID_AQUI"
+          data-pixel-enabled="false">
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "FAT Tech CRM IA — S.Y.N.A.P.S.E. Protocol",
+        "description": "Ecossistema Comercial com Agentes Neurais de IA (RAG), WhatsApp API Oficial da Meta e Funil Kanban fortemente automatizado.",
+    "brand": { "@type": "Organization", "name": "FAT Tech", "url": "https://fattech.com.br", "telephone": "+55-35-99849-1017" }
+  }
+  </script>
+  <link rel="stylesheet" href="site-unified.css">
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise"     aria-hidden="true"></div>
+
+  <!-- ══════════════ NAVBAR ══════════════ -->
+  <nav id="navbar" role="navigation" aria-label="Menu principal">
+    <div class="nav-container">
+      <a href="#inicio" class="nav-logo" aria-label="FAT Tech CRM IA">
+        <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+        <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);margin-left:10px;letter-spacing:0.06em">// CRM IA</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html"      class="nav-link">← Site</a></li>
+        <li><a href="#inicio"         class="nav-link active">CRM IA</a></li>
+        <li><a href="#diagnostico"    class="nav-link">Diagnóstico</a></li>
+        <li><a href="#solucao"        class="nav-link">Solução</a></li>
+        <li><a href="#arsenal"        class="nav-link">Funcionalidades</a></li>
+        <li><a href="#planos"         class="nav-link">Planos</a></li>
+        <li><a href="#contato"        class="nav-link">Contato</a></li>
+        <li><a href="blog/index.html" class="nav-link">Blog</a></li>
+      </ul>
+
+      <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20ao%20vivo%20do%20FAT%20Tech%20CRM%20IA%20S.Y.N.A.P.S.E."
+         class="btn-primary nav-cta" target="_blank" rel="noopener noreferrer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span>Agendar Demo</span>
+      </a>
+      <button type="button" class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <!-- Backdrop compartilhado da navbar principal.
+       Mantém CRM alinhado ao mesmo contrato da home. -->
+  <div id="navBackdrop" class="nav-backdrop" aria-hidden="true"></div>
+
+
+  <!-- ══════════════ HERO ══════════════ -->
+  <section id="inicio" class="hero" aria-label="FAT Tech CRM IA S.Y.N.A.P.S.E.">
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+    <div class="hero-grid" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="hero-content">
+
+        <div class="hero-badge" data-reveal>
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>// STATUS: SISTEMA OPERACIONAL ATIVO — S.Y.N.A.P.S.E. IA v2.0</span>
+        </div>
+
+        <h1 class="hero-title" data-reveal>
+          <span class="line1">Imagine sua empresa</span>
+          <span id="hero-swap-wrap"><span id="hero-swap" data-text="fechando vendas">fechando vendas</span></span>
+          <span class="line3">enquanto você dorme.</span>
+        </h1>
+
+        <p class="hero-subtitle" data-reveal>
+          Pare de queimar caixa com estrutura lenta e humana. Implante os <strong>Agentes Neurais da FAT Tech</strong>
+          no seu WhatsApp Oficial: eles atendem em milissegundos, conversam com a autoridade do seu melhor vendedor,
+          operam seu funil Kanban sozinhos e blindam sua operação contra a perda de leads.
+          <strong>24 horas por dia. 7 dias por semana.</strong>
+        </p>
+
+        <div class="hero-actions" data-reveal>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20ativar%20minha%20M%C3%A1quina%20de%20Vendas%20com%20o%20FAT%20Tech%20CRM%20IA%20S.Y.N.A.P.S.E.%20Podemos%20conversar%3F"
+             class="btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+            <span>👉 QUERO ATIVAR MINHA MÁQUINA DE VENDAS</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="#diagnostico" class="btn-outline btn-lg">Ver Demonstração ao Vivo →</a>
+        </div>
+
+        <div class="hero-stats" data-reveal aria-label="Resultados do sistema">
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="24">0</span>
+              <span class="stat-symbol">/7</span>
+            </div>
+            <div class="stat-label">Disponibilidade Total</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="60">0</span>
+              <span class="stat-symbol">%</span>
+            </div>
+            <div class="stat-label">Projeção de Conversão</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="70">0</span>
+              <span class="stat-symbol">%</span>
+            </div>
+            <div class="stat-label">Redução Custo Operacional</div>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <div class="stat-num-wrap">
+              <span class="stat-num" data-target="30">0</span>
+              <span class="stat-symbol">dias</span>
+            </div>
+            <div class="stat-label">Implementação Acelerada</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hero-scroll" style="bottom:80px" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span>SCROLL</span>
+    </div>
+
+    <div class="ticker-outer" aria-hidden="true">
+      <div class="ticker-inner">
+        <span class="ticker-item">WhatsApp API Oficial Meta</span>
+        <span class="ticker-item">Agentes Neurais RAG</span>
+        <span class="ticker-item">CRM Kanban Autônomo</span>
+        <span class="ticker-item">Agenda Automática via IA</span>
+        <span class="ticker-item">Cobranças no Chat</span>
+        <span class="ticker-item">Dashboard de Diretoria</span>
+        <span class="ticker-item">Laboratório Sandbox</span>
+        <span class="ticker-item">Disparo via API Oficial</span>
+        <span class="ticker-item">Chat Supervisionado 24/7</span>
+        <span class="ticker-item">WebHooks &amp; Integrações</span>
+        <span class="ticker-item">WhatsApp API Oficial Meta</span>
+        <span class="ticker-item">Agentes Neurais RAG</span>
+        <span class="ticker-item">CRM Kanban Autônomo</span>
+        <span class="ticker-item">Agenda Automática via IA</span>
+        <span class="ticker-item">Cobranças no Chat</span>
+        <span class="ticker-item">Dashboard de Diretoria</span>
+        <span class="ticker-item">Laboratório Sandbox</span>
+        <span class="ticker-item">Disparo via API Oficial</span>
+        <span class="ticker-item">Chat Supervisionado 24/7</span>
+        <span class="ticker-item">WebHooks &amp; Integrações</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ DIAGNÓSTICO ══════════════ -->
+  <section id="diagnostico" class="section bg-alt" aria-label="O diagnóstico">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 01 — O DIAGNÓSTICO</div>
+        <h2 class="section-title" data-reveal>
+          Você consegue ouvir o som do dinheiro<br>
+          <span class="neon-pink">escorrendo pelo ralo da sua empresa?</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Se você opera sem IA Neural, a resposta é sim. Olhe para sua operação com honestidade brutal.
+          Cada ponto abaixo não é apenas uma ineficiência — é uma hemorragia financeira ativa
+          alimentando seu concorrente.
+        </p>
+      </div>
+
+      <div class="services-grid">
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>O Abismo do WhatsApp Humano</h3>
+          <p>Sua equipe dorme. O lead não. O cliente que te chama às 19h de sexta-feira não vai esperar até segunda. Ele já comprou de quem respondeu em segundos. Você pagou pelo lead para entregá-lo de graça para a concorrência.</p>
+          <p class="dor-quote">Gatilho: Perda de oportunidade imediata e irreversível.</p>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+          </div>
+          <h3>O Sequestro do Talento</h3>
+          <p>Seus melhores vendedores — que deveriam estar fechando contratos complexos — passam boa parte do dia filtrando curiosos, respondendo preços e agendando horários repetitivos. Você está pagando salário de elite para trabalho operacional demais.</p>
+          <p class="dor-quote">Gatilho: Frustração e ineficiência estratégica.</p>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <h3>A Caixa Preta do Funil</h3>
+          <p>Quantos leads você perdeu ontem? Por que eles desistiram? Onde o funil travou? Se você depende de planilhas e da boa vontade da equipe para atualizar o CRM, você está voando às cegas. E decisões no escuro sempre custam caro.</p>
+          <p class="dor-quote">Gatilho: Falta de controle e ansiedade executiva.</p>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <h3>A Colcha de Retalhos Tecnológica</h3>
+          <p>WhatsApp em uma janela, CRM em outra, agenda em outra, pagamento em outra. Sua equipe perde tempo alternando telas, perdendo contexto e gerando erros manuais. A desorganização é a inimiga número um da escala.</p>
+          <p class="dor-quote">Gatilho: Caos operacional como inimigo da escala.</p>
+        </article>
+
+      </div>
+
+      <div style="text-align:center;margin-top:56px;padding:28px 36px;background:rgba(255,45,120,0.05);border:1px solid rgba(255,45,120,0.2);border-radius:var(--radius-lg);" data-reveal>
+        <p style="color:var(--text);font-size:1.05rem;line-height:1.8;max-width:720px;margin:0 auto;">
+          Enquanto você gasta sua energia apagando incêndios operacionais e gerenciando desculpas humanas,
+          o mercado já está sendo dominado por quem automatizou o caos.
+          <strong style="color:var(--pink)">A escolha é sua: evoluir ou se tornar obsoleto.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ SOLUÇÃO ══════════════ -->
+  <section id="solucao" class="section" aria-label="A revolução S.Y.N.A.P.S.E.">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 02 — A VIRADA DE CHAVE</div>
+        <h2 class="section-title" data-reveal>
+          Apresentamos o Cérebro Digital<br>
+          <span class="neon-cyan">do seu Negócio: FAT Tech CRM IA</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Esqueça chatbots burros de "digite 1 para financeiro". Nós não vendemos software de prateleira —
+          nós implantamos um <strong>Agente Neural de Inteligência Comercial</strong>. WhatsApp API Oficial,
+          IA de Última Geração (RAG) e Funil Kanban Autônomo em uma única interface implacável.
+        </p>
+      </div>
+
+      <div class="synapse-architecture" data-reveal>
+        <article class="synapse-manifesto">
+          <div class="section-tagline">Cérebro digital + operação comercial</div>
+          <h3>Não é um software solto. É um operador digital treinado para vender, classificar e mover seu funil sem depender de digitação humana.</h3>
+          <p>
+            A FAT Tech implanta um sistema comercial inteiro em cima da sua operação: o lead entra no WhatsApp Oficial,
+            a IA entende contexto e intenção, consulta o conhecimento profundo da sua empresa, responde com autoridade e
+            já registra a próxima ação dentro do CRM. Em vez de um carrossel escondendo a proposta, deixamos a arquitetura
+            explícita: canal oficial, cérebro treinado e esteira autônoma trabalhando juntos em tempo real.
+          </p>
+        </article>
+
+        <div class="synapse-side">
+          <article class="synapse-stack">
+            <div class="synapse-stack-item">
+              <span class="synapse-stack-label">Camada 01</span>
+              <strong>WhatsApp API Oficial da Meta</strong>
+              <p>Canal robusto, escalável e seguro, sem gambiarra nem risco operacional para a sua máquina de vendas.</p>
+            </div>
+            <div class="synapse-stack-item">
+              <span class="synapse-stack-label">Camada 02</span>
+              <strong>Agente Neural com RAG</strong>
+              <p>Treinado com catálogo, objeções, regras comerciais, diferenciais e linguagem da sua operação.</p>
+            </div>
+            <div class="synapse-stack-item">
+              <span class="synapse-stack-label">Camada 03</span>
+              <strong>CRM Kanban Autônomo</strong>
+              <p>Qualifica, move cards, registra contexto, agenda etapas e entrega visibilidade real para gestão e vendas.</p>
+            </div>
+          </article>
+
+          <article class="synapse-flow">
+            <div class="synapse-flow-grid">
+              <div class="synapse-flow-card">
+                <span>Entrada</span>
+                <strong>Atende em segundos</strong>
+                <p>Nenhum lead esfria enquanto sua equipe dorme ou está ocupada.</p>
+              </div>
+              <div class="synapse-flow-card">
+                <span>Processamento</span>
+                <strong>Qualifica e decide</strong>
+                <p>A IA interpreta contexto, identifica intenção e prepara o próximo passo automaticamente.</p>
+              </div>
+              <div class="synapse-flow-card">
+                <span>Operação</span>
+                <strong>Atualiza o funil</strong>
+                <p>O CRM recebe movimento, histórico e status real sem ninguém alimentando planilha.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ ARSENAL ══════════════ -->
+  <section id="arsenal" class="section bg-alt" aria-label="Arsenal técnico">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 03 — O ARSENAL COMPLETO</div>
+        <h2 class="section-title" data-reveal>
+          Uma infraestrutura comercial<br>
+          <span class="neon-cyan">à prova de falhas humanas</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Cada funcionalidade foi projetada para eliminar um ponto de perda no seu processo comercial.
+          Tudo integrado. Tudo em uma única tela.
+        </p>
+      </div>
+
+      <div class="services-grid">
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Agenda Autônoma via IA</h3>
+          <p>A IA acessa a agenda da equipe em tempo real e marca reuniões, consultas ou visitas no melhor horário disponível. Elimina o vai-e-vem de mensagens instantaneamente — sem intervenção humana.</p>
+          <span class="feature-badge">Google Agenda integrado</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20a%20Agenda%20Aut%C3%B4noma%20via%20IA%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>Vendas e Cobranças Diretas no Chat</h3>
+          <p>Seus Agentes enviam links de pagamento (PIX/Cartão) e fecham negócios ali mesmo na conversa. Perfeito para recuperar carrinhos, cobrar mensalidades e fechar serviços rápidos sem atrito.</p>
+          <span class="feature-badge">PIX + Cartão integrado</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20Vendas%20e%20Cobran%C3%A7as%20no%20Chat%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Dashboard de Diretoria em Tempo Real</h3>
+          <p>Visualize SLA de primeira resposta, Velocity do pipeline, No-Show de agendamentos e faturamento estimado por etapa. Decisões baseadas em dados puros de engenharia — não em achismos.</p>
+          <span class="feature-badge">Métricas em tempo real</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Dashboard%20de%20Diretoria%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Laboratório Sandbox — Segurança Total</h3>
+          <p>Antes do Go Live, testamos e simulamos centenas de conversas do seu Agente em ambiente controlado. Sua marca nunca fica exposta a um agente despreparado ou com prompt errado.</p>
+          <span class="feature-badge">Ambiente isolado</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Laborat%C3%B3rio%20Sandbox%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>Contador de Janela de Atendimento</h3>
+          <p>Gestão rigorosa da janela de 24h da API Oficial. O sistema alerta o momento exato para acionar agentes humanos ou follow-up automático antes que a sessão expire — otimizando custos com a Meta.</p>
+          <span class="feature-badge">Controle de janelas</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Contador%20de%20Janela%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>WebHooks &amp; Integrações Ilimitadas</h3>
+          <p>Conecte seu ERP, e-commerce, sistema médico ou qualquer ferramenta via API (n8n, Zapier, etc.) com total flexibilidade. O CRM IA se torna o coração do seu ecossistema tecnológico.</p>
+          <span class="feature-badge">API &amp; WebHooks</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20WebHooks%20e%20integra%C3%A7%C3%B5es%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <h3>Catálogo Neural de Produtos</h3>
+          <p>Adicione produtos com fotos, estoque e descrições ricas. Seus Agentes apresentam, vendem e tiram dúvidas técnicas sobre cada item como um especialista que conhece o catálogo de memória.</p>
+          <span class="feature-badge">Produtos &amp; Serviços</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Cat%C3%A1logo%20Neural%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </div>
+          <h3>Disparo em Massa via API Oficial</h3>
+          <p>Reative bases antigas, dispare campanhas segmentadas e faça follow-up massivo em total conformidade com as políticas da Meta. Alcance quem já demonstrou interesse e reacenda leads frios.</p>
+          <span class="feature-badge">Disparos em massa oficiais</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20Disparos%20em%20Massa%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+        <article class="service-card" data-reveal>
+          <div class="service-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Gestão Completa de Operadores</h3>
+          <p>Configure a equipe, distribua atendimentos por regras inteligentes (Round-robin, Híbrido) e monitore o desempenho de cada colaborador com relatórios detalhados de produtividade e SLA.</p>
+          <span class="feature-badge">Gestão de equipe</span>
+          <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20a%20Gest%C3%A3o%20de%20Operadores%20do%20FAT%20Tech%20CRM." class="service-link" target="_blank" rel="noopener noreferrer">Saiba mais <span>→</span></a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ COMPARATIVO ══════════════ -->
+  <section class="section" aria-label="A matemática do crescimento">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 04 — A MATEMÁTICA DO CRESCIMENTO</div>
+        <h2 class="section-title" data-reveal>
+          Por que continuar operando no Caos<br>
+          <span class="neon-pink">é um erro que está te custando caro</span>
+        </h2>
+      </div>
+
+      <div class="cyber-vs" data-reveal>
+
+        <div class="cyberv-col cyberv-bad">
+          <span class="cyberv-status bad">SISTEMA CRÍTICO</span>
+          <h3>O Modelo Antigo — A Hemorragia</h3>
+          <div class="cyberv-list">
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--pink)">✗</span><span>Custo altíssimo com salários e encargos de múltiplos atendentes e SDRs</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--pink)">✗</span><span>Turnover alto: o conhecimento vai embora com quem pede demissão</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--pink)">✗</span><span>Vendas limitadas ao horário comercial — fora dele, dinheiro perdido</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--pink)">✗</span><span>Dezenas de softwares fragmentados que não conversam entre si</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--pink)">✗</span><span>Equipe de elite sobrecarregada com dúvidas básicas e repetitivas</span></div>
+          </div>
+          <div class="cyberv-result">Alto custo fixo · Retorno imprevisível · Escala travada</div>
+        </div>
+
+        <div class="cyberv-sep">
+          <div class="cyberv-vs-badge" aria-hidden="true">VS</div>
+        </div>
+
+        <div class="cyberv-col cyberv-good">
+          <span class="cyberv-status good">SISTEMA ATIVO — 24/7</span>
+          <h3>FAT Tech IA — A Blindagem de Caixa</h3>
+          <div class="cyberv-list">
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--cyan)">✓</span><span>Custo fixo reduzido — um investimento que substitui múltiplos salários comerciais</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--cyan)">✓</span><span>IA Neural que aprende, melhora e nunca esquece — sem turnover, sem retrabalho</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--cyan)">✓</span><span>Operação comercial 24/7 — seu negócio vende enquanto você dorme</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--cyan)">✓</span><span>Ecossistema unificado: WhatsApp, IA e CRM em uma única tela</span></div>
+            <div class="cyberv-item"><span class="cyberv-bullet" style="color:var(--cyan)">✓</span><span>Equipe focada no que importa: fechar contratos e atender clientes VIP</span></div>
+          </div>
+          <div class="cyberv-result">Menos custo · Mais escala · Mais lucro · Previsibilidade total</div>
+        </div>
+
+        <div class="cyber-roi">
+          <div class="cyber-roi-inner">
+            <div style="text-align:center">
+              <div class="cyber-roi-num">R$3K+</div>
+              <div class="cyber-roi-sub">economia / mês</div>
+            </div>
+            <div class="cyber-roi-text">
+              Em muitos cenários, o FAT Tech CRM IA <strong style="color:var(--text)">alivia a rotina equivalente a 1 ou 2 atendentes comerciais</strong>,
+              com payback entre 90 e 120 dias, dependendo da demanda, da margem e da disciplina de operação.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ INVESTIMENTO ══════════════ -->
+  <section id="planos" class="section invest-section" aria-label="Investimento — Protocolo S.Y.N.A.P.S.E.">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 05 — PROTOCOLO S.Y.N.A.P.S.E. — O INVESTIMENTO</div>
+        <h2 class="section-title" data-reveal>
+          Quanto vale ter sua empresa<br>
+          <span class="neon-cyan">vendendo enquanto você dorme?</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Não é mensalidade de software. É a ativação de uma infraestrutura comercial de elite —
+          construída, treinada e gerenciada pela FAT Tech exclusivamente para o seu negócio.
+        </p>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           SCARCITY BAR — Contador de vagas disponíveis
+           ATENÇÃO: Atualizar manualmente o número em
+           id="scarcitySlots" e o mês toda virada de mês.
+           Controle via pipeline real de implantações.
+      ════════════════════════════════════════════════ -->
+      <div id="scarcityBar"
+           data-reveal
+           role="status"
+           aria-live="polite"
+           aria-label="Disponibilidade de vagas este mês"
+           style="background:rgba(255,45,120,0.06);
+                  border:1px solid rgba(255,45,120,0.28);
+                  border-radius:10px;padding:16px 22px;margin-bottom:32px;
+                  display:flex;align-items:center;
+                  justify-content:space-between;flex-wrap:wrap;gap:14px;">
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span aria-hidden="true"
+                style="width:9px;height:9px;border-radius:50%;
+                       background:var(--pink);display:inline-block;
+                       flex-shrink:0;animation:scarcityPulse 1.5s ease-in-out infinite;">
+          </span>
+          <span style="font-family:var(--font-mono);font-size:0.68rem;
+                       color:var(--pink);letter-spacing:.07em;">
+            // DISPONIBILIDADE — ABRIL 2026
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+          <span style="font-family:var(--font-display);font-size:1rem;color:var(--text);">
+            <strong id="scarcitySlots"
+                    style="color:var(--cyan);font-size:1.35rem;font-weight:700;">2</strong>
+            <span style="color:var(--text-muted);font-size:0.82rem;"> vagas abertas este mês</span>
+          </span>
+          <a class="scarcity-cta"
+             href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Vi%20que%20restam%20poucas%20vagas%20para%20o%20S.Y.N.A.P.S.E.%20em%20abril.%20Quero%20garantir%20a%20minha."
+             target="_blank"
+             rel="noopener noreferrer">
+            GARANTIR MINHA VAGA →
+          </a>
+        </div>
+      </div>
+
+      <style>
+      @keyframes scarcityPulse {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.4); opacity: .55; }
+      }
+      .scarcity-cta {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--cyan);
+        border: 1px solid rgba(0,240,255,0.3);
+        padding: 7px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        white-space: nowrap;
+        background: transparent;
+        transition: background .2s, border-color .2s;
+      }
+      .scarcity-cta:hover {
+        background: rgba(0,240,255,0.08);
+        border-color: rgba(0,240,255,0.6);
+      }
+      </style>
+
+      <div class="invest-card" data-reveal>
+        <div class="invest-bg">
+          <canvas id="investCanvas" aria-hidden="true"></canvas>
+          <div class="invest-corner" aria-hidden="true">
+            // STATUS: ATIVO<br>
+            // SERVIDOR: ONLINE<br>
+            // API_META: OK
+          </div>
+          <div class="invest-inner">
+
+            <div class="invest-badge">
+              <span class="invest-badge-dot"></span>
+              ★ BEST SELLER — NÍVEL 03 — MÁQUINA DE VENDAS
+            </div>
+
+            <h3 class="invest-title">🚀 FAT Tech CRM IA — S.Y.N.A.P.S.E. Protocol</h3>
+            <p class="invest-sub">
+              O Cérebro Digital do seu negócio: CRM IA que vende 24h por dia, 7 dias por semana. Ideal para empresas que precisam
+              vender mais sem contratar vendedores — automatizando atendimento, qualificação e agendamento no WhatsApp.
+            </p>
+
+            <div class="invest-prices">
+              <div class="invest-price setup">
+                <span class="ip-tag">Taxa de Engenharia &amp; Implantação VIP</span>
+                <div class="ip-val"><small style="font-size:0.45em;vertical-align:super">R$</small>3.260</div>
+                <span class="ip-note">pago uma única vez</span>
+              </div>
+              <div class="invest-plus" aria-hidden="true">+</div>
+              <div class="invest-price recurring">
+                <span class="ip-tag">Licença, Servidor &amp; API</span>
+                <div class="ip-val"><small style="font-size:0.45em;vertical-align:super">R$</small>497</div>
+                <span class="ip-note">/ mês — recorrência</span>
+              </div>
+            </div>
+
+            <div class="invest-roi">
+              💡 Pode reduzir boa parte do peso operacional de atendimento e pré-vendas, com payback plausível entre 90 e 120 dias quando a operação absorve o sistema de verdade
+            </div>
+
+            <div class="invest-features">
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>CRM IA completo: Kanban, Agentes Neurais RAG, WhatsApp API Oficial, Dashboards</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Treinamento RAG personalizado com catálogo, regras e voz da sua empresa</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Laboratório Sandbox — testes antes do Go Live, zero exposição da marca</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Onboarding VIP assistido — 30 dias de acompanhamento exclusivo com a equipe</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Suporte técnico e estratégico VIP via WhatsApp direto com o fundador</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Dashboards em tempo real — SLA, Velocity, conversão e previsibilidade</span></div>
+            </div>
+
+            <div class="invest-bonus">
+              🎁 BRINDE EXCLUSIVO: Agenda Automática via IA integrada — ativada já no setup, sem custo adicional.
+            </div>
+
+            <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20ativar%20o%20Protocolo%20S.Y.N.A.P.S.E.%20%E2%80%94%20M%C3%A1quina%20de%20Vendas%20CRM%20IA%20(N%C3%ADvel%2003).%20Podemos%20conversar%3F"
+               class="invest-cta" target="_blank" rel="noopener noreferrer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              ⚔️ ATIVAR MEU PROTOCOLO S.Y.N.A.P.S.E. AGORA
+            </a>
+
+            <p class="invest-note">Sem fidelidade mínima · A taxa de setup refere-se à engenharia e implantação · Cancele quando quiser</p>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="planos-note" style="margin-top:32px" data-reveal>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Precisa de um plano personalizado? Temos opções desde R$297/mês até BPO completo. <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Preciso%20de%20um%20plano%20personalizado%20para%20minha%20empresa." target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">Fale conosco →</a></span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ CONTATO ══════════════ -->
+  <section id="contato" class="section contato-section" aria-label="Próximo passo">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag" data-reveal>// 06 — PRÓXIMO PASSO</div>
+        <h2 class="section-title" data-reveal>
+          Pronto para nunca mais perder<br>
+          <span class="neon-cyan">um lead sequer para a concorrência?</span>
+        </h2>
+        <p class="section-sub" data-reveal>
+          Fale agora com nossa equipe. Mostramos o sistema S.Y.N.A.P.S.E. funcionando ao vivo,
+          compartilhando a tela, com o Agente Neural já configurado para responder como sua empresa.
+          <strong>Resposta humana em até 2 horas. Agente IA ativo 24/7.</strong>
+        </p>
+      </div>
+
+      <div class="contato-grid">
+        <div class="contato-info" data-reveal>
+          <div class="info-item">
+            <span class="info-icon">📱</span>
+            <div><strong>WHATSAPP VIP COMERCIAL</strong><span><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20a%20p%C3%A1gina%20do%20CRM%20IA%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20a%20solu%C3%A7%C3%A3o%20S.Y.N.A.P.S.E." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a></span></div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📧</span>
+            <div><strong>E-MAIL INSTITUCIONAL</strong><span><a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a></span></div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📍</span>
+            <div><strong>SEDE</strong><span>Januária, MG — Brasil</span></div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🕐</span>
+            <div><strong>ATENDIMENTO HUMANO</strong><span>Seg–Sex das 8h às 18h<br><span style="color:var(--cyan);font-family:var(--font-mono);font-size:0.8rem">Agente IA ativo 24/7</span></span></div>
+          </div>
+          <div class="contato-social">
+            <span>// REDES SOCIAIS</span>
+            <div class="social-row">
+              <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20a%20p%C3%A1gina%20do%20CRM%20IA%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20a%20solu%C3%A7%C3%A3o%20S.Y.N.A.P.S.E." class="social-btn wpp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </a>
+              <a href="https://www.instagram.com/_fat.tech/" class="social-btn insta" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+              <a href="https://www.linkedin.com/company/94845466/" class="social-btn linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </a>
+              <a href="https://www.facebook.com/Fat.Tech42" class="social-btn facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <form class="contato-form" id="contactForm" novalidate data-reveal>
+          <div class="form-header">
+            <div class="section-tag" style="margin-bottom:8px">// AGENDAR DEMONSTRAÇÃO GRATUITA</div>
+            <h3 style="font-family:var(--font-display);font-size:1.1rem;color:var(--text)">Veja o S.Y.N.A.P.S.E. em ação no seu negócio</h3>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nome">Nome Completo</label>
+              <input type="text" id="nome" name="nome" placeholder="Seu nome" required autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label for="whatsapp">Seu WhatsApp</label>
+              <input type="tel" id="whatsapp" name="whatsapp" placeholder="(00) 00000-0000" required autocomplete="tel" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label for="interesse">Tenho interesse em</label>
+            <select id="interesse" name="interesse">
+              <option value="⚔️ Ativar o Protocolo S.Y.N.A.P.S.E. — Máquina de Vendas CRM IA">Ativar o Protocolo S.Y.N.A.P.S.E. — CRM IA</option>
+              <option value="🎯 Demonstração gratuita ao vivo primeiro">Demonstração gratuita ao vivo primeiro</option>
+              <option value="💬 Apenas o Agente Neural no WhatsApp API Oficial">Apenas o Agente Neural no WhatsApp</option>
+              <option value="👑 Plano personalizado para minha empresa">Plano personalizado para minha empresa</option>
+              <option value="❓ Tenho dúvidas e quero conversar">Tenho dúvidas e quero conversar</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mensagem">Conte sobre seu negócio <span style="color:var(--text-dim)">(opcional)</span></label>
+            <textarea id="mensagem" name="mensagem" placeholder="Segmento, tamanho da equipe, principal desafio..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary btn-full">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <span>👉 AGENDAR MINHA DEMONSTRAÇÃO GRATUITA AO VIVO</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ CTA FINAL ══════════════ -->
+  <section class="cta-final-section" aria-label="Chamada final">
+    <div class="container">
+      <div class="cta-final-box" data-reveal>
+        <div class="section-tag" style="margin-bottom:16px">// A ESCOLHA É SIMPLES</div>
+        <h2 class="section-title">
+          Não deixe mais<br>
+          <span class="neon-cyan">dinheiro na mesa.</span>
+        </h2>
+        <p>
+          Continuar apagando incêndios e perdendo vendas para concorrentes que já automatizaram —
+          ou ativar o S.Y.N.A.P.S.E. e assumir o controle total da sua escala comercial.
+          A revolução da IA já está na sua cidade. De qual lado você vai estar?
+        </p>
+        <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20agendar%20minha%20demonstra%C3%A7%C3%A3o%20gratuita%20do%20FAT%20Tech%20CRM%20IA%20S.Y.N.A.P.S.E.%20ao%20vivo."
+           class="btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+          👉 AGENDAR DEMONSTRAÇÃO GRATUITA AO VIVO
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <div class="cta-sub-line">
+          <span>Sem compromisso</span>
+          <span>Demo ao vivo com o sistema real</span>
+          <span>Implantação inicial em até 45 dias</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="container">
+      <div class="footer-grid">
+
+        <div class="footer-brand">
+          <a href="#inicio" class="footer-logo nav-logo" aria-label="FAT Tech CRM IA">
+            <span class="logo-bracket">[</span><span class="logo-fat">FAT</span><span class="logo-tech">TECH</span><span class="logo-bracket">]</span>
+          </a>
+          <p>Ecossistema Comercial com Agentes Neurais de IA (RAG), WhatsApp API Oficial (Meta) e Funil Kanban Automatizado para negócios que não podem parar de crescer.</p>
+          <div class="footer-social">
+            <a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20a%20p%C3%A1gina%20do%20CRM%20IA%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20a%20solu%C3%A7%C3%A3o%20S.Y.N.A.P.S.E." class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+            <a href="https://www.instagram.com/_fat.tech/" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+            <a href="https://www.linkedin.com/company/94845466/" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+            <a href="https://www.facebook.com/Fat.Tech42" class="fsocial-btn" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="index.html">← Site Principal</a></li>
+            <li><a href="blog/index.html">Blog</a></li>
+            <li><a href="#inicio">CRM IA</a></li>
+            <li><a href="#diagnostico">Diagnóstico</a></li>
+            <li><a href="#solucao">A Solução</a></li>
+            <li><a href="#arsenal">Funcionalidades</a></li>
+            <li><a href="#planos">Investimento</a></li>
+            <li><a href="#contato">Contato</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Funcionalidades CRM IA</h4>
+          <ul>
+            <li><a href="#arsenal">Agentes Neurais RAG</a></li>
+            <li><a href="#arsenal">WhatsApp API Oficial</a></li>
+            <li><a href="#arsenal">CRM Kanban Autônomo</a></li>
+            <li><a href="#arsenal">Agenda Automática via IA</a></li>
+            <li><a href="#arsenal">Dashboard de Diretoria</a></li>
+            <li><a href="#arsenal">Laboratório Sandbox</a></li>
+            <li><a href="#arsenal">Disparo Massivo Oficial</a></li>
+            <li><a href="#arsenal">WebHooks &amp; Integrações</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul class="footer-contact">
+            <li><a href="https://wa.me/5535998491017?text=Ol%C3%A1%21%20Visitei%20a%20p%C3%A1gina%20do%20CRM%20IA%20da%20FAT%20Tech%20e%20quero%20falar%20com%20um%20especialista%20sobre%20a%20solu%C3%A7%C3%A3o%20S.Y.N.A.P.S.E." target="_blank" rel="noopener noreferrer">+55 (35) 99849-1017</a></li>
+            <li><a href="mailto:contato@fattech.com.br">contato@fattech.com.br</a></li>
+            <li>Januária, MG — Brasil</li>
+            <li style="color:var(--cyan);font-family:var(--font-mono);font-size:0.75rem;margin-top:8px">Agente IA ativo 24/7</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 FAT Tech — Todos os direitos reservados. | <a href="privacidade.html" style="color:var(--text-muted)">Política de Privacidade</a> | <a href="index.html" style="color:var(--text-muted)">Site Principal</a></p>
+        <p style="color:var(--cyan)">Desenvolvido com IA Neural pela FAT Tech CRM Division.</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- WA Float -->
+  <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Vi%20o%20site%20do%20FAT%20Tech%20CRM%20IA%20e%20quero%20saber%20mais."
+     class="wa-float" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
+  <!-- Banner de cookies LGPD -->
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-modal="true" aria-label="Aviso de privacidade e cookies" aria-live="polite" hidden>
+    <div class="cookie-banner__inner">
+      <div class="cookie-banner__icon" aria-hidden="true">🍪</div>
+      <div class="cookie-banner__text">
+        <strong>Privacidade &amp; Cookies</strong>
+        <p>Usamos cookies essenciais para o funcionamento do site e, com seu consentimento, cookies analíticos para melhorar sua experiência. Protegidos pela <a href="privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a> conforme a <abbr title="Lei Geral de Proteção de Dados">LGPD</abbr>.</p>
+      </div>
+      <div class="cookie-banner__actions">
+        <button id="cookieReject" class="cookie-btn cookie-btn--outline" type="button">Apenas essenciais</button>
+        <button id="cookieAccept" class="cookie-btn cookie-btn--primary" type="button">Aceitar todos</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+  <script>
+  /* ── Invest Canvas — Neural Net Background ────────────────────── */
+  (function () {
+    var canvas = document.getElementById('investCanvas');
+    if (!canvas || !canvas.getContext) return;
+    var ctx   = canvas.getContext('2d');
+    var nodes = [];
+    var RAF   = 0;
+    var active = false;
+
+    function resize() {
+      var parent = canvas.parentElement;
+      canvas.width  = parent.offsetWidth;
+      canvas.height = parent.offsetHeight;
+    }
+
+    function init() {
+      resize();
+      nodes = [];
+      var n = Math.min(45, Math.floor(canvas.width * canvas.height / 6500));
+      for (var i = 0; i < n; i++) {
+        nodes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: (Math.random() - 0.5) * 0.22,
+          r: Math.random() * 1.4 + 0.4
+        });
+      }
+    }
+
+    function draw() {
+      if (!active) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      nodes.forEach(function (n) {
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
+        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,240,255,0.55)';
+        ctx.fill();
+      });
+      for (var i = 0; i < nodes.length; i++) {
+        for (var j = i + 1; j < nodes.length; j++) {
+          var dx = nodes[i].x - nodes[j].x;
+          var dy = nodes[i].y - nodes[j].y;
+          var d  = Math.sqrt(dx * dx + dy * dy);
+          if (d < 110) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = 'rgba(0,240,255,' + (0.15 * (1 - d / 110)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      RAF = requestAnimationFrame(draw);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !active) {
+          active = true; init(); draw();
+        } else if (!entry.isIntersecting) {
+          active = false; cancelAnimationFrame(RAF);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    var card = canvas.closest('.invest-card');
+    if (card) io.observe(card);
+
+    window.addEventListener('resize', function () {
+      if (active) { cancelAnimationFrame(RAF); init(); draw(); }
+    });
+  })();
+
+  /* ── Hero VHS Glitch — Power Surge + Strip Corruption + Decode ── */
+  (function () {
+    /* ── Config ── */
+    var WORDS = [
+      'fechando vendas',
+      'faturando mais',
+      'qualificando leads',
+      'vendendo de novo',
+      'convertendo clientes',
+      'agendando consultas',
+      'vendendo carros',
+      'apresentando imóveis'
+    ];
+    var INTERVAL_MS  = 3200;  /* tempo entre ciclos              */
+    var N_STRIPS     = 8;     /* faixas VHS                      */
+    var SCRAMBLE_F   = 9;     /* frames de caos total            */
+    var DECODE_F     = 7;     /* frames de decodificação         */
+    var FRAME_MS     = 30;    /* ms por frame de scramble        */
+    var STRIP_SETTLE = 220;   /* ms para strips voltarem ao eixo */
+    var CLEANUP_MS   = 500;   /* ms para remover strips          */
+
+    /* Charset cyberpunk: katakana + símbolos + hex */
+    var CS = 'アイウエオカキクケコサシスセタチツテナニヌネハヒフヘマミムヤユヨラリルワヲン!@#$%^&*<>[]{}|\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    function rnd() { return CS[Math.floor(Math.random() * CS.length)]; }
+
+    var el   = document.getElementById('hero-swap');
+    var wrap = document.getElementById('hero-swap-wrap');
+    if (!el || !wrap) return;
+
+    var idx  = 0;
+    var busy = false;
+
+    /* ── Fase 1: Power Surge (50ms) ── */
+    function phaseSurge(cb) {
+      el.classList.add('surge');
+      setTimeout(function () {
+        el.classList.remove('surge');
+        cb();
+      }, 55);
+    }
+
+    /* ── Fase 2+3: VHS Strips + Scramble ── */
+    function phaseStripsAndDecode(next, cb) {
+      /* Cria N_STRIPS faixas cobrindo o texto */
+      var strips = [];
+      for (var i = 0; i < N_STRIPS; i++) {
+        var clipT  = (i / N_STRIPS * 100).toFixed(1) + '%';
+        var clipB  = ((N_STRIPS - i - 1) / N_STRIPS * 100).toFixed(1) + '%';
+        var xOff   = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 18 + 5);
+        var isPink = Math.random() > 0.75;
+
+        var strip  = document.createElement('div');
+        var inner  = document.createElement('span');
+        strip.className = 'gstrip';
+        strip.style.clipPath = 'inset(' + clipT + ' 0 ' + clipB + ' 0)';
+
+        inner.className = 'gstrip-inner' + (isPink ? ' pink' : '');
+        inner.textContent = el.textContent;
+        inner.style.setProperty('--sx', xOff + 'px');
+
+        strip.appendChild(inner);
+        wrap.appendChild(strip);
+        strips.push({ el: strip, inner: inner });
+      }
+
+      /* Esconde o texto real enquanto as strips dominam */
+      el.style.opacity = '0';
+      el.classList.add('glitching');
+
+      /* ── Scramble: caos → decode ── */
+      var frame = 0;
+      var totalF = SCRAMBLE_F + DECODE_F;
+      var scrTimer = setInterval(function () {
+
+        if (frame < SCRAMBLE_F) {
+          /* Caos total — chars aleatórios */
+          var chaos = next.split('').map(function (c) {
+            return c === ' ' ? '\u00A0' : rnd();
+          }).join('');
+          el.textContent = chaos;
+          el.setAttribute('data-text', chaos);
+          strips.forEach(function (s) { s.inner.textContent = chaos; });
+
+        } else if (frame < totalF) {
+          /* Decodificação progressiva da esquerda para a direita */
+          var prog    = (frame - SCRAMBLE_F) / DECODE_F;
+          var revealN = Math.floor(prog * next.length);
+          var partial = next.split('').map(function (c, i) {
+            if (i < revealN) return c;
+            return c === ' ' ? '\u00A0' : rnd();
+          }).join('');
+          el.textContent = partial;
+          el.setAttribute('data-text', partial);
+          strips.forEach(function (s) { s.inner.textContent = partial; });
+
+        } else {
+          /* Texto final definido */
+          el.textContent = next;
+          el.setAttribute('data-text', next);
+          strips.forEach(function (s) { s.inner.textContent = next; });
+          clearInterval(scrTimer);
+        }
+        frame++;
+      }, FRAME_MS);
+
+      /* ── Strips voltam ao eixo (efeito VHS se re-alinhando) ── */
+      setTimeout(function () {
+        strips.forEach(function (s, i) {
+          setTimeout(function () {
+            s.inner.style.transition = 'transform 0.13s ease-out';
+            s.inner.style.setProperty('--sx', '0px');
+          }, i * 20);
+        });
+      }, STRIP_SETTLE);
+
+      /* ── Limpeza ── */
+      setTimeout(function () {
+        strips.forEach(function (s) {
+          if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
+        });
+        el.style.opacity = '1';
+        el.classList.remove('glitching');
+        cb();
+      }, CLEANUP_MS);
+    }
+
+    /* ── Fase 4: Post-glow ── */
+    function phasePostGlow(done) {
+      el.classList.add('post-glow');
+      setTimeout(function () {
+        el.classList.remove('post-glow');
+        done();
+      }, 520);
+    }
+
+    /* ── Orquestração do ciclo ── */
+    function cycle() {
+      if (busy) return;
+      busy = true;
+      idx = (idx + 1) % WORDS.length;
+      var next = WORDS[idx];
+
+      phaseSurge(function () {
+        phaseStripsAndDecode(next, function () {
+          phasePostGlow(function () {
+            busy = false;
+          });
+        });
+      });
+    }
+
+    setInterval(cycle, INTERVAL_MS);
+  })();
+  </script>
+  <script src="global-particles.js"></script>
+</body>
+</html>
+
+
+
+
+

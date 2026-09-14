@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║  FAT TECH × IMPULSE CRM — LP DEDICADA                    ║
+  ║  Hospedada em fattech.com.br/lp/impulse-crm/             ║
+  ║  Design system próprio (glassmorphism dark premium)      ║
+  ║  Independente do tema cyberpunk do site principal.       ║
+  ╚══════════════════════════════════════════════════════════╝
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- ── SEO Primário ── -->
+  <title>Impulse CRM | Um time comercial a um clique — FAT Tech</title>
+  <meta name="description" content="Impulse CRM da FAT Tech: IA preditiva, WhatsApp Oficial Meta, agentes neurais, kanban inteligente e automações sob demanda. Faça mais negócios em menos tempo." />
+  <meta name="keywords" content="Impulse CRM, CRM com IA, agentes neurais, WhatsApp Business API, automação comercial, FAT Tech, sandbox de prompts, RAG, kanban, agenda IA" />
+  <meta name="author" content="FAT Tech — Walfredo Figueiredo" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://fattech.com.br/lp/impulse-crm/" />
+
+  <!-- ── Open Graph / Facebook / WhatsApp ── -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fattech.com.br/lp/impulse-crm/" />
+  <meta property="og:site_name" content="FAT Tech" />
+  <meta property="og:title" content="Impulse CRM | Um time comercial a um clique" />
+  <meta property="og:description" content="Plataforma de CRM com IA preditiva, WhatsApp oficial Meta e agentes neurais. Do diagnóstico à operação 24/7 — pela FAT Tech." />
+  <meta property="og:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Impulse CRM — FAT Tech" />
+  <meta name="twitter:description" content="CRM inteligente com agentes neurais, WhatsApp oficial e automação comercial supervisionada." />
+  <meta name="twitter:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="../../dist/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="../../dist/favicon.png" />
+  <meta name="theme-color" content="#050507" />
+
+  <!-- ── Security ── -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <!-- ── Schema.org Product LD+JSON ── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Impulse CRM",
+    "brand": { "@type": "Brand", "name": "FAT Tech" },
+    "description": "Plataforma de CRM com IA preditiva, WhatsApp oficial Meta, agentes neurais e automações comerciais.",
+    "url": "https://fattech.com.br/lp/impulse-crm/",
+    "image": "https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Taxa de Engenharia e Implementação",
+        "price": "4997",
+        "priceCurrency": "BRL"
+      },
+      {
+        "@type": "Offer",
+        "name": "Licença Servidor API",
+        "price": "897",
+        "priceCurrency": "BRL",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "billingIncrement": "P1M"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- ── Fontes ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- ── CSS principal da LP ── -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ── Google Consent Mode v2 — LGPD: default denied antes do gtag ── -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) — mesmo ID do site principal -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    gtag('js', new Date());
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+<body>
+  <div class="page-glow page-glow--pink" aria-hidden="true"></div>
+  <div class="page-glow page-glow--green" aria-hidden="true"></div>
+  <div class="page-noise" aria-hidden="true"></div>
+
+  <!-- Top ribbon: FAT Tech ownership signal -->
+  <div style="background:rgba(255,47,125,0.08);border-bottom:1px solid rgba(255,47,125,0.18);padding:8px 16px;text-align:center;font-size:0.78rem;color:rgba(255,245,235,0.78);letter-spacing:.02em;">
+    Um produto operado pela
+    <a href="../../index.html" style="color:#ff5b95;font-weight:700;text-decoration:none;border-bottom:1px dotted rgba(255,91,149,0.6);">FAT Tech</a>
+    — Agência de Automação com IA
+  </div>
+
+  <header class="site-header" data-header>
+    <div class="container header-shell">
+      <a class="brand" href="#hero" aria-label="Impulse CRM por FAT Tech">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6 17L17 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+            <path d="M10 6H17V13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </span>
+        <span class="brand__word">IMPULSO<span>.</span></span>
+      </a>
+
+      <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Abrir navegação</span>
+      </button>
+
+      <nav class="main-nav" id="site-nav" data-nav>
+        <a href="#features">Funcionalidades</a>
+        <a href="#preview">Pré-visualização</a>
+        <a href="#testimonials">Depoimentos</a>
+        <a href="#pricing">Preços</a>
+        <a href="#faq">Perguntas frequentes</a>
+        <a href="../../index.html">FAT Tech</a>
+      </nav>
+
+      <div class="header-actions" data-header-actions>
+        <a class="header-link" href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20conhecer%20o%20Impulse%20CRM%20da%20FAT%20Tech." target="_blank" rel="noopener noreferrer">Falar com vendas</a>
+        <a class="btn btn--primary" href="#cta">Começar agora</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section" id="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Impulsionado por Inteligência Artificial</span>
+          <h1 class="hero-title reveal" data-reveal>
+            Um time comercial
+            <span class="text-gradient text-gradient--pink">a um clique</span>
+          </h1>
+          <p class="hero-text reveal" data-reveal>
+            Faça mais negócios em menos tempo. Nossa IA preditiva analisa dados, automatiza tarefas repetitivas
+            e indica exatamente onde sua equipe deve focar.
+          </p>
+
+          <div class="hero-actions reveal" data-reveal>
+            <a class="btn btn--primary btn--large" href="#cta">Começar</a>
+            <a class="btn btn--secondary btn--large" href="#features">Ver Funcionalidades</a>
+          </div>
+
+          <div class="hero-metrics reveal" data-reveal>
+            <article class="metric-card">
+              <span>IA Preditiva</span>
+              <strong>+34%</strong>
+              <small>de aumento na taxa de conversão</small>
+            </article>
+            <article class="metric-card">
+              <span>Tempo salvo</span>
+              <strong>18h</strong>
+              <small>por semana em tarefas operacionais</small>
+            </article>
+            <article class="metric-card">
+              <span>Supervisão</span>
+              <strong>100%</strong>
+              <small>das conversas sob controle do time</small>
+            </article>
+          </div>
+        </div>
+
+        <div class="hero-stage reveal" data-reveal>
+          <article class="window-card hero-window">
+            <div class="window-card__bar">
+              <div class="window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-pill">app.impulse.com/overview</div>
+            </div>
+
+            <div class="hero-window__body">
+              <aside class="hero-window__sidebar" aria-label="Navegação do preview do dashboard">
+                <span class="sidebar-label">Painel</span>
+                <button class="sidebar-link is-active" type="button">Dashboard</button>
+                <button class="sidebar-link" type="button">WhatsApp</button>
+                <button class="sidebar-link" type="button">Agentes IA</button>
+                <button class="sidebar-link" type="button">CRM Kanban</button>
+                <button class="sidebar-link" type="button">Relatórios</button>
+              </aside>
+
+              <div class="hero-window__main">
+                <div class="hero-stats">
+                  <article class="hero-stat hero-stat--pink"><span>Leads quentes</span><strong>126</strong></article>
+                  <article class="hero-stat hero-stat--green"><span>Agentes ativos</span><strong>08</strong></article>
+                  <article class="hero-stat hero-stat--gold"><span>Uptime do chat</span><strong>99,9%</strong></article>
+                </div>
+
+                <div class="hero-kanban">
+                  <article class="kanban-mini">
+                    <header><span>Novo</span><strong>2</strong></header>
+                    <div class="mini-lead"><b>Mariana Costa</b><small>R$ 1.200</small></div>
+                    <div class="mini-lead"><b>Bruno Alves</b><small>R$ 3.500</small></div>
+                  </article>
+                  <article class="kanban-mini">
+                    <header><span>Contato</span><strong>2</strong></header>
+                    <div class="mini-lead"><b>Carla Mendes</b><small>R$ 800</small></div>
+                    <div class="mini-lead"><b>Diego Souza</b><small>R$ 5.200</small></div>
+                  </article>
+                  <article class="kanban-mini">
+                    <header><span>Agendamento</span><strong>1</strong></header>
+                    <div class="mini-lead"><b>Fernanda Lima</b><small>R$ 2.100</small></div>
+                  </article>
+                </div>
+
+                <div class="hero-live-strip">
+                  <div class="live-badge">AO VIVO</div>
+                  <p>IA sugerindo próxima ação para 7 leads com alta chance de fechamento.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <div class="floating-card floating-card--pink">
+            <span>Agente conectado</span>
+            <strong>WhatsApp + CRM</strong>
+          </div>
+          <div class="floating-card floating-card--green">
+            <span>Tempo de resposta</span>
+            <strong>&lt; 30s</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Funcionalidades</span>
+          <h2 class="section-title reveal" data-reveal>
+            Funcionalidades que fazem a
+            <span class="text-gradient text-gradient--pink">diferença</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Projetado para eliminar atritos e focar no que importa: vender mais.
+          </p>
+        </div>
+
+        <div class="feature-grid" data-features></div>
+      </div>
+    </section>
+
+    <section class="section section--pink" id="preview">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Agentes com IA</span>
+          <h2 class="section-title reveal" data-reveal>
+            Conjunto de agentes para
+            <span class="text-gradient text-gradient--pink">operar seu negócio</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Cada agente é especializado em uma função estratégica do seu negócio, trabalhando juntos
+            para fechar mais negócios e reter clientes.
+          </p>
+        </div>
+
+        <article class="agent-showcase reveal" data-reveal>
+          <div class="agent-showcase__icon" data-agent-icon>ES</div>
+          <h3 data-agent-title>Estrategista</h3>
+          <p data-agent-description>Analisa pipeline, sugere ações e ajuda para fechar negócios.</p>
+          <span class="agent-label">Sugestões</span>
+          <div class="prompt-grid" data-agent-prompts></div>
+          <a class="btn btn--primary" href="#cta" data-agent-cta>Estrategista Experimental</a>
+        </article>
+
+        <div class="agent-tabs" role="tablist" aria-label="Agentes do Impulse CRM">
+          <button class="agent-tab is-active" type="button" data-agent="strategist" aria-selected="true">Estrategista</button>
+          <button class="agent-tab" type="button" data-agent="architect" aria-selected="false">Arquiteto de IA</button>
+          <button class="agent-tab" type="button" data-agent="explorer" aria-selected="false">Explorador</button>
+          <button class="agent-tab" type="button" data-agent="negotiator" aria-selected="false">Negociador</button>
+          <button class="agent-tab" type="button" data-agent="guardian" aria-selected="false">Guardião</button>
+          <button class="agent-tab" type="button" data-agent="autopilot" aria-selected="false">Piloto Automático</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--green">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--green reveal" data-reveal>WhatsApp Business</span>
+          <h2 class="section-title reveal" data-reveal>
+            WhatsApp com
+            <span class="text-gradient text-gradient--green">conexão guiada</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Integração oficial com a META WhatsApp API. Configure em minutos com nosso assistente passo a passo,
+            sem necessidade de um desenvolvedor.
+          </p>
+          <div class="meta-badge reveal" data-reveal>M Parceiro Oficial Meta Business - API Verificada</div>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Como funciona a conexão guiada</h3>
+            <div class="stack-list">
+              <article class="stack-card reveal" data-reveal><span>01</span><div><strong>Acesse a configuração guiada</strong><p>Entre no painel do Impulse CRM e clique em "Conectar WhatsApp". Um assistente passo a passo vai te guiar por todo o processo.</p></div></article>
+              <article class="stack-card reveal" data-reveal><span>02</span><div><strong>Conecte-se através da Meta Business</strong><p>Autentique sua conta Meta Business diretamente pelo Impulse CRM, sem necessidade de acessar o painel do Facebook separadamente.</p></div></article>
+              <article class="stack-card reveal" data-reveal><span>03</span><div><strong>Configure seus agentes</strong><p>Associe agentes de IA ao seu número, defina horários de atendimento, templates de mensagem e regras de roteamento.</p></div></article>
+              <article class="stack-card reveal" data-reveal><span>04</span><div><strong>Comece a converter</strong><p>Pronto. Seu WhatsApp já está conectado ao CRM. Cada conversa vira um lead automaticamente no seu pipeline.</p></div></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#cta">Começar agora</a>
+          </div>
+
+          <article class="window-card showcase-window reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-pill">app.impulse.com/whatsapp</div>
+            </div>
+            <div class="window-card__body">
+              <header class="window-header">
+                <div>
+                  <strong>WhatsApp Business</strong>
+                  <p>Gerencie sua conexão, integrações e conversões.</p>
+                </div>
+              </header>
+
+              <div class="runtime-card runtime-card--green">
+                <div>
+                  <strong>Agent Runtime conectado ao WhatsApp</strong>
+                  <p>Monte as etapas do agente interno direto no builder.</p>
+                </div>
+                <a class="mini-btn" href="#cta">Abrir Runtime</a>
+              </div>
+
+              <div class="tab-strip">
+                <button class="tab-chip is-active" type="button">Conexão</button>
+                <button class="tab-chip" type="button">Integrações</button>
+                <button class="tab-chip" type="button">Conversões</button>
+              </div>
+
+              <div class="setup-card">
+                <div class="setup-card__head">
+                  <div>
+                    <strong>API do WhatsApp Business</strong>
+                    <p>Conexão oficial via Meta Cloud API com suporte a templates, múltiplos atendentes e integrações.</p>
+                  </div>
+                  <span class="status-pill status-pill--green">API OFICIAL</span>
+                </div>
+                <a class="mini-btn mini-btn--solid" href="#cta">Conectar Número</a>
+              </div>
+
+              <div class="check-list">
+                <div class="check-row check-row--done"><span>1</span><strong>Criar conta Meta Business</strong></div>
+                <div class="check-row check-row--done"><span>2</span><strong>Verificar número de telefone</strong></div>
+                <div class="check-row"><span>3</span><strong>Configurar webhook Impulse CRM</strong></div>
+                <div class="check-row"><span>4</span><strong>Ativar templates de mensagem</strong></div>
+              </div>
+
+              <div class="badge-row badge-row--three">
+                <span>Sem código necessário</span>
+                <span>API Oficial Meta</span>
+                <span>Configuração em 5 min</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--gold">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--gold reveal" data-reveal>Chat ao Vivo</span>
+          <h2 class="section-title reveal" data-reveal>
+            Chat
+            <span class="text-gradient text-gradient--gold">100% supervisionado</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Seu colaborador acompanha todas as conversas ao vivo e pode intervir a qualquer momento,
+            sem o cliente perceber a transição.
+          </p>
+        </div>
+
+        <div class="showcase-grid showcase-grid--chat">
+          <div class="showcase-copy">
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Supervisão em tempo real</strong><p>Veja todas as conversas ao vivo em um painel unificado. Nenhuma interação passa despercebida.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Intervenção com 1 clique</strong><p>Seu colaborador assume a conversa instantaneamente, sem interrupção do fluxo do cliente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Controle total</strong><p>Defina regras: quando a IA responde, quando alerta a equipe e quando transfere automaticamente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Histórico completo</strong><p>Todo o contexto da conversa fica salvo e disponível para o colaborador antes de intervir.</p></article>
+            </div>
+
+            <div class="metric-boxes">
+              <article class="tiny-metric reveal" data-reveal><strong>&lt; 30s</strong><small>Tempo de intervenção</small></article>
+              <article class="tiny-metric reveal" data-reveal><strong>99,9%</strong><small>Uptime do chat</small></article>
+              <article class="tiny-metric reveal" data-reveal><strong>0 clicks</strong><small>Para assumir conversa</small></article>
+            </div>
+          </div>
+
+          <article class="window-card showcase-window reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-pill">Chat ao Vivo - Supervisão</div>
+              <div class="live-indicator">AO VIVO</div>
+            </div>
+
+            <div class="window-card__body">
+              <div class="mode-bar">
+                <span>Modo de atendimento</span>
+                <div class="mode-pills">
+                  <button type="button">IA</button>
+                  <button type="button" class="is-active">Híbrido</button>
+                  <button type="button">Humano</button>
+                </div>
+              </div>
+
+              <div class="notice-bar">
+                IA responde e seu colaborador monitora ao vivo, podendo intervir a qualquer momento.
+              </div>
+
+              <div class="chat-thread">
+                <div class="chat-bubble chat-bubble--client"><strong>Lead</strong><p>Preciso de uma solução para automação de vendas.</p><time>15:10</time></div>
+                <div class="chat-bubble chat-bubble--assistant"><strong>IA</strong><p>Ótimo. Temos uma solução completa para automação de vendas com IA. Você já usa algum CRM atualmente?</p><time>15:10</time></div>
+                <div class="chat-bubble chat-bubble--client"><strong>Lead</strong><p>Sim, Pipedrive. Mas quero algo com IA integrada.</p><time>15:11</time></div>
+                <div class="chat-bubble chat-bubble--human"><strong>Camila - Vendas <span>INTERVEIO</span></strong><p>Oi. Aqui é a Camila do Impulse CRM. Tenho uma migração facilitada para te mostrar. Posso agendar uma demo personalizada?</p><time>15:11</time></div>
+              </div>
+
+              <div class="input-shell">
+                <span>Digite sua mensagem...</span>
+                <button type="button">Intervir agora</button>
+              </div>
+
+              <div class="sub-note">3 colaboradores monitorando</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Implementação Guiada</span>
+          <h2 class="section-title reveal" data-reveal>
+            Agentes prontos para
+            <span class="text-gradient text-gradient--pink">implementação agora</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Biblioteca de agentes pré-construída com configuração guiada passo a passo.
+            Sem código, sem plataformas externas, operando em minutos.
+          </p>
+        </div>
+
+        <div class="roadmap-grid">
+          <article class="roadmap-card reveal" data-reveal><span>01</span><strong>Escolha o agente</strong><p>Navegue pela biblioteca e selecione o agente que resolve seu problema.</p></article>
+          <article class="roadmap-card reveal" data-reveal><span>02</span><strong>Clique em Implementar</strong><p>Um assistente guiado irá configurar o agente passo a passo sem código.</p></article>
+          <article class="roadmap-card reveal" data-reveal><span>03</span><strong>Conecte suas ferramentas</strong><p>Autorize CRM, WhatsApp, calendário e email com um clique cada.</p></article>
+          <article class="roadmap-card reveal" data-reveal><span>04</span><strong>Agente ativo em minutos</strong><p>Pronto. Seu agente já está operando e gerando resultados.</p></article>
+        </div>
+
+        <div class="filter-row" data-library-filters></div>
+        <div class="library-grid" data-library-grid></div>
+
+        <p class="bottom-note reveal" data-reveal>
+          Todos os agentes incluídos no plano Business e Enterprise. No plano Starter você pode implementar até 2 agentes.
+        </p>
+      </div>
+    </section>
+
+    <section class="section section--orange">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--orange reveal" data-reveal>Laboratório de Sandbox</span>
+          <h2 class="section-title reveal" data-reveal>
+            Teste seus prompts antes de
+            <span class="text-gradient text-gradient--orange">ir para produção</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Simule conversas reais com seu agente em um ambiente isolado. Veja exatamente como ele responde,
+            sem afetar seus leads.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Por que usar o Sandbox?</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Teste sem risco</strong><p>Valide os avisos em ambiente isolado antes de ativar a produção.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Resposta em 10 segundos</strong><p>Veja exatamente como seu agente responderia em cada cenário.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Cenários prontos</strong><p>Biblioteca de situações reais: objeções, urgência, clientes difíceis.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Configuração em tempo real</strong><p>Ajuste temperatura, persona e instruções sem sair do sandbox.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#cta">Acessar o Sandbox</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Laboratório de Sandbox</div>
+              <div class="header-tools">
+                <button type="button" class="ghost-chip">Limpar</button>
+                <button type="button" class="solid-chip">Nova sessão</button>
+              </div>
+            </div>
+            <div class="window-card__body">
+              <div class="scenario-grid">
+                <article class="scenario-card"><strong>Modo Treino Preço</strong><p>Conversa curta para validar o entendimento inicial do agente.</p></article>
+                <article class="scenario-card"><strong>Cliente Misterioso</strong><p>Cliente muda contexto no meio da conversa para testar adaptação.</p></article>
+                <article class="scenario-card"><strong>Objeção de Preço</strong><p>Simula cliente com dúvida de valor e necessidade de argumento.</p></article>
+                <article class="scenario-card"><strong>Atendimento Urgente</strong><p>Cliente quer resposta objetiva e rápida para fechar agora.</p></article>
+              </div>
+
+              <div class="sandbox-output">
+                <strong>Seu agente, em conversa - sem WhatsApp</strong>
+                <p>Escolha um cenário acima ou digite sua própria mensagem para ver como ele responderá.</p>
+              </div>
+
+              <div class="input-shell input-shell--wide">
+                <span>Anexo</span>
+                <span>Digite a mensagem de teste...</span>
+                <button type="button">Enviar</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Relatório de desempenho</span>
+          <h2 class="section-title reveal" data-reveal>
+            Meça, otimize e
+            <span class="text-gradient text-gradient--pink">eleve a produtividade</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Acompanhe em tempo real o desempenho de cada operador - conversas, tempo de resposta,
+            taxas de resolução e avaliações dos clientes.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Por que sua equipe ganha</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Metas claras e SLAs</strong><p>Defina metas por atendente ou para toda a equipe e acompanhe o progresso em tempo real.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Tendências de longo prazo</strong><p>Veja se o desempenho está evoluindo comparando períodos anteriores automaticamente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Classificação gamificada</strong><p>Motive a equipe com um ranking de desempenho atualizado a cada interação.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Alertas inteligentes</strong><p>Receba notificações quando um atendente estiver abaixo do tempo de resposta ideal.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com desempenho</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Desempenho da Equipe</div>
+              <div class="window-tools"><span class="ghost-chip">Hoje</span><span class="ghost-chip is-active">7 dias</span><span class="ghost-chip">30 dias</span></div>
+            </div>
+            <div class="window-card__body">
+              <div class="performance-kpis">
+                <article class="perf-box perf-box--blue"><strong>247</strong><small>Conversas</small><span>+23%</span></article>
+                <article class="perf-box perf-box--gold"><strong>2 min 08 s</strong><small>Tempo médio</small><span>+8%</span></article>
+                <article class="perf-box perf-box--green"><strong>88%</strong><small>Taxa de resolução</small><span>+5%</span></article>
+                <article class="perf-box perf-box--gold"><strong>4,7</strong><small>Avaliação média</small><span>+0,1</span></article>
+              </div>
+
+              <div class="leaderboard">
+                <header><strong>Classificação</strong></header>
+                <div class="leader-row"><span>1</span><b>Carla Mendes</b><small>91 conv.</small><small>1 min 58 s</small><small>4,9</small><small>94%</small></div>
+                <div class="leader-row"><span>2</span><b>Ana Lima</b><small>87 conv.</small><small>2 min 05 s</small><small>4,7</small><small>88%</small></div>
+                <div class="leader-row"><span>3</span><b>Bruno Souza</b><small>69 conv.</small><small>2 min 22 s</small><small>4,5</small><small>82%</small></div>
+              </div>
+
+              <div class="chart-pair">
+                <article class="chart-card">
+                  <strong>Conversas por Período</strong>
+                  <div class="line-chart">
+                    <span data-height="22"></span><span data-height="44"></span><span data-height="30"></span><span data-height="62"></span><span data-height="18"></span><span data-height="10"></span>
+                  </div>
+                </article>
+                <article class="chart-card">
+                  <strong>Tempo de 1a Resposta</strong>
+                  <div class="bar-list">
+                    <div><span>Carla</span><i data-width="72"></i><small>1 min 58 s</small></div>
+                    <div><span>Ana</span><i data-width="58"></i><small>2 min 05 s</small></div>
+                    <div><span>Bruno</span><i data-width="46"></i><small>2 min 22 s</small></div>
+                  </div>
+                  <div class="legend-row"><span>61% &lt; 2 min</span><span>29% 2-5 min</span><span>10% &gt; 5 min</span></div>
+                </article>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Distribuição de Atendimentos</span>
+          <h2 class="section-title reveal" data-reveal>
+            Configure como quiser a
+            <span class="text-gradient text-gradient--pink">distribuição de atendimentos</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Escolha entre distribuição manual, automática por round-robin, captura automática ou modo híbrido,
+            e ajuste cada detalhe do comportamento da sua equipe.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Controle total sobre o fluxo</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>4 pontos de encontro</strong><p>Manual, Captura Automática, Round-robin ou Híbrido. Escolha o que faz sentido para o seu tempo.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Alertas de conversa sem atendente</strong><p>Configure o tempo máximo sem atribuição antes de disparar um alerta automático para o supervisor.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Nome do atendente nas mensagens</strong><p>Exiba o nome em negrito antes de cada mensagem no WhatsApp para criar vínculo e humanizar o atendimento.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Limite por atendente</strong><p>Defina conversas simultâneas com cada atendente para evitar sobrecarga.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com distribuição avançada</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Distribuição de conversas</div>
+              <div class="window-tools"><span class="ghost-chip">0 online</span><button class="solid-chip" type="button">Convidar</button></div>
+            </div>
+            <div class="window-card__body">
+              <div class="mode-grid">
+                <article class="mode-card"><strong>Manual</strong><p>Você decide quem atende cada conversa.</p></article>
+                <article class="mode-card"><strong>Captura automática</strong><p>Atendentes capturam conversas livres por conta própria.</p></article>
+                <article class="mode-card is-active"><strong>Round-robin</strong><p>Distribuição automática para quem tem menos conversas.</p></article>
+                <article class="mode-card"><strong>Híbrido</strong><p>Round-robin automático com captura manual.</p></article>
+              </div>
+
+              <div class="settings-list">
+                <div class="settings-row"><span>Limite de conversas por atendente</span><div class="counter-pill">10</div></div>
+                <div class="settings-row"><span>Nome do atendente nas mensagens</span><div class="toggle-pill toggle-pill--on"></div></div>
+                <div class="settings-row"><span>Prefixo do nome</span><div class="counter-pill">Suporte -</div></div>
+                <div class="settings-row"><span>Alerta de conversa sem atendente</span><div class="counter-pill">30 min</div></div>
+              </div>
+
+              <article class="preview-bubble">
+                * Suporte - Ana :* Boa tarde, como posso ajudar?
+              </article>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--green">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--green reveal" data-reveal>Disparo via API Oficial WhatsApp</span>
+          <h2 class="section-title reveal" data-reveal>
+            Dispare mensagens pelo
+            <span class="text-gradient text-gradient--green">WhatsApp Oficial</span>
+            sem risco
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Crie templates aprovados pela Meta, dispare em massa ou 1:1 e automatize toda a comunicação
+            com variáveis dinâmicas, tudo pela API Oficial.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Por que usar a API Oficial</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>API Oficial Meta</strong><p>Disparo por canais selecionados pelo WhatsApp Business, sem risco de banimento.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Modelos aprovados</strong><p>Crie e gerencie templates de mensagem diretamente pelo painel, sem sair do CRM.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Disparo em massa ou 1:1</strong><p>Envie para toda a base ou automatize o envio individual após cada evento do CRM.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Variáveis dinâmicas</strong><p>Personalize nome, dados, valor e qualquer campo do lead em cada mensagem enviada.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com disparo via API</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Modelos de Mensagem</div>
+              <div class="window-tools"><button class="ghost-chip" type="button">Atualizar</button><button class="solid-chip" type="button">Criar modelo</button></div>
+            </div>
+            <div class="window-card__body">
+              <div class="input-line">Canal do WhatsApp Business - Alê Impulse BPO (+1 555-922-8501)</div>
+              <article class="channel-card">
+                <strong>Alê - Impulse BPO (+1 555-922-8501)</strong>
+                <span class="status-pill status-pill--green">Conectado</span>
+              </article>
+              <div class="toolbar-line">
+                <div class="input-line">Buscar modelos por nome ou conteúdo...</div>
+                <div class="counter-pill">Todos os status</div>
+              </div>
+
+              <div class="empty-state">
+                <div class="empty-state__icon">MT</div>
+                <strong>Nenhum modelo ainda</strong>
+                <p>Crie seu primeiro modelo para começar a enviar mensagens via WhatsApp.</p>
+                <a class="btn btn--primary" href="#cta">Criar meu primeiro modelo</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--purple">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--purple reveal" data-reveal>Treinamento de Agentes Neurais</span>
+          <h2 class="section-title reveal" data-reveal>
+            Nunca foi tão simples criar
+            <span class="text-gradient text-gradient--purple">agentes com identidade</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Construa agentes que pensam, se identificam e raciocinam como especialistas reais do seu negócio,
+            sem escrever uma linha de código.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Agentes com identidade e raciocínio</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Regiões cerebrais modulares</strong><p>Construa o raciocínio do agente em módulos - Contexto, Identidade, Raciocínio e Exemplos.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Prompt gerado por IA</strong><p>A IA analisa seu tipo de agente, setor e contexto e gera o prompt completo automaticamente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Identidade e tom de voz</strong><p>Defina nome, personalidade, tom e regras de comportamento para que o agente tenha consistência.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Treinamento por feedbacks</strong><p>Adicione exemplos de boas e más respostas para refinar o comportamento com dados reais.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#cta">Criar meu primeiro agente</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Nova Região Cerebral</div>
+              <button class="ghost-chip" type="button">X</button>
+            </div>
+            <div class="window-card__body">
+              <div class="tab-strip">
+                <button class="tab-chip is-active" type="button">Contexto</button>
+                <button class="tab-chip" type="button">Identidade</button>
+                <button class="tab-chip" type="button">Raciocínio</button>
+                <button class="tab-chip" type="button">Feedbacks</button>
+                <button class="tab-chip" type="button">Exemplos</button>
+                <button class="tab-chip" type="button">Pronto final</button>
+              </div>
+
+              <div class="type-grid">
+                <button type="button" class="type-pill is-active">Comercial</button>
+                <button type="button" class="type-pill">Suporte</button>
+                <button type="button" class="type-pill">Agendamento</button>
+                <button type="button" class="type-pill">Qualificação</button>
+                <button type="button" class="type-pill">Personalizado</button>
+              </div>
+
+              <div class="form-block"><label>Setor / Nicho</label><div class="input-line">Selecione o nicho...</div></div>
+              <div class="form-block"><label>Contexto adicional</label><div class="textarea-line">Informações extras que a IA deve considerar ao criar o prompt...</div></div>
+              <button type="button" class="btn btn--secondary btn--block">Gerar Prompt Completo</button>
+              <article class="note-card note-card--blue">Dica: quanto mais contexto você fornecer, melhor será a qualidade do prompt gerado pela IA.</article>
+            </div>
+            <div class="window-footer">
+              <button type="button" class="btn btn--secondary">Cancelar</button>
+              <button type="button" class="btn btn--primary">Salvar Região Cerebral</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Perguntas e Respostas - Banco de Conhecimento</span>
+          <h2 class="section-title reveal" data-reveal>
+            Transforme seu agente num
+            <span class="text-gradient text-gradient--pink">verdadeiro funcionário</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Crie um banco de sinapses de conhecimento real. Cada par de pergunta e resposta vira um neurônio
+            que seu agente consulta para responder com soluções.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Conhecimento que vira inteligência</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Banco de conhecimento real</strong><p>Crie sinapses de perguntas e respostas que o agente consulta antes de responder.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Neurônios especializados</strong><p>Cada pergunta e resposta vira um neurônio. Quanto mais sinapses, mais inteligente e preciso seu agente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Categorias e tags</strong><p>Organize o conhecimento por categoria e filtre por tags para fácil manutenção.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Ativação instantânea</strong><p>Novas sinapses ficam ativas em segundos, sem reiniciar o agente ou mexer no prompt.</p></article>
+            </div>
+            <div class="counter-strip reveal" data-reveal>
+              <article><strong>5</strong><small>Sinapses</small></article>
+              <article><strong>4</strong><small>Categorias</small></article>
+              <article><strong>14</strong><small>Etiquetas</small></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#cta">Começar a treinar meu agente</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Base de Conhecimento</div>
+              <button type="button" class="solid-chip">Nova Sinapse</button>
+            </div>
+            <div class="window-card__body">
+              <div class="toolbar-line">
+                <div class="input-line">Buscar sinapses de conhecimento...</div>
+              </div>
+              <div class="chip-row">
+                <span class="status-pill status-pill--pink">Todas</span>
+                <span class="status-pill">Geral</span>
+                <span class="status-pill">Produto</span>
+                <span class="status-pill">Preços</span>
+                <span class="status-pill">Suporte</span>
+                <span class="status-pill">Comercial</span>
+              </div>
+              <div class="knowledge-list" data-knowledge-list></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--blue">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--blue reveal" data-reveal>Agentes RAG - Base de Conhecimento Profundo</span>
+          <h2 class="section-title reveal" data-reveal>
+            Conhecimento de ponta a ponta no
+            <span class="text-gradient text-gradient--blue">núcleo do seu negócio</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Carregue PDFs, documentos e URLs inteiros. O agente RAG vetoriza, indexa e consulta seu acervo
+            em tempo real para responder com precisão cirúrgica.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>IA que conhece seu negócio de verdade</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Bases RAG vetorizadas</strong><p>Carregue PDFs, DOCs, planilhas ou URLs. O sistema vetoriza e indexa automaticamente via embeddings.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Busca semântica profunda</strong><p>O agente não só busca palavras. Ele entende o significado e retorna os trechos mais relevantes.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Modelos de embedding</strong><p>Escolha entre Pequeno ou Grande dependendo da criticidade do seu conteúdo.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Configuração de blocos</strong><p>Controle como os documentos são divididos para acelerar a recuperação.</p></article>
+            </div>
+            <div class="format-row reveal" data-reveal>
+              <span>.pdf</span><span>.docx</span><span>.txt</span><span>.csv</span><span>.xlsx</span><span>.md</span><span>.html</span><span>.url</span>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#cta">Criar minha primeira base RAG</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Bases de Conhecimento RAG</div>
+              <button type="button" class="solid-chip">Base Nova</button>
+            </div>
+            <div class="window-card__body">
+              <div class="rag-row"><div><strong>Manual do Produto</strong><p>Documentação completa do Impulse CRM - funcionalidades, integrações e tutoriais.</p></div><span class="status-pill status-pill--green">Ativo</span><small>142 documentos</small></div>
+              <div class="rag-row"><div><strong>Perguntas Frequentes</strong><p>Base de FAQ gerada a partir de conversas reais com clientes.</p></div><span class="status-pill status-pill--green">Ativo</span><small>318 documentos</small></div>
+              <div class="rag-row"><div><strong>Protocolos de Atendimento</strong><p>Scripts e procedimentos internos para situações de suporte avançado.</p></div><span class="status-pill status-pill--gold">Indexando...</span><small>57 documentos</small></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>CRM Kanban com IA</span>
+          <h2 class="section-title reveal" data-reveal>
+            Agentes que operam o CRM
+            <span class="text-gradient text-gradient--pink">de forma inteligente</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Lideranças, movimentos entre etapas e reuniões agendadas automaticamente,
+            enquanto você foca em negócios fechados.
+          </p>
+        </div>
+
+        <div class="top-benefits">
+          <article class="mini-card reveal" data-reveal><strong>IA que opera o funil</strong><p>Qualifica automaticamente cada lead, move entre etapas e agenda reuniões sem intervenção humana.</p></article>
+          <article class="mini-card reveal" data-reveal><strong>Pontuação de qualificação</strong><p>Cada lead recebe uma pontuação de 0 a 100 com base no comportamento e perfil.</p></article>
+          <article class="mini-card reveal" data-reveal><strong>Agendamento</strong><p>O agente verifica a agenda, propõe horários e confirma reuniões diretamente no WhatsApp.</p></article>
+          <article class="mini-card reveal" data-reveal><strong>Pipeline em tempo real</strong><p>Veja valor estimado, faturado e taxas de conversão de cada etapa atualizado a cada movimento.</p></article>
+        </div>
+
+        <article class="window-card kanban-window reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-title">CRM de Leads</div>
+            <div class="window-tools">
+              <span class="ghost-chip">7 leads</span>
+              <span class="ghost-chip">R$ 25,0 mil</span>
+              <span class="ghost-chip">14% convert</span>
+              <span class="ghost-chip">4 destaques</span>
+            </div>
+          </div>
+          <div class="window-card__body">
+            <div class="toolbar-line">
+              <div class="input-line">Buscar por nome, email, WhatsApp, origem...</div>
+              <button class="ghost-chip" type="button">IA Qualificar</button>
+              <button class="solid-chip" type="button">Novo</button>
+            </div>
+
+            <div class="kanban-columns">
+              <section class="kanban-column">
+                <header><span>Novo</span><strong>2</strong></header>
+                <article class="lead-card"><b>Mariana Costa</b><small>WhatsApp</small><strong>R$ 1.200</strong></article>
+                <article class="lead-card"><b>Bruno Alves</b><small>Instagram</small><strong>R$ 3.500</strong></article>
+              </section>
+              <section class="kanban-column">
+                <header><span>Contato</span><strong>2</strong></header>
+                <article class="lead-card"><b>Carla Mendes</b><small>Site</small><strong>R$ 800</strong></article>
+                <article class="lead-card"><b>Diego Souza</b><small>Indicação</small><strong>R$ 5.200</strong></article>
+              </section>
+              <section class="kanban-column">
+                <header><span>Agendamento</span><strong>1</strong></header>
+                <article class="lead-card"><b>Fernanda Lima</b><small>Google</small><strong>R$ 2.100</strong></article>
+              </section>
+              <section class="kanban-column">
+                <header><span>Consulta</span><strong>1</strong></header>
+                <article class="lead-card"><b>Gabriel Torres</b><small>WhatsApp</small><strong>R$ 7.800</strong></article>
+              </section>
+              <section class="kanban-column">
+                <header><span>Fechado</span><strong>1</strong></header>
+                <article class="lead-card"><b>Helena Ramos</b><small>LinkedIn</small><strong>R$ 4.400</strong></article>
+              </section>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Agenda Automática via IA</span>
+          <h2 class="section-title reveal" data-reveal>
+            Seus agentes operam
+            <span class="text-gradient text-gradient--pink">como agendas</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Reuniões, horários selecionados e confirmações enviadas pelo WhatsApp,
+            tudo sem intervenção humana.
+          </p>
+        </div>
+
+        <article class="window-card agenda-window reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-title">Agenda</div>
+            <div class="window-tools">
+              <span class="ghost-chip">5 total</span>
+              <span class="ghost-chip">5 eventos</span>
+              <span class="ghost-chip">4 IA (24h)</span>
+              <span class="ghost-chip">3 agendados</span>
+            </div>
+          </div>
+          <div class="window-card__body agenda-window__body">
+            <aside class="agenda-sidebar" aria-label="Resumo e filtros da agenda">
+              <div class="input-line">Todos os colaboradores</div>
+              <div class="summary-grid summary-grid--two">
+                <article class="summary-box"><strong>2</strong><span>Colaboradores</span></article>
+                <article class="summary-box"><strong>2</strong><span>Cargos</span></article>
+              </div>
+              <article class="note-card">
+                <strong>IA Ativa</strong>
+                <p>4 agendamentos criados automaticamente nas últimas 24h.</p>
+                <a class="mini-btn mini-btn--solid" href="#cta">Agendador via IA</a>
+              </article>
+              <div class="legend-stack">
+                <span>Agendado</span>
+                <span>Realizado</span>
+                <span>Cancelado</span>
+                <span>Agendado pela IA</span>
+              </div>
+            </aside>
+
+            <div class="agenda-main">
+              <div class="toolbar-line">
+                <div class="input-line">Buscar por cliente, colaborador ou observações...</div>
+                <button class="ghost-chip" type="button">Filtros Avançados</button>
+                <button class="solid-chip" type="button">Novo Agendamento</button>
+              </div>
+              <div class="date-row"><span>16/03 - 22/03</span><div class="window-tools"><span class="ghost-chip">Hoje</span><span class="ghost-chip">Esta semana</span><span class="ghost-chip">Dia</span><span class="ghost-chip is-active">Semana</span></div></div>
+              <div class="calendar-grid">
+                <div class="calendar-header"></div>
+                <div class="calendar-header">SEG 16/03</div>
+                <div class="calendar-header">TER 17/03</div>
+                <div class="calendar-header">QUA 18/03</div>
+                <div class="calendar-header">QUI 19/03</div>
+                <div class="calendar-header">SEX 20/03</div>
+                <div class="calendar-header">SAB 21/03</div>
+                <div class="calendar-header">DOM 22/03</div>
+
+                <div class="hour-cell">09:00</div>
+                <div class="event-block event-block--green">Lançamento de produto<br>Mariana Costa</div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+
+                <div class="hour-cell">11:00</div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="event-block">Demo do sistema<br>Fernanda Lima</div>
+                <div class="calendar-cell"></div>
+                <div class="event-block">Integração inicial<br>Helena Ramos</div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+
+                <div class="hour-cell">14:00</div>
+                <div class="event-block">Reunião de fechamento<br>Diego Souza</div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="event-block event-block--dark">Acompanhamento</div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+                <div class="calendar-cell"></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Gestão de Clientes Automatizada</span>
+          <h2 class="section-title reveal" data-reveal>
+            Sua carteira de clientes
+            <span class="text-gradient text-gradient--pink">operada por IA</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Classificação automática, tags inteligentes, reativação de inativos e atualização de status,
+            tudo sem precisar tocar numa tela.
+          </p>
+        </div>
+
+        <article class="window-card reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-title">Gestão de Clientes</div>
+            <div class="window-tools">
+              <span class="ghost-chip">6 total</span>
+              <span class="ghost-chip">3 ativos</span>
+              <span class="ghost-chip">2 este mês</span>
+              <span class="ghost-chip">6 com email</span>
+            </div>
+          </div>
+          <div class="window-card__body">
+            <div class="toolbar-line">
+              <div class="input-line">Buscar por nome, email ou telefone...</div>
+              <button class="ghost-chip" type="button">Compacto</button>
+              <button class="ghost-chip" type="button">Exportador</button>
+              <button class="ghost-chip" type="button">IA Gerir</button>
+              <button class="solid-chip" type="button">Novo</button>
+            </div>
+
+            <div class="chip-row">
+              <span class="status-pill">Ativos</span><span class="status-pill">Inativos</span><span class="status-pill">Hoje</span><span class="status-pill">Últimos 7 dias</span><span class="status-pill">Este mês</span><span class="status-pill">Últimos 30 dias</span>
+            </div>
+
+            <div class="client-table">
+              <div class="client-table__head"><span>Cliente</span><span>Contato</span><span>Status</span><span>Valor LTV</span><span>Ações</span></div>
+              <div class="client-table__row"><span><b>Mariana Costa</b><small>VIP • Recorrente</small></span><span>mariana@empresa.com.br<br>+55 11 99812-3456</span><span><i class="status-dot status-dot--green"></i> Ativo</span><span>R$ 8.400</span><span>desde jan/2024</span></div>
+              <div class="client-table__row"><span><b>Diego Souza</b><small>Alto valor • Corporativo</small></span><span>diego@solucoes.com.br<br>+55 31 96543-2109</span><span><i class="status-dot status-dot--green"></i> Ativo</span><span>R$ 15.200</span><span>desde mar/2024</span></div>
+              <div class="client-table__row"><span><b>Fernanda Lima</b><small>Novo</small></span><span>fernanda@lima.com.br<br>+55 11 95432-1098</span><span><i class="status-dot status-dot--gold"></i> Perspectiva</span><span>-</span><span>desde mar/2025</span></div>
+              <div class="client-table__row"><span><b>Gabriel Torres</b><small>VIP • Alto valor</small></span><span>gabriel@torres.io<br>+55 85 94321-0987</span><span><i class="status-dot status-dot--green"></i> Ativo</span><span>R$ 31.500</span><span>desde jun/2023</span></div>
+              <div class="client-table__row"><span><b>Helena Ramos</b><small>Recorrente</small></span><span>helena@ramos.com.br<br>+55 11 93210-9876</span><span><i class="status-dot"></i> Inativo</span><span>R$ 5.100</span><span>desde ago/2022</span></div>
+              <div class="client-table__row"><span><b>Bruno Alves</b><small>Indicação • Novo</small></span><span>bruno@alves.co<br>+55 21 98723-1234</span><span><i class="status-dot status-dot--gold"></i> Perspectiva</span><span>-</span><span>desde mar/2025</span></div>
+            </div>
+
+            <div class="panel-link-row">
+              <small>Exibindo 6 clientes</small>
+              <small>Atualizado às 17:59</small>
+            </div>
+          </div>
+        </article>
+
+        <a class="center-link reveal" data-reveal href="#cta">Automatizar minha gestão de clientes</a>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Gestão de Agenda por Colaborador</span>
+          <h2 class="section-title reveal" data-reveal>
+            Cada colaborador com sua própria
+            <span class="text-gradient text-gradient--pink">agenda definida</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Defina horários, intervalos e disponibilidades individuais.
+            O agente distribui agenda automaticamente respeitando cada configuração.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <article class="collaborator-card reveal" data-reveal><header><strong>Ana Beatriz</strong><small>Consultora Sênior</small></header><p>5 dias/sem • Intervalo de 15 minutos • 12 agendamentos</p></article>
+            <article class="collaborator-card reveal" data-reveal><header><strong>Carlos Eduardo</strong><small>Vendedor</small></header><p>5 dias/sem • Intervalo de 10 minutos • 8 agendamentos</p></article>
+            <article class="note-card reveal" data-reveal>IA distribuição automática: o agente verifica disponibilidade e distribui os agendamentos respeitando horários, intervalos e horários ajustados.</article>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Ana Beatriz</div>
+              <div class="window-tools"><span class="ghost-chip">15 min entre as cadeiras</span><span class="ghost-chip">Ana Beatriz</span></div>
+            </div>
+            <div class="window-card__body">
+              <div class="week-list">
+                <div class="week-row"><strong>Domingo</strong><span>Fechado</span><small>0h</small></div>
+                <div class="week-row"><strong>Segunda</strong><span>08:00 até 17:00</span><small>9h</small></div>
+                <div class="week-row"><strong>Terça</strong><span>08:00 até 17:00</span><small>9h</small></div>
+                <div class="week-row"><strong>Quarta</strong><span>08:00 até 17:00</span><small>9h</small></div>
+                <div class="week-row"><strong>Quinta</strong><span>08:00 até 17:00</span><small>9h</small></div>
+                <div class="week-row"><strong>Sexta</strong><span>08:00 até 17:00</span><small>9h</small></div>
+                <div class="week-row"><strong>Sábado</strong><span>Fechado</span><small>0h</small></div>
+              </div>
+
+              <div class="summary-grid summary-grid--three">
+                <article class="summary-box"><strong>5d/sem</strong><span>Dias ativos</span></article>
+                <article class="summary-box"><strong>15 minutos</strong><span>Intervalo</span></article>
+                <article class="summary-box"><strong>12</strong><span>Agendados</span></article>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <a class="center-link reveal" data-reveal href="#cta">Gerenciar agendas da minha equipe</a>
+      </div>
+    </section>
+
+    <section class="section section--green">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--green reveal" data-reveal>Painel Financeiro</span>
+          <h2 class="section-title reveal" data-reveal>
+            Controle financeiro
+            <span class="text-gradient text-gradient--green">em tempo real</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Entradas, saídas, saldo acumulado e fluxo de caixa. Tudo em um único painel
+            atualizado automaticamente a cada transação.
+          </p>
+        </div>
+
+        <article class="window-card finance-window reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-title">Painel Financeiro</div>
+            <div class="window-tools"><button class="ghost-chip" type="button">Filtros</button><button class="ghost-chip" type="button">Exportador</button><button class="ghost-chip is-active" type="button">Entradas</button><button class="ghost-chip" type="button">Às vezes, isso acontece por si só.</button><button class="ghost-chip" type="button">Compacto</button></div>
+          </div>
+          <div class="window-card__body">
+            <div class="toolbar-line"><div class="counter-pill">Período: Última Semana</div><small class="success-note">Atualizado em tempo real</small></div>
+
+            <div class="finance-kpis">
+              <article class="perf-box perf-box--green"><strong>R$ 18.750,00</strong><small>Total de entradas</small></article>
+              <article class="perf-box perf-box--pink"><strong>R$ 9.550,00</strong><small>Total de lançamentos</small></article>
+              <article class="perf-box perf-box--green"><strong>R$ 9.200,00</strong><small>Saldo real</small></article>
+              <article class="perf-box perf-box--blue"><strong>21</strong><small>Total de transações</small></article>
+            </div>
+
+            <article class="chart-card chart-card--large">
+              <div class="chart-card__head"><strong>Fluxo de Caixa</strong><div class="window-tools"><span class="status-pill status-pill--green">Entradas</span><span class="status-pill status-pill--pink">Lançamentos</span><span class="status-pill">Saldo</span></div></div>
+              <div class="chart-table">
+                <div><small>Total de entradas</small><strong>R$ 18.750,00</strong></div>
+                <div><small>Total de lançamentos</small><strong>R$ 9.550,00</strong></div>
+                <div><small>Saldo real</small><strong>R$ 9.200,00</strong></div>
+                <div><small>Variação</small><strong>+96,3%</strong></div>
+              </div>
+              <div class="line-chart line-chart--wide">
+                <span data-height="20"></span><span data-height="34"></span><span data-height="31"></span><span data-height="58"></span><span data-height="82"></span><span data-height="74"></span>
+              </div>
+            </article>
+          </div>
+        </article>
+
+        <a class="center-link reveal" data-reveal href="#cta">Ver meu painel financeiro</a>
+      </div>
+    </section>
+
+    <section class="section section--orange">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--orange reveal" data-reveal>Produtos e Serviços</span>
+          <h2 class="section-title reveal" data-reveal>
+            Seus agentes
+            <span class="text-gradient text-gradient--orange">vendem para você</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Cadastre produtos, serviços e assinaturas com fotos, estoque e preços.
+            Depois deixe os agentes venderem automaticamente no WhatsApp.
+          </p>
+        </div>
+
+        <article class="window-card reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-title">Produtos / Serviços</div>
+            <div class="window-tools"><button class="ghost-chip" type="button">Planilha de Migração</button><button class="solid-chip" type="button">Novo Produto</button></div>
+          </div>
+          <div class="window-card__body">
+            <div class="toolbar-line"><div class="input-line">Buscar produto ou serviço...</div><button class="ghost-chip" type="button">Filtrar por tipo</button><button class="ghost-chip" type="button">Filtrar por status</button><button class="ghost-chip" type="button">Filtrar por tag</button></div>
+            <div class="toolbar-line"><div class="window-tools"><span class="ghost-chip">Nome (A-Z)</span><span class="ghost-chip">Sem estoque</span><span class="ghost-chip">Assinaturas</span></div><div class="window-tools"><span class="ghost-chip is-active">Confortável</span><span class="ghost-chip">Compacto</span></div></div>
+
+            <div class="product-grid" data-product-grid></div>
+
+            <div class="panel-link-row">
+              <small>Exibindo 6 de 6 produtos • 5 vendáveis pela IA</small>
+              <a href="#cta">Ativar com IA</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--pink">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Funis e Métricas</span>
+          <h2 class="section-title reveal" data-reveal>
+            Leituras executivas
+            <span class="text-gradient text-gradient--pink">para acelerar decisões</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Comparativo de períodos, conversão de funil, atividade de IA vs humano e insights acionáveis.
+            Tudo em tempo real para você e para os agentes.
+          </p>
+        </div>
+
+        <article class="window-card metrics-window reveal" data-reveal>
+          <div class="window-card__bar">
+            <div class="window-tools"><span class="ghost-chip is-active">Funil de Métricas</span><span class="ghost-chip">Agentes de IA</span></div>
+          </div>
+          <div class="window-card__body">
+            <article class="note-card"><strong>Funil de Métricas do CRM</strong><p>Leituras executivas e operacionais em paridade com ChatLive para acelerar decisões comerciais.</p></article>
+            <div class="metrics-filters"><div class="window-tools"><span class="ghost-chip">Hoje</span><span class="ghost-chip">7d</span><span class="ghost-chip is-active">30 dias</span><span class="ghost-chip">Este mês</span><span class="ghost-chip">Mês cru</span><span class="ghost-chip">Personalizado</span></div><button class="ghost-chip" type="button">Atualizar</button></div>
+            <div class="three-fields"><div class="small-field"><label>Organização</label><div class="input-line">Impulso BPO</div></div><div class="small-field"><label>Canal</label><div class="input-line">Todos os canais</div></div><div class="small-field"><label>Responsável</label><div class="input-line">Todos os responsáveis</div></div></div>
+            <article class="alert-banner alert-banner--gold">Fallbacks ativos de dados - usuários participantes, funil CRM e tabela de SLA com cobertura parcial.</article>
+            <article class="alert-banner alert-banner--pink">Cobertura parcial do SLA: a base cobre 91,0% das conversas do período.</article>
+
+            <div class="metric-overview">
+              <article class="overview-card"><strong>342</strong><small>Entradas no Funil</small><span>+67 vs mês anterior</span></article>
+              <article class="overview-card"><strong>24,3%</strong><small>Conversão Geral</small><span>+5,8%</span></article>
+              <article class="overview-card"><strong>1.204</strong><small>Conversas Ativas</small><span>sem base percentual anterior</span></article>
+              <article class="overview-card"><strong>91%</strong><small>SLA até 15 min</small><span>+4%</span></article>
+              <article class="overview-card"><strong>148</strong><small>Agendamentos Criados</small><span>+32</span></article>
+              <article class="overview-card"><strong>119</strong><small>Agendamentos Concluídos</small><span>+28</span></article>
+              <article class="overview-card"><strong>9,5%</strong><small>Não compareceu</small><span>-1,5%</span></article>
+              <article class="overview-card"><strong>4.1</strong><small>Velocidade (mov/dia)</small><span>+0,8</span></article>
+            </div>
+          </div>
+        </article>
+
+        <a class="center-link reveal" data-reveal href="#cta">Acessar meu funil</a>
+      </div>
+    </section>
+
+    <section class="section" id="testimonials">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <h2 class="section-title reveal" data-reveal>O que nossos clientes dizem</h2>
+        </div>
+        <div class="testimonial-grid" data-testimonial-grid></div>
+      </div>
+    </section>
+
+    <section class="section section--pricing" id="pricing">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <h2 class="section-title reveal" data-reveal>
+            Investimento
+            <span class="text-gradient text-gradient--pink">transparente</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Sem taxas ocultas. Dois componentes simples para começar a transformar suas vendas.
+          </p>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="pricing-card reveal" data-reveal>
+            <span class="pricing-badge">Único</span>
+            <h3>Taxa de Engenharia e Implementação</h3>
+            <div class="pricing-value"><small>R$</small><strong>4,997</strong><small>,00</small></div>
+            <p>cobrado uma única vez</p>
+            <ul class="pricing-list">
+              <li>Levantamento de requisitos e configuração inicial</li>
+              <li>Personalização completa da plataforma</li>
+              <li>Integração com sistemas existentes</li>
+              <li>Treinamento da equipe e onboarding</li>
+              <li>Configuração dos agentes de IA</li>
+              <li>Migração de dados assistida</li>
+            </ul>
+            <a class="btn btn--secondary btn--block" href="#cta">Começar agora</a>
+          </article>
+
+          <article class="pricing-card pricing-card--featured reveal" data-reveal>
+            <span class="pricing-badge pricing-badge--pink">Recorrente</span>
+            <h3>Licença Servidor API e Recorrência</h3>
+            <div class="pricing-value"><small>R$</small><strong>897</strong><small>,00</small></div>
+            <p>por mês</p>
+            <ul class="pricing-list">
+              <li>Acesso completo à plataforma Impulse CRM</li>
+              <li>Servidor API dedicado e seguro</li>
+              <li>Atualizações automáticas incluídas</li>
+              <li>Suporte técnico prioritário 24h por dia, 7 dias por semana</li>
+              <li>Backups diários</li>
+              <li>SLA de disponibilidade garantida</li>
+            </ul>
+            <a class="btn btn--primary btn--block" href="#cta">Agora de Assinar</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container faq-shell">
+        <div class="section-head section-head--center">
+          <h2 class="section-title reveal" data-reveal>Perguntas Frequentes</h2>
+        </div>
+        <div class="faq-list" data-faq-list></div>
+      </div>
+    </section>
+
+    <section class="section section--cta" id="cta">
+      <div class="container">
+        <article class="cta-panel reveal" data-reveal>
+          <h2 class="section-title">
+            Pronto para transformar
+            <span class="text-gradient text-gradient--pink">seu negócio?</span>
+          </h2>
+          <p class="section-text">
+            Junte-se a milhares de empresas que estão crescendo com o poder da IA.
+            Teste por 14 dias grátis.
+          </p>
+          <div class="cta-actions">
+            <a class="btn btn--primary btn--large" href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20conhecer%20o%20Impulse%20CRM%20da%20FAT%20Tech." target="_blank" rel="noopener noreferrer">
+              Falar agora pelo WhatsApp
+            </a>
+          </div>
+          <small>Não requer cartão de crédito.</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--pink" id="webhooks">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Nova Função - Webhooks</span>
+          <h2 class="section-title reveal" data-reveal>
+            Conecte aplicativos externos
+            <span class="text-gradient text-gradient--pink">via API</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Dispare eventos do Impulse CRM diretamente para qualquer ferramenta - n8n, Make, Zapier,
+            HubSpot ou sua própria API - em tempo real, sem código.
+          </p>
+          <div class="tool-pills reveal" data-reveal>
+            <span>n8n</span><span>Make</span><span>Zapier</span><span>HubSpot</span><span>Pipedrive</span><span>Slack</span><span>Planilhas Google</span><span>API Própria</span>
+          </div>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Tudo o que você precisa para integrar</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>URL de destino</strong><p>Envie eventos para qualquer endpoint HTTP - n8n, Make, Zapier ou sua própria API.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Autenticação segura</strong><p>Suporte a Bearer Token, Basic Auth e headers customizados com JSON.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Tentar novamente</strong><p>Configure tentativas de reenvio e timeout para garantir a entrega dos eventos.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Limite de taxa por minuto</strong><p>Controle o volume de disparos para não sobrecarregar sistemas externos.</p></article>
+            </div>
+
+            <article class="code-card reveal" data-reveal>
+              <span class="code-card__label">Carga útil de exemplo - Lead Criado</span>
+<pre>{
+  "evento": "lead.criado",
+  "timestamp": "2026-03-20T15:29:00Z",
+  "dados": {
+    "id": "lead_abc123",
+    "nome": "Mariana Costa",
+    "telefone": "+5511998123456",
+    "etapa": "Qualificado",
+    "origem": "WhatsApp"
+  }
+}</pre>
+            </article>
+
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com Webhooks</a>
+          </div>
+
+          <article class="window-card webhook-window reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Novo Webhook</div>
+              <button type="button" class="ghost-chip">X</button>
+            </div>
+            <div class="window-card__body webhook-window__body">
+              <div class="webhook-form">
+                <div class="form-block"><label>Nome do Webhook</label><div class="input-line">Processador líder n8n</div></div>
+                <div class="form-block"><label>URL do Webhook</label><div class="input-line">https://seu-n8n.com/webhook/magic</div></div>
+                <div class="form-block"><label>Tipo de Autenticação</label><div class="input-line">Sem travessia</div></div>
+                <div class="three-fields">
+                  <div class="small-field"><label>Tentar novamente</label><div class="input-line">3</div></div>
+                  <div class="small-field"><label>Tempo limite</label><div class="input-line">30</div></div>
+                  <div class="small-field"><label>Taxa/min</label><div class="input-line">60</div></div>
+                </div>
+                <div class="form-block"><label>Cabeçalhos personalizados</label><div class="input-line">{ }</div></div>
+              </div>
+
+              <aside class="event-sidebar" aria-label="Eventos disponíveis para disparo do webhook">
+                <h4>Eventos para disparar</h4>
+                <div class="event-group is-active">
+                  <header>CRM e Leads <span>4 eventos</span></header>
+                  <label class="check-option"><input type="checkbox" checked> Líder Criado</label>
+                  <label class="check-option"><input type="checkbox"> Líder Atualizado</label>
+                  <label class="check-option"><input type="checkbox"> Etapa Mudou Principal</label>
+                  <label class="check-option"><input type="checkbox" checked> Lead Ganhou</label>
+                </div>
+                <div class="event-group"><header>Clientes <span>2 eventos</span></header></div>
+                <div class="event-group"><header>Agendamentos <span>3 eventos</span></header></div>
+                <div class="event-group"><header>Financeiro <span>7 eventos</span></header></div>
+                <div class="event-group"><header>WhatsApp <span>5 eventos</span></header></div>
+              </aside>
+            </div>
+
+            <div class="window-footer">
+              <button type="button" class="btn btn--secondary">Cancelar</button>
+              <button type="button" class="btn btn--primary">Criar Webhook</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--green" id="payments">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--green reveal" data-reveal>Integrações de revestimento</span>
+          <h2 class="section-title reveal" data-reveal>
+            Cobranças e vendas
+            <span class="text-gradient text-gradient--green">totalmente automatizadas</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Conecte os principais gateways do Brasil e deixe o agente de IA cuidar de cobranças,
+            reembolsos e consultas - sem sair do WhatsApp.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>O que o agente pode fazer</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Cobranças automatizadas</strong><p>O agente de IA gera cobranças, envia links de pagamento e confirma transações sem intervenção humana.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Credenciais seguras</strong><p>Chaves de API e tokens armazenados com criptografia. O agente opera nos gateways sem expor as credenciais.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Reembolsos e assinaturas</strong><p>Gerencie cancelamentos, reembolsos e upgrades de assinatura diretamente pelo chat do cliente.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Consulta de vendas em tempo real</strong><p>Peça ao agente o faturamento do dia, semana ou mês. Ele busca nos gateways e responde na hora.</p></article>
+            </div>
+
+            <article class="note-card reveal" data-reveal>
+              As credenciais de API permitem ao agente IA operar nos gateways. As credenciais de webhook
+              para receber eventos são configuradas separadamente na captura de leads.
+            </article>
+
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com Pagamentos</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Integrações de revestimento</div>
+            </div>
+            <div class="window-card__body">
+              <div class="window-header">
+                <div>
+                  <strong>Credenciais de API dos Gateways</strong>
+                  <p>Configure as credenciais para que o agente IA consulte vendas, gere cobranças e gerencie assinaturas via MCP.</p>
+                </div>
+                <span class="status-pill status-pill--green">0 / 7</span>
+              </div>
+
+              <article class="note-card note-card--blue">
+                Essas credenciais de API permitem ao agente IA operar nos gateways. Credenciais de webhook
+                para receber eventos são configuradas separadamente.
+              </article>
+
+              <div class="gateway-list">
+                <article class="gateway-row"><strong>Hotmart</strong><span>OAuth2</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>Kiwify</strong><span>Chave de API</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>Ticto</strong><span>OAuth2</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>Asaas</strong><span>access_token</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>Mercado Pago</strong><span>Bearer Token</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>Vindi</strong><span>Basic Auth</span><span class="status-pill status-pill--gold">Pendente</span></article>
+                <article class="gateway-row"><strong>PicPay</strong><span>OAuth2</span><span class="status-pill status-pill--gold">Pendente</span></article>
+              </div>
+
+              <div class="panel-link-row">
+                <button type="button" class="ghost-chip">Mostrar todos os gateways</button>
+                <a href="#cta">Ver documentação</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--pink" id="team">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--pink reveal" data-reveal>Equipe</span>
+          <h2 class="section-title reveal" data-reveal>
+            Sua equipe operando em
+            <span class="text-gradient text-gradient--pink">perfeita sincronia</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Convide atendentes, defina cargos, controle permissões e acompanhe o desempenho
+            de cada um, tudo em um único lugar.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-copy">
+            <h3 class="showcase-title reveal" data-reveal>Gestão completa de atendimento</h3>
+            <div class="stack-list">
+              <article class="info-card reveal" data-reveal><strong>Equipe centralizada</strong><p>Convide os participantes por email e gerencie toda a equipe em um único painel.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Isolamento de dados</strong><p>Cada participante vê apenas seus próprios leads e conversas. Dados de outros membros ficam protegidos.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Desempenho individual</strong><p>Acompanhe conversas, tempo de resposta, taxas de resolução e avaliação de cada participante.</p></article>
+              <article class="info-card reveal" data-reveal><strong>Cargos e níveis</strong><p>Atendente, Supervisor ou Gerente. Cada cargo com níveis de acesso definidos e auditáveis.</p></article>
+            </div>
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com múltiplos participantes</a>
+          </div>
+
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-title">Equipe</div>
+              <div class="window-tools"><span class="ghost-chip">0 online</span><button type="button" class="solid-chip">Convidar</button></div>
+            </div>
+            <div class="window-card__body">
+              <div class="tab-strip">
+                <button class="tab-chip is-active" type="button">Equipe</button>
+                <button class="tab-chip" type="button">Desempenho</button>
+                <button class="tab-chip" type="button">Configurações</button>
+              </div>
+
+              <article class="invite-card">
+                <strong>Nenhum atendente ainda</strong>
+                <p>Convide membros da equipe para a função "Atendente" para que possam atender conversas e gerenciar leads.</p>
+                <a class="mini-btn mini-btn--solid" href="#cta">Convidar atendente</a>
+              </article>
+
+              <div class="settings-card">
+                <div class="settings-card__row"><strong>Cargos</strong><span>Posições da equipe e como se distribuir</span></div>
+                <div class="settings-card__row settings-card__row--column">
+                  <strong>Nível de acesso</strong>
+                  <p>O que um atendente pode ver e fazer</p>
+                  <div class="permission-grid">
+                    <div>
+                      <span class="permission-title">Acesso permitido</span>
+                      <div class="permission-tags">
+                        <span>Chat ao vivo</span><span>CRM Kanban</span><span>Leads</span><span>Agenda</span><span>Clientes</span><span>Perguntas frequentes</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="permission-title">Sem acesso</span>
+                      <div class="permission-tags permission-tags--muted">
+                        <span>Financeiro</span><span>Relatórios</span><span>Configurações</span><span>Automações</span><span>Produtos</span><span>Configuração do WhatsApp</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <article class="note-card note-card--blue">
+                Os participantes só podem visualizar seus próprios leads, conversas e agendamentos atribuídos.
+                Dados de outros membros são protegidos por isolamento automático.
+              </article>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--gold" id="window-counter">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="section-pill section-pill--gold reveal" data-reveal>Contador de Janela</span>
+          <h2 class="section-title reveal" data-reveal>
+            Nunca perca uma
+            <span class="text-gradient text-gradient--gold">janela de conversa</span>
+          </h2>
+          <p class="section-text reveal" data-reveal>
+            Monitore o contador de 24h de cada lead em tempo real. Saiba exatamente quando agir,
+            sem perder oportunidades e sem gastar com modelos desnecessários.
+          </p>
+        </div>
+
+        <div class="window-grid">
+          <article class="window-card reveal" data-reveal>
+            <div class="window-card__bar">
+              <div class="window-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-pill">Janelas Ativas - WhatsApp</div>
+              <div class="live-indicator live-indicator--gold">AO VIVO</div>
+            </div>
+
+            <div class="window-card__body">
+              <div class="summary-grid">
+                <article class="summary-box summary-box--green"><strong>2</strong><span>Ativas</span></article>
+                <article class="summary-box summary-box--gold"><strong>1</strong><span>Expirando</span></article>
+                <article class="summary-box summary-box--red"><strong>1</strong><span>Expiradas</span></article>
+              </div>
+
+              <div class="lead-window-list">
+                <article class="lead-window lead-window--active"><header><strong>Mariana Costa</strong><span>Ativa</span></header><small>Janela 24h - Restam 6h 19m</small><div class="progress-line"><span data-width="74"></span></div></article>
+                <article class="lead-window lead-window--warning"><header><strong>Clínica OdontoVida</strong><span>Expirando</span></header><small>Janela 24h - Restam 1h 7m</small><div class="progress-line"><span data-width="18"></span></div></article>
+                <article class="lead-window lead-window--expired"><header><strong>Tech Solutions LTDA</strong><span>Expirada</span></header><small>Janela 24h - Expirada</small><div class="progress-line"><span data-width="4"></span></div></article>
+                <article class="lead-window lead-window--active"><header><strong>Ricardo Almeida</strong><span>Ativa</span></header><small>Janela 24h - Restam 5h 44m</small><div class="progress-line"><span data-width="68"></span></div></article>
+              </div>
+            </div>
+          </article>
+
+          <div class="detail-stack">
+            <article class="detail-card detail-card--warning reveal" data-reveal>
+              <div class="detail-card__head">
+                <div>
+                  <strong>Clínica OdontoVida</strong>
+                  <p>+55 21 98765-0001</p>
+                </div>
+                <span class="status-pill status-pill--gold">Expirando</span>
+              </div>
+              <ul class="detail-list">
+                <li><span>Janela 24h</span><strong>Restam 1h 7m 10s</strong></li>
+                <li><span>Provider</span><strong>API Meta Cloud</strong></li>
+                <li><span>Última msg recebida</span><strong>Hoje, 10:44</strong></li>
+              </ul>
+              <div class="alert-box">
+                Atenção. Janela expirando em breve. O agente de acompanhamento será acionado automaticamente.
+              </div>
+            </article>
+
+            <article class="info-card reveal" data-reveal><strong>Alertas automáticos antes de expirar</strong><p>Receba notificações com 2h, 1h e 30 min de antecedência. Nunca perca uma janela aberta sem responder.</p></article>
+            <article class="info-card reveal" data-reveal><strong>Disparo de acompanhamento automático</strong><p>Quando uma janela está prestes a fechar, os agentes de IA disparam uma mensagem de reengajamento automático.</p></article>
+            <article class="info-card reveal" data-reveal><strong>Reduza o custo com modelos</strong><p>Reabertura de janela exige templates pagos. Controlar o tempo evita gastos desnecessários.</p></article>
+            <article class="info-card reveal" data-reveal><strong>Indicador para agentes de acompanhamento</strong><p>Seus agentes consultam o status da janela antes de cada ação, respondendo na hora certa.</p></article>
+            <a class="inline-link reveal" data-reveal href="#pricing">Ver planos com controle de janela</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#hero">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6 17L17 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+              <path d="M10 6H17V13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </span>
+          <span class="brand__word">IMPULSO<span>.</span></span>
+        </a>
+        <p>O CRM inteligente que trabalha para você. Automatize processos e foque em fechar negócios.</p>
+      </div>
+
+      <div>
+        <h3>Produto</h3>
+        <a href="#features">Funcionalidades</a>
+        <a href="#pricing">Preços</a>
+        <a href="#preview">Integrações</a>
+        <a href="#preview">Registro de alterações</a>
+        <a href="#preview">Segurança</a>
+      </div>
+
+      <div>
+        <h3>Recursos</h3>
+        <a href="#preview">Blog</a>
+        <a href="#preview">Guias e E-books</a>
+        <a href="#faq">Central de Ajuda</a>
+        <a href="#preview">Comunidade</a>
+        <a href="#preview">Documentação da API</a>
+      </div>
+
+      <div>
+        <h3>Empresa</h3>
+        <a href="../../index.html#sobre">Sobre a FAT Tech</a>
+        <a href="../../index.html#cases">Cases</a>
+        <a href="#cta">Falar com vendas</a>
+        <a href="../../integracoes.html">Integrações</a>
+        <a href="../../privacidade.html">Política de Privacidade</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <span>© 2026 Impulse CRM — produto operado pela <a href="../../index.html" style="color:var(--pink);font-weight:700">FAT Tech</a>. Todos os direitos reservados.</span>
+      <div>
+        <a href="../../privacidade.html">Termos de serviço</a>
+        <a href="../../privacidade.html">Política de Cookies</a>
+        <a href="../../index.html">← Voltar ao site FAT Tech</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp flutuante -->
+  <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Vi%20a%20p%C3%A1gina%20do%20Impulse%20CRM%20e%20quero%20saber%20mais."
+     target="_blank" rel="noopener noreferrer"
+     aria-label="Falar no WhatsApp"
+     style="position:fixed;bottom:24px;right:24px;z-index:90;width:60px;height:60px;border-radius:9999px;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 32px rgba(37,211,102,0.45);transition:transform .25s ease;">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  </a>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <script defer src="script.js"></script>
+</body>
+</html>

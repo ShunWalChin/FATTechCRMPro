@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Como um restaurante com delivery pode vender mais e reter clientes usando IA no WhatsApp. | FAT Tech</title>
+  <meta name="description" content="Case food service. Este case mostra como um negócio de food service conseguiu acelerar atendimento, aumentar recorrência e criar um canal mais inteligente par">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FAT Tech">
+  <meta property="og:title" content="Como um restaurante com delivery pode vender mais e reter clientes usando IA no WhatsApp. | FAT Tech">
+  <meta property="og:description" content="Case food service. Este case mostra como um negócio de food service conseguiu acelerar atendimento, aumentar recorrência e criar um canal mais inteligente par">
+  <meta property="og:url" content="https://fattech.com.br/lp/case-restaurante-delivery">
+  <meta property="og:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png">
+  <meta property="og:locale" content="pt_BR">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Como um restaurante com delivery pode vender mais e reter clientes usando IA no WhatsApp. | FAT Tech">
+  <meta name="twitter:description" content="Case food service. Este case mostra como um negócio de food service conseguiu acelerar atendimento, aumentar recorrência e criar um canal mais inteligente par">
+  <meta name="twitter:image" content="https://fattech.com.br/dist/Logo_FATTech_Nova-B-ZGug9A.png">
+  <link rel="canonical" href="https://fattech.com.br/lp/case-restaurante-delivery">
+  <link rel="icon" href="../dist/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../lp-showcase.css">
+  <link rel="stylesheet" href="../site-unified.css">
+
+  <style>
+    .showcase-radar,
+    .showcase-ops-grid,
+    .showcase-proof-stack,
+    .showcase-proof-metrics,
+    .showcase-closing-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .showcase-radar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .showcase-signal,
+    .showcase-ops-card,
+    .showcase-proof-note,
+    .showcase-proof-metric,
+    .showcase-closing-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 240, 255, 0.14);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(14, 19, 36, 0.92), rgba(8, 12, 24, 0.94));
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.3);
+      padding: 22px;
+    }
+
+    .showcase-signal::before,
+    .showcase-ops-card::before,
+    .showcase-proof-note::before,
+    .showcase-proof-metric::before,
+    .showcase-closing-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(0, 240, 255, 0.12), transparent 34%),
+        linear-gradient(135deg, rgba(255, 45, 120, 0.08), transparent 55%, rgba(168, 85, 247, 0.12));
+      pointer-events: none;
+    }
+
+    .showcase-signal > *,
+    .showcase-ops-card > *,
+    .showcase-proof-note > *,
+    .showcase-proof-metric > *,
+    .showcase-closing-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .showcase-signal strong,
+    .showcase-proof-metric strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2vw, 2.2rem);
+      color: var(--cyan);
+      text-shadow: 0 0 18px rgba(0, 240, 255, 0.2);
+      margin-bottom: 8px;
+    }
+
+    .showcase-signal span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .showcase-signal p,
+    .showcase-ops-card p,
+    .showcase-proof-note p,
+    .showcase-proof-metric p,
+    .showcase-closing-card p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .showcase-hero-card {
+      padding: 26px;
+    }
+
+    .showcase-ops-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 24px;
+    }
+
+    .showcase-ops-card h3,
+    .showcase-closing-card h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+    }
+
+    .showcase-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.18);
+      background: rgba(0, 240, 255, 0.08);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .showcase-proof-stack {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: stretch;
+      margin-top: 22px;
+    }
+
+    .showcase-proof-note {
+      display: grid;
+      gap: 16px;
+    }
+
+    .showcase-proof-chat {
+      display: grid;
+      gap: 10px;
+    }
+
+    .showcase-proof-bubble {
+      max-width: 92%;
+      padding: 14px 16px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+      font-size: 0.96rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .showcase-proof-bubble--out {
+      justify-self: end;
+      background: linear-gradient(180deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.06));
+      border-color: rgba(0, 240, 255, 0.18);
+    }
+
+    .showcase-proof-bubble--in {
+      justify-self: start;
+      background: linear-gradient(180deg, rgba(17, 27, 40, 0.98), rgba(12, 18, 30, 0.96));
+    }
+
+    .showcase-proof-bubble small {
+      display: block;
+      margin-top: 8px;
+      text-align: right;
+      color: rgba(226, 232, 240, 0.5);
+      font-size: 0.72rem;
+    }
+
+    .showcase-proof-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .showcase-closing-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 24px;
+    }
+
+    .showcase-cta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .showcase-cta-strip a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 240, 255, 0.16);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+      font-family: var(--font-display);
+      transition: 0.25s ease;
+    }
+
+    .showcase-cta-strip a:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+
+    @media (max-width: 980px) {
+      .showcase-radar,
+      .showcase-ops-grid,
+      .showcase-proof-stack,
+      .showcase-closing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <!-- Google Consent Mode v2 — LGPD: default denied antes do gtag (atualizado para granted pelo ConsentManager ao aceitar o banner) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LRDDE0GWT3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LRDDE0GWT3');
+  </script>
+</head>
+<body data-fat-lp="case-restaurante-delivery">
+  <div class="lp-shell">
+    <header class="lp-nav">
+      <div class="lp-nav-inner">
+        <a class="lp-brand" href="../index.html" aria-label="Voltar para a home da FAT Tech">
+          <img src="../dist/Logo_FATTech_Nova-B-ZGug9A.png" alt="Logo FAT Tech - Case food service" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(0,240,255,.18));">
+          <div>
+            <div class="lp-brand-mark">FAT Tech</div>
+            <div class="lp-brand-meta">Case food service</div>
+          </div>
+        </a>
+        <nav class="lp-nav-links" aria-label="Atalhos da landing page">
+          <a href="../index.html">Site Principal</a>
+          <a href="../crm.html">CRM IA</a>
+          <a href="#preco">Investimento</a>
+          <a href="https://wa.me/5535998491017?text=Vi+o+case+de+restaurante+e+delivery+e+quero+montar+essa+estrutura+de+atendimento+e+recorr%C3%AAncia+no+meu+neg%C3%B3cio." target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="lp-section lp-section--hero">
+        <div class="lp-section-inner lp-hero">
+          <div class="lp-reveal">
+            <div class="lp-kicker">Case inspirado em resultado real</div>
+            <h1>Como um restaurante com delivery pode vender mais e reter clientes usando IA no WhatsApp.</h1>
+            <p class="lp-lead">Este case mostra como um negócio de food service conseguiu acelerar atendimento, aumentar recorrência e criar um canal mais inteligente para pedidos e relacionamento.</p>
+            <div class="lp-hero-actions">
+              <a class="lp-btn" href="https://wa.me/5535998491017?text=Vi+o+case+de+restaurante+e+delivery+e+quero+montar+essa+estrutura+de+atendimento+e+recorr%C3%AAncia+no+meu+neg%C3%B3cio." target="_blank" rel="noopener noreferrer">Quero esse modelo no meu restaurante</a>
+              <a class="lp-btn-secondary" href="#solucao">Ver a estrutura</a>
+            </div>
+            <div class="showcase-radar">
+
+            <article class="showcase-signal lp-reveal">
+              <strong>+14%</strong>
+              <span>retencao</span>
+              <p>Sem uma esteira clara, a equipe responde de forma desigual e perde contexto.</p>
+            </article>
+
+            <article class="showcase-signal lp-reveal">
+              <strong>+12%</strong>
+              <span>pedidos recorrentes</span>
+              <p>Contatos bons e frios se misturam, drenando tempo e energia comercial.</p>
+            </article>
+
+            <article class="showcase-signal lp-reveal">
+              <strong>-28%</strong>
+              <span>tempo de atendimento</span>
+              <p>Oportunidades param no meio porque não existe sistema ativo para continuar a conversa.</p>
+            </article>
+            </div>
+          </div>
+
+          <aside class="lp-hero-card showcase-hero-card lp-reveal">
+            <div class="lp-kicker">Setup visivel</div>
+            <h3>Implantação comercial completa</h3>
+            <p>Você não recebe um chatbot genérico. Recebe uma operação treinada com contexto, funil e processo comercial de verdade.</p>
+            <ul class="lp-price-list">
+            <li>WhatsApp API Oficial integrado</li>
+            <li>Agente Neural com conhecimento profundo</li>
+            <li>CRM Kanban autônomo com histórico e próxima ação</li>
+            </ul>
+            <div class="showcase-cta-strip">
+              <a href="#dor">Leitura do case</a>
+              <a href="#preco">Ver investimento</a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="lp-section" id="dor">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">Leitura do case</div>
+            <h2 class="lp-section-title">O restaurante respondia muito e vendia menos do que podia.</h2>
+            <p class="lp-section-sub">O problema não é apenas atendimento. É vazamento operacional entre o primeiro contato, a qualificação e a próxima ação comercial.</p>
+          </div>
+          <div class="lp-card-grid">
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 01</div>
+              <h3>Entrada desorganizada</h3>
+              <p>Sem uma esteira clara, a equipe responde de forma desigual e perde contexto.</p>
+            </article>
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 02</div>
+              <h3>Qualificação fraca</h3>
+              <p>Contatos bons e frios se misturam, drenando tempo e energia comercial.</p>
+            </article>
+
+            <article class="lp-card lp-reveal">
+              <div class="lp-card-number">Ponto 03</div>
+              <h3>Follow-up inconsistente</h3>
+              <p>Oportunidades param no meio porque não existe sistema ativo para continuar a conversa.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="solucao">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">Como a FAT Tech organiza esse tipo de operação</div>
+            <h2 class="lp-section-title">Uma esteira comercial com IA operando em tempo real.</h2>
+            <p class="lp-section-sub">A IA recebe, entende, qualifica, registra e prepara a próxima ação para seu time entrar no momento certo e com mais contexto.</p>
+          </div>
+          <div class="lp-proof-grid">
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Modulo 01</div>
+              <h3>Atendimento inicial com contexto</h3>
+              <p>A conversa deixa de ser fria e passa a seguir um roteiro comercial inteligente.</p>
+            </article>
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Modulo 02</div>
+              <h3>Qualificação e registro</h3>
+              <p>Tudo entra no CRM com status, histórico e próxima ação claros.</p>
+            </article>
+
+            <article class="lp-proof-card lp-reveal">
+              <div class="lp-card-number">Modulo 03</div>
+              <h3>Follow-up e reativação</h3>
+              <p>A operação não depende mais de memória humana para continuar o processo.</p>
+            </article>
+          </div>
+          <div class="showcase-ops-grid">
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Modulo 01</div>
+              <h3>Atendimento inicial com contexto</h3>
+              <p>A conversa deixa de ser fria e passa a seguir um roteiro comercial inteligente.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Modulo 02</div>
+              <h3>Qualificação e registro</h3>
+              <p>Tudo entra no CRM com status, histórico e próxima ação claros.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Modulo 03</div>
+              <h3>Follow-up e reativação</h3>
+              <p>A operação não depende mais de memória humana para continuar o processo.</p>
+            </article>
+
+            <article class="showcase-ops-card lp-reveal">
+              <div class="showcase-eyebrow">Modulo 04</div>
+              <h3>Camada de entrega</h3>
+              <p>WhatsApp API Oficial integrado, Agente Neural treinado no seu contexto, CRM comercial autônomo.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="prova">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">O que esse tipo de estrutura costuma mudar na prática</div>
+            <h2 class="lp-section-title">O que muda quando processo e IA entram juntos.</h2>
+            <p class="lp-section-sub">Mais recorrência e menos atrito transformam a experiência e a margem.</p>
+          </div>
+          <div class="showcase-proof-stack">
+            <article class="showcase-proof-note lp-reveal">
+              <div class="lp-kicker">Conversa que transmite processo</div>
+              <div class="showcase-proof-chat">
+                <div class="showcase-proof-bubble showcase-proof-bubble--out">
+                  Como isso muda na pratica para o time?
+                  <small>09:18</small>
+                </div>
+                <div class="showcase-proof-bubble showcase-proof-bubble--in">
+                  Você passa a enxergar melhor o funil, os gargalos e o que virou oportunidade real.
+                  <small>09:19</small>
+                </div>
+                <div class="showcase-proof-bubble showcase-proof-bubble--in">
+                  A equipe humana foca em decisão, fechamento e casos sensíveis, não em repeticao.
+                  <small>09:20</small>
+                </div>
+              </div>
+            </article>
+            <div class="showcase-proof-metrics">
+
+              <article class="showcase-proof-metric lp-reveal">
+                <strong>Mais previsibilidade comercial</strong>
+                <p>Você passa a enxergar melhor o funil, os gargalos e o que virou oportunidade real.</p>
+              </article>
+
+              <article class="showcase-proof-metric lp-reveal">
+                <strong>Menos peso operacional</strong>
+                <p>A equipe humana foca em decisão, fechamento e casos sensíveis, não em repeticao.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="decisao">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">Por que essa estrutura chama atenção</div>
+            <h2 class="lp-section-title">Porque o cliente percebe ordem, velocidade e segurança na conversa. E isso muda a forma como ele responde à oferta.</h2>
+            <p class="lp-section-sub">Você não recebe um chatbot genérico. Recebe uma operação treinada com contexto, funil e processo comercial de verdade.</p>
+          </div>
+          <div class="showcase-closing-grid">
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>1</h3>
+              <p>WhatsApp API Oficial integrado</p>
+            </article>
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>2</h3>
+              <p>Agente Neural treinado no seu contexto</p>
+            </article>
+
+            <article class="showcase-closing-card lp-reveal">
+              <h3>3</h3>
+              <p>CRM comercial autônomo</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-section" id="preco">
+        <div class="lp-section-inner lp-price-grid">
+          <article class="lp-price lp-reveal">
+            <div class="lp-price-tag">Investimento</div>
+            <h3>S.Y.N.A.P.S.E. para Case food service</h3>
+            <p class="lp-section-sub">Preco claro desde a primeira conversa.</p>
+            <div class="lp-price-main">
+              <div class="lp-price-value">R$ 3.260</div>
+              <div class="lp-price-caption">implantação e engenharia comercial</div>
+            </div>
+            <div class="lp-price-main">
+              <div class="lp-price-value">R$ 497/mes</div>
+              <div class="lp-price-caption">licença, servidor e operação mensal</div>
+            </div>
+            <div class="lp-price-disclaimer">Expectativas de ganho e payback variam conforme oferta, demanda, maturidade comercial e ritmo de execucao.</div>
+          </article>
+
+          <article class="lp-price lp-reveal">
+            <div class="lp-price-tag">Inclui</div>
+            <h3>O que entra na entrega</h3>
+            <ul class="lp-price-list">
+            <li>WhatsApp API Oficial integrado</li>
+            <li>Agente Neural treinado no seu contexto</li>
+            <li>CRM comercial autônomo</li>
+            <li>Refinamento inicial com a FAT Tech</li>
+            </ul>
+            <div class="lp-hero-actions" style="margin-top:24px;">
+              <a class="lp-btn" href="https://wa.me/5535998491017?text=Vi+o+case+de+restaurante+e+delivery+e+quero+montar+essa+estrutura+de+atendimento+e+recorr%C3%AAncia+no+meu+neg%C3%B3cio." target="_blank" rel="noopener noreferrer">Quero esse modelo no meu restaurante</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="lp-section" id="faq">
+        <div class="lp-section-inner">
+          <div class="lp-section-header lp-reveal">
+            <div class="lp-kicker">FAQ comercial</div>
+            <h2 class="lp-section-title">Perguntas frequentes</h2>
+          </div>
+          <div class="lp-faq-list">
+
+            <article class="lp-faq-item lp-reveal">
+              <h3>Preciso trocar toda a minha operação?</h3>
+              <p>Não. A FAT Tech implanta a camada comercial e integra o processo ao que faz sentido para o seu cenário atual.</p>
+            </article>
+
+            <article class="lp-faq-item lp-reveal">
+              <h3>Isso substitui meu time?</h3>
+              <p>Não. A IA remove peso operacional e prepara melhor o terreno para o time humano atuar com mais contexto.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="lp-footer">
+      <div class="lp-footer-inner">
+        <span>FAT Tech - IA aplicada ao comercial, atendimento e operação.</span>
+        <span><a href="../privacidade.html">Política de Privacidade</a> · <a href="../blog/index.html">Blog</a></span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="../global-particles.js"></script>
+</body>
+</html>
