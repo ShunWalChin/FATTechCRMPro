@@ -84,7 +84,7 @@ apps/web/app/crm/propostas/page.tsx,207,8e209020c2149d7083092c8513feccf05a8fc3b6
 apps/web/app/crm/radar/page.tsx,90,8034136c14293f58bc501c9a6c08012a4b45fbbf0af5f12e8a12ed7639ae0cf5
 apps/web/app/crm/relatorios/page.tsx,215,a005835d80a16d4fcce627c6674ba07fa6fdc5cb6b468468695a5a9a1bd34d87
 apps/web/app/crm/tarefas/page.tsx,205,cb87f6999deb95b33f1f1ce599eec01a15396ba89939fc3b920976a9b4e21be5
-apps/web/app/globals.css,77869,b32ed7987e9c67e4e78819fd2d8ff4a6bd4873106874c8810835635b3a965f62
+apps/web/app/globals.css,80551,df2c26b4a6d3edf52743880be752db1757f35bbd2502853ca403907051fd0a37
 apps/web/app/integracoes/page.tsx,1393,a9e42b805c80827f1202789df32fd6656e0299810333d0345083eecef7fd0284
 apps/web/app/layout.tsx,935,628f083043f89c82f85afa3e4f4ac33270b3a3fa92e782f901fc2be1dd300a65
 apps/web/app/login/page.tsx,1444,4587abd3732bde4d68694303982c238ca1aea9615ab63797707b825432d79cbe
@@ -113,7 +113,7 @@ apps/web/components/pipelines.tsx,10475,f7619d40316e5d56b0ce8a0ff48cb53e456fb3a2
 apps/web/components/public-shell.tsx,1378,f17589cba3839ddb8fa47ec607e3a42c0c13923918834bbf9718b9ad1ded96fe
 apps/web/components/radar.tsx,5129,1773716eb23dc1b3c5c3f46783f04ff01a8afc152c6c853ed75ec3531d5876c9
 apps/web/components/record-detail.tsx,6171,e529f848bfe1516a9cfe86f75f5faa466c480f24818bf6cb202b46b06508c2d3
-apps/web/components/resource-page.tsx,20659,91e0135da824282199ff216a3f7fc6c2daf4e534f0d5ae772b4235cc45c86672
+apps/web/components/resource-page.tsx,20692,3beb610f63c08c109ae0c404c20464113d137665e25450acac68e6083c2ff23f
 apps/web/components/sales-report.tsx,11949,8b7c39f9dd99327a8ff3a479d6c9ee382293efa45d47225e2167d0f2aba3a53f
 apps/web/components/team-management.tsx,5195,f30d0b96287e032b3b7cbeab83cf96be8864a5d15eef1065fcf11b2af8266c0e
 apps/web/components/work-queue.tsx,9357,417aa425d3f0b73baebd3f3f21b3e9b36e31db4a5d448cd7593798b4a6c57216
@@ -155,7 +155,7 @@ docs/releases/2026-09-12-versao-0.2.2.md,4323,81e6703a9a7648ef1b16d47db0ebd89a28
 docs/releases/2026-09-12-versao-0.2.md,4626,0054c5b4e5932647c887e071c2c23e4c91efca40d3bd22231eedb9c9e4e56ac9
 docs/releases/2026-09-12.md,5493,1322b5fb00ef79b8d8e3818e370420c112675d353539a934dca37468c2d417f2
 docs/releases/2026-09-13-versao-0.3.md,6127,2e7a67fd00de68691c2994981a2f51f018248b371008524fc8d5e26c51d821f1
-docs/releases/2026-09-13-versao-0.4.md,8632,ec657e5603f75e4963d12e026c0e5ade087f605035ee24c54b5d1de39d583786
+docs/releases/2026-09-13-versao-0.4.md,10207,632bc5d0a9d02a6d3553e0cb98a1dee189efe6e06905b98febbcba6d8b61b7ee
 infra/.env.example,458,dcef44ea80ea82304ac46f42e63cc742c2c496a3d83167e5860ff75fa56b3709
 infra/Dockerfile.api,457,d46d8e32677e754b655e2047d44b3ada8fbe7cf53f5509c61d0840e44fcd306d
 infra/Dockerfile.web,808,ef181c9ff54da316b4c533db6e54f20333c42b279cc67046e0995e9530761546
