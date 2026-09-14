@@ -27,6 +27,10 @@ Em Linux, o contrato equivalente é `PYTHONPATH=apps/api`, ambiente development,
 - Copiar somente arquivos versionados para `/opt/fattechcrmpro`.
 - Gerar segredos **no servidor** com `sudo python3 infra/provision_env.py --origin URL_HTTPS --email EMAIL_DO_ADMIN`.
 - Guardar `/etc/fattechcrmpro.env` com permissão `0600`; o script se recusa a sobrescrever.
+- Instalar com `sudo bash infra/install-release.sh <pacote> <sha256> <tag> <commit>`, que confere o
+  pacote, faz backup, extrai, **remove os arquivos versionados que a versao nao contem mais**,
+  confere hash e tamanho de cada arquivo do inventario e so entao chama `deploy.sh`. Extrair sem
+  podar deixa arquivo removido vivo em producao: foi assim que rotas antigas colidiram com as novas.
 - Executar `sudo bash infra/deploy.sh`. A migração usa usuário proprietário e cria permissões
   para o usuário runtime `fattech_app`, que não é superusuário nem dono de tabela.
 - Validar API, login, isolamento, lead público, backups e interface antes de apontar DNS.
