@@ -3,6 +3,10 @@
 node_modules/
 .next/
 dist/
+# O site da empresa tem uma pasta dist/ que e conteudo original, nao saida de build:
+# ignora-la deixou as imagens fora do Git e, por consequencia, fora de producao.
+!apps/web/public/dist/
+!apps/web/site-original/dist/
 build/
 __pycache__/
 .pytest_cache/
