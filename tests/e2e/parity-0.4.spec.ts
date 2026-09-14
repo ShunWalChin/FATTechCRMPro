@@ -37,7 +37,7 @@ test('the work queue filters on the server, survives a reload and closes work in
   await page.goto('/crm/tarefas');
   await page.getByLabel('Prazo').selectOption('overdue');
   await page.getByLabel('Buscar tarefas').fill(String(stamp));
-  const cards = page.locator('.resource-card-grid > article');
+  const cards = page.locator('.queue-list > .queue-row');
   await expect(cards).toHaveCount(1);
   await expect(cards.first()).toContainText(`Vencida ${stamp}`);
   await expect(page.locator('.pagination')).toContainText('1 tarefa');
