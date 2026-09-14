@@ -13,6 +13,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Acabamento, ficha do registro e busca global, publicado em 12/09](docs/releases/2026-09-12-acabamento-e-ficha.md)
 - [Versão 0.2: avisos, importação e operação comercial ligada](docs/releases/2026-09-12-versao-0.2.md)
 - [Versão 0.2.1: relatórios com tela e quadro que funciona no celular](docs/releases/2026-09-12-versao-0.2.1.md)
+- [Versão 0.5: o site da empresa de volta e um workspace que se lê](docs/releases/2026-09-14-versao-0.5.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.
@@ -20,8 +21,11 @@ As credenciais do administrador são entregues em arquivo local privado, fora de
 
 ## O que está funcionando
 
-- Site responsivo, 22 artigos, 20 landing pages e redirecionamentos das URLs anteriores.
-- Formulário público que grava contato, consentimento, atribuição UTM e auditoria no CRM.
+- Site público da FAT Tech reescrito nesta stack com fidelidade conferida página a página:
+  49 endereços, folhas de estilo e scripts originais inalterados, e as URLs `.html` antigas
+  redirecionando para as rotas novas.
+- `POST /public/leads` grava contato, consentimento, atribuição UTM e auditoria no CRM. O site da
+  empresa envia seu formulário para o WhatsApp, então hoje nenhuma tela chama esse endpoint.
 - Login privado, sessões revogáveis, troca de senha, papéis e administração da equipe.
 - Contatos, empresas, tarefas, projetos, produtos e conhecimento.
 - Funis configuráveis por etapa, com rótulo, probabilidade, resultado e duração esperada definidos

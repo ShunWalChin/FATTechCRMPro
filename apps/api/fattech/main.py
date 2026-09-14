@@ -34,7 +34,7 @@ from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.4.0"
+APP_VERSION = "0.5.0"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
