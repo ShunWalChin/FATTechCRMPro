@@ -1,7 +1,9 @@
 export type RelationshipResource='contacts'|'companies'|'projects'|'deals'|'conversations'|'team'|'products';
 export type Field={key:string;label:string;type?:'text'|'email'|'tel'|'url'|'date'|'textarea'|'number'|'money'|'tags'|'checkbox'|'select'|'json';required?:boolean;options?:string[];help?:string;relationship?:RelationshipResource};
 export type Option={value:string;label:string};
-export type Stage={key:string;label:string;probability:number;outcome:'open'|'won'|'lost';expected_duration_hours?:number};
+export type StageRequiredField='contact_id'|'company_id'|'owner_id'|'value_cents'|'expected_close'|'next_action_at';
+export type Stage={key:string;label:string;probability:number;outcome:'open'|'won'|'lost';expected_duration_hours?:number;required_fields?:StageRequiredField[]};
+export const stageRequiredFields:{value:StageRequiredField;label:string}[]=[{value:'contact_id',label:'Contato'},{value:'company_id',label:'Empresa cadastrada'},{value:'owner_id',label:'Responsável'},{value:'value_cents',label:'Valor maior que zero'},{value:'expected_close',label:'Previsão de fechamento'},{value:'next_action_at',label:'Próxima ação'}];
 export type PipelineRecord={id:string;version:number;name:string;description?:string;status:string;is_default:boolean;stages:Stage[];loss_reasons?:string[]};
 export type Resource={key:string;route:string;title:string;singular:string;gender?:'m'|'f';description:string;icon:string;fields:Field[];columns:string[];view?:'board'|'cards'|'tasks'|'knowledge'|'agents'|'automations'|'approvals'|'finance'};
 // Portuguese agrees in gender, so the article travels with the resource instead of being concatenated blindly.
@@ -10,7 +12,7 @@ export const thisLabel=(r:Resource)=>`${r.gender==='f'?'esta':'este'} ${r.singul
 export const plural=(n:number,one:string,many:string)=>`${n} ${n===1?one:many}`;
 const relationships:Record<string,RelationshipResource>={contact_id:'contacts',company_id:'companies',project_id:'projects',deal_id:'deals',conversation_id:'conversations',owner_id:'team'};
 const field=(key:string,label:string,type:Field['type']='text',options?:string[]):Field=>({key,label,type,options,relationship:relationships[key]});
-export const emptyStage=():Stage=>({key:'',label:'',probability:0,outcome:'open',expected_duration_hours:72});
+export const emptyStage=():Stage=>({key:'',label:'',probability:0,outcome:'open',expected_duration_hours:72,required_fields:[]});
 export const stageKey=(label:string)=>label.normalize('NFD').replace(/[^\u0020-\u007e]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/^(?![a-z])/,'e').slice(0,40);
 export const outcomes:Option[]=[{value:'open',label:'Em andamento'},{value:'won',label:'Ganho'},{value:'lost',label:'Perdido'}];
 export const labels:Record<string,string>={lead:'Entrada',qualified:'Qualificação',proposal:'Proposta',negotiation:'Negociação',won:'Ganho',lost:'Perdido',new:'Novo',active:'Ativo',inactive:'Inativo',customer:'Cliente',qualified_contact:'Qualificado',todo:'A fazer',in_progress:'Em andamento',done:'Concluído',low:'Baixa',medium:'Média',high:'Alta',urgent:'Urgente',open:'Aberta',pending:'Pendente',closed:'Encerrada',draft:'Rascunho',scheduled:'Agendada',running:'Em execução',paused:'Pausado',completed:'Concluído',planning:'Planejamento',approved:'Aprovado',rejected:'Rejeitado',paid:'Pago',overdue:'Vencido',sent:'Enviado',internal:'Interno',whatsapp:'WhatsApp',instagram:'Instagram',email:'E-mail',available:'Disponível',not_configured:'Configuração pendente',manual:'Manual',service:'Serviço',general:'Geral',archived:'Arquivado',cancelled:'Cancelado',social:'Redes sociais',ads:'Anúncios',owner:'Proprietário',admin:'Administrador',member:'Integrante',viewer:'Leitura'};

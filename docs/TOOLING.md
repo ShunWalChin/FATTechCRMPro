@@ -70,6 +70,25 @@ O grafo é gerado de código local por AST e não necessita de uma chave de IA.
 `.graphifyignore` exclui clones, bancos, ambientes, segredos e dependências.
 O inventário publicado de arquivos é produzido separadamente com `npm run inventory`.
 
+### Regras de negócio no grafo
+
+O AST responde quem chama quem; não responde por que uma regra existe. As regras ficam em
+`docs/knowledge/`, versionadas, no mesmo formato do grafo, e entram nele depois da extração:
+
+```text
+graphify update . --no-cluster
+<python-com-graphify> scripts/update-knowledge-graph.py
+graphify diagnose multigraph --json
+```
+
+A ordem importa: `update` reescreve `graph.json` a partir do código e descarta o que foi curado, então
+a mesclagem vem **depois**. Os nós de negócio declaram `source_file` no próprio artefato de conhecimento
+— e não no arquivo Python que descrevem — para que a próxima extração não os confunda com nós de código.
+
+Cada nó carrega `status` e `verification`. `verification` só passa a `tests_executed` quando a suíte
+correspondente foi de fato executada, e o bloco `execution_record` nomeia comando, motor e resultado.
+Regra ainda não construída permanece `planned`: o grafo registra o que existe, não o que se pretende.
+
 ## Ponytail
 
 Instalado via marketplace oficial do projeto, versão 4.9.0. A skill foi lida e aplicada:

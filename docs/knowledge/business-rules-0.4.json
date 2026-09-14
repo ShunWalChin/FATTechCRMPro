@@ -1,0 +1,363 @@
+{
+  "schema_version": "1.0",
+  "release": "0.4",
+  "reviewed_at": "2026-09-13",
+  "provenance": "Agent-authored semantic interpretation of inspected source. Test execution is recorded in execution_record and names the engines; deployment is claimed only by the release note.",
+  "merge_note": "All semantic nodes use this artifact as source_file to prevent build_merge replacing Python/TypeScript AST nodes. source_location points to inspected implementation. IDs use a separate business namespace.",
+  "nodes": [
+    {
+      "id": "fattech:business:stage-configuration",
+      "label": "Requisitos nativos por etapa",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/schemas.py:L61",
+      "status": "implemented",
+      "rule": "Lista fechada de seis campos, sem duplicatas e vazia por padrão.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_stage_requirements.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:stage-gates",
+      "label": "Qualificação validada no serviço",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L199",
+      "status": "implemented",
+      "rule": "Criação e edição exigem os campos configurados na etapa; valor zero não satisfaz requisito de valor.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_stage_requirements.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        },
+        {
+          "path": "tests/e2e/parity-0.4.spec.ts",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:deal-write",
+      "label": "Mutação concorrente de oportunidade",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L484",
+      "status": "implemented",
+      "rule": "Versão antiga retorna conflito; validação antecede atualização e auditoria.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_stage_requirements.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        },
+        {
+          "path": "tests/e2e/parity-0.4.spec.ts",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:lead-capture",
+      "label": "Captura pública preservada",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L434",
+      "status": "implemented",
+      "rule": "Contato deduplicado e histórico preservados; recaptura não desfaz opt-out.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_stage_requirements.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed"
+    },
+    {
+      "id": "fattech:business:lead-qualification",
+      "label": "Qualificação humana após captura",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L396",
+      "status": "implemented",
+      "rule": "Falta de campos na etapa inicial registra qualificação pendente e permite tarefa vinculada somente ao contato.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_stage_requirements.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed"
+    },
+    {
+      "id": "fattech:business:closing-authority",
+      "label": "Fechamento com autoridade do servidor",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L199",
+      "status": "implemented",
+      "rule": "Servidor grava outcome e closed_at. Reabertura limpa fechamento; edição no mesmo resultado preserva a data, inclusive ausência legada.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_closing_reports.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:report-basis",
+      "label": "Coortes comerciais explícitas",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/sales_operations.py:L229",
+      "status": "implemented",
+      "rule": "Relatório distingue criação e fechamento UTC, expõe exclusão de legados sem data e soma valores inteiros no banco.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_closing_reports.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        },
+        {
+          "path": "tests/e2e/parity-0.4.spec.ts",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:work-queue",
+      "label": "Fila paginada de follow-up",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/work_queue.py:L18",
+      "status": "implemented",
+      "rule": "Consulta SQL filtra responsável, prioridade, estado, prazo e busca; pagina com desempate por identificador.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_work_queue.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        },
+        {
+          "path": "tests/e2e/parity-0.4.spec.ts",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed"
+    },
+    {
+      "id": "fattech:business:queue-scope",
+      "label": "Permissões na fila e nomes relacionados",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/work_queue.py:L18",
+      "status": "implemented",
+      "rule": "Requer tasks:read e tenant autenticado; nomes de contatos, oportunidades e equipe dependem de seus escopos de leitura.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_work_queue.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed"
+    },
+    {
+      "id": "fattech:business:queue-deadline",
+      "label": "Semântica temporal da fila",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/work_queue.py:L18",
+      "status": "implemented",
+      "rule": "Resposta informa UTC e instante de referência; datas sem horário vencem após o dia e instantes vencem conforme horário.",
+      "evidence": [
+        {
+          "path": "apps/api/tests/test_work_queue.py",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        },
+        {
+          "path": "tests/e2e/parity-0.4.spec.ts",
+          "kind": "test_source",
+          "execution": "executed_in_execution_record"
+        }
+      ],
+      "verification": "tests_executed_both_engines"
+    },
+    {
+      "id": "fattech:business:saved-views",
+      "label": "Visões salvas compartilhadas",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "docs/discovery/crm-parity-0.4.md:L11",
+      "status": "planned",
+      "rule": "Persistência e compartilhamento de visões requerem política própria; filtros disponíveis não comprovam recurso entregue.",
+      "evidence": [],
+      "verification": "pending_test_evidence"
+    }
+  ],
+  "edges": [
+    {
+      "id": "fattech:relation:stage-configuration:configures:stage-gates",
+      "source": "fattech:business:stage-configuration",
+      "target": "fattech:business:stage-gates",
+      "relation": "configures",
+      "label": "configures",
+      "action": "Campos selecionados tornam-se pré-condições no serviço.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/schemas.py:L61",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:stage-gates:protects:deal-write",
+      "source": "fattech:business:stage-gates",
+      "target": "fattech:business:deal-write",
+      "relation": "protects",
+      "label": "protects",
+      "action": "Erro impede atualização e evento de sucesso.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L199",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:lead-qualification:preserves:lead-capture",
+      "source": "fattech:business:lead-qualification",
+      "target": "fattech:business:lead-capture",
+      "relation": "preserves",
+      "label": "preserves",
+      "action": "Qualificação pendente não precisa descartar o contato recebido.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L393",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:stage-gates:requires:lead-qualification",
+      "source": "fattech:business:stage-gates",
+      "target": "fattech:business:lead-qualification",
+      "relation": "requires",
+      "label": "requires",
+      "action": "A captura não contorna a qualificação do funil.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L199",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:deal-write:applies:closing-authority",
+      "source": "fattech:business:deal-write",
+      "target": "fattech:business:closing-authority",
+      "relation": "applies",
+      "label": "applies",
+      "action": "Transição comercial calcula fechamento no servidor.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L481",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:closing-authority:determines:report-basis",
+      "source": "fattech:business:closing-authority",
+      "target": "fattech:business:report-basis",
+      "relation": "determines",
+      "label": "determines",
+      "action": "Data e resultado persistidos delimitam a coorte de fechamento.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L199",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:queue-scope:restricts:work-queue",
+      "source": "fattech:business:queue-scope",
+      "target": "fattech:business:work-queue",
+      "relation": "restricts",
+      "label": "restricts",
+      "action": "Escopo e tenant limitam consulta e enriquecimento.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/work_queue.py:L18",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:queue-deadline:orders_and_filters:work-queue",
+      "source": "fattech:business:queue-deadline",
+      "target": "fattech:business:work-queue",
+      "relation": "orders_and_filters",
+      "label": "orders_and_filters",
+      "action": "Prazos determinam seleção e prioridade cronológica.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/work_queue.py:L18",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:lead-qualification:creates_followup:work-queue",
+      "source": "fattech:business:lead-qualification",
+      "target": "fattech:business:work-queue",
+      "relation": "creates_followup",
+      "label": "creates_followup",
+      "action": "Tarefa pendente torna o lead qualificável pela equipe.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "apps/api/fattech/services.py:L393",
+      "confidence": "INFERRED",
+      "status": "implemented"
+    },
+    {
+      "id": "fattech:relation:saved-views:may_extend:work-queue",
+      "source": "fattech:business:saved-views",
+      "target": "fattech:business:work-queue",
+      "relation": "may_extend",
+      "label": "may_extend",
+      "action": "Sugestão futura; não é implementação de visões persistentes.",
+      "source_file": "docs/knowledge/business-rules-0.4.json",
+      "source_location": "docs/discovery/crm-parity-0.4.md:L11",
+      "confidence": "INFERRED",
+      "status": "planned"
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "token_accounting": "Host-agent extraction; token usage not measured by Graphify. Zeros are placeholders, not a measured zero cost.",
+  "execution_record": {
+    "recorded_at": "2026-09-13",
+    "recorded_by": "development-workstation",
+    "suites": [
+      {
+        "command": "pytest apps/api/tests -q",
+        "engine": "sqlite",
+        "result": "175 passed, 11 skipped"
+      },
+      {
+        "command": "python scripts/validate-postgres.py",
+        "engine": "postgresql-17 (isolated validation instance)",
+        "result": "186 passed, 0 skipped"
+      },
+      {
+        "command": "npx playwright test",
+        "engine": "chromium against the seeded API",
+        "result": "26 passed"
+      }
+    ],
+    "caveat": "Numbers describe this workstation run. Publication evidence belongs to the release note; a passing suite is not a claim about production data."
+  }
+}

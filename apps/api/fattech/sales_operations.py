@@ -1,8 +1,8 @@
 """Commercial documents and goals with immutable money snapshots and explicit transitions.
 
 `issued` records internal issuance only; this module never sends a message, charges a
-customer or marks a deal won. Reports describe the current outcome of a creation-date
-cohort, because legacy deals do not have a reliable closing timestamp.
+customer or marks a deal won. Reports can select a creation-date cohort or actual
+last-closing dates; legacy deals without reliable closing timestamps are disclosed.
 """
 from datetime import date, datetime, timedelta, timezone
 from typing import Annotated, Literal
@@ -228,6 +228,7 @@ def update_goal(goal_id: str, payload: GoalUpdate, principal=Depends(require_aut
 @router.get("/report")
 def sales_report(owner_id: str | None = None, source: str | None = Query(None, max_length=100),
                  date_from: date | None = None, date_to: date | None = None,
+                 date_basis: Literal["created", "closed"] = "created",
                  period: Period | None = None, principal=Depends(require_auth), db=Depends(get_db)):
     principal.require("deals:read")
     owner_id = visible_owner(principal, owner_id)
@@ -236,12 +237,6 @@ def sales_report(owner_id: str | None = None, source: str | None = Query(None, m
     query = scoped(principal.tenant_id, "deals")
     if owner_id is not None:
         query = query.where(Record.data["owner_id"].as_string() == owner_id)
-    if date_from is not None:
-        query = query.where(Record.created_at >= datetime.combine(date_from, datetime.min.time(), timezone.utc))
-    if date_to is not None:
-        if date_to == date.max:
-            raise HTTPException(422, "Data final fora do intervalo permitido")
-        query = query.where(Record.created_at < datetime.combine(date_to + timedelta(days=1), datetime.min.time(), timezone.utc))
     if source is not None:
         contact = aliased(Record)
         query = query.outerjoin(contact, and_(contact.id == Record.data["contact_id"].as_string(),
@@ -251,17 +246,38 @@ def sales_report(owner_id: str | None = None, source: str | None = Query(None, m
     referenced = query.with_only_columns(Record.data["pipeline_id"].as_string()).distinct().correlate(None)
     pipelines = {record.id: {stage["key"]: stage["outcome"] for stage in record.data["stages"]}
                  for record in db.scalars(scoped(principal.tenant_id, "pipelines").where(Record.id.in_(referenced)))}
+    pipeline_id, stage = Record.data["pipeline_id"].as_string(), Record.data["stage"].as_string()
+    recorded_outcome = Record.data["outcome"].as_string()
+    closed_at = func.nullif(Record.data["closed_at"].as_string(), "")
+    excluded_missing_closed_at = 0
+    if date_basis == "closed":
+        # Missing dates cannot be assigned to any period. Count them before date filtering,
+        # retaining seller/source/tenant visibility and legacy outcome resolution.
+        missing = query.where(closed_at.is_(None)).with_only_columns(
+            pipeline_id, stage, recorded_outcome, func.count()).group_by(pipeline_id, stage, recorded_outcome)
+        excluded_missing_closed_at = sum(count for funnel, key, outcome, count in db.execute(missing)
+            if (outcome or pipelines.get(funnel, {}).get(key, "open")) in {"won", "lost"})
+        query = query.where(closed_at.is_not(None), recorded_outcome.in_(["won", "lost"]))
+    date_column = closed_at if date_basis == "closed" else Record.created_at
+    # Server-owned timestamps use a normalized UTC ISO representation on both engines.
+    if date_from is not None:
+        lower = datetime.combine(date_from, datetime.min.time(), timezone.utc)
+        query = query.where(date_column >= (lower.isoformat() if date_basis == "closed" else lower))
+    if date_to is not None:
+        if date_to == date.max:
+            raise HTTPException(422, "Data final fora do intervalo permitido")
+        upper = datetime.combine(date_to + timedelta(days=1), datetime.min.time(), timezone.utc)
+        query = query.where(date_column < (upper.isoformat() if date_basis == "closed" else upper))
     result = {"deal_count": 0, "open_count": 0, "won_count": 0, "lost_count": 0,
               "pipeline_cents": 0, "weighted_pipeline_cents": 0, "won_cents": 0, "lost_reasons": {}}
     weighted_hundredths = 0
-    pipeline_id, stage = Record.data["pipeline_id"].as_string(), Record.data["stage"].as_string()
     reason = Record.data["lost_reason"].as_string()
     amount = func.coalesce(cast(Record.data["value_cents"].as_string(), BigInteger), 0)
     probability = func.coalesce(cast(Record.data["probability"].as_string(), BigInteger), 0)
-    grouped = query.with_only_columns(pipeline_id, stage, reason, func.count(), func.sum(amount),
-                                     func.sum(amount * probability)).group_by(pipeline_id, stage, reason)
-    for funnel, stage_key, lost_reason, count, value, weighted in db.execute(grouped):
-        outcome = pipelines.get(funnel, {}).get(stage_key, "open")
+    grouped = query.with_only_columns(pipeline_id, stage, recorded_outcome, reason, func.count(), func.sum(amount),
+                                     func.sum(amount * probability)).group_by(pipeline_id, stage, recorded_outcome, reason)
+    for funnel, stage_key, outcome, lost_reason, count, value, weighted in db.execute(grouped):
+        outcome = outcome or pipelines.get(funnel, {}).get(stage_key, "open")
         value, weighted = int(value), int(weighted)
         result["deal_count"] += count
         if outcome == "won":
@@ -281,6 +297,7 @@ def sales_report(owner_id: str | None = None, source: str | None = Query(None, m
         goals = goals.where(Record.data["owner_id"].as_string() == owner_id)
     if period is not None:
         goals = goals.where(Record.data["period"].as_string() == period)
-    return {**result, "date_basis": "deal_created_at_utc", "weighted_rounding": "half_up_after_sum",
+    return {**result, "date_basis": "deal_closed_at_utc" if date_basis == "closed" else "deal_created_at_utc",
+            "excluded_missing_closed_at": excluded_missing_closed_at, "weighted_rounding": "half_up_after_sum",
             "filters": {"owner_id": owner_id, "source": source, "date_from": date_from, "date_to": date_to,
                         "goal_period": period}, "goals": [serialize(goal) for goal in db.scalars(goals)]}

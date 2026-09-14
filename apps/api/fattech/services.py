@@ -196,7 +196,7 @@ def guard_stage_removal(db, tenant_id, pipeline_id, before, after):
             raise HTTPException(409, f"A etapa {stage['label']} possui oportunidades ativas; mova-as antes de removê-la ou mudar seu desfecho")
 
 
-def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previous_reason=None):
+def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previous_reason=None, before=None):
     """Stage vocabulary is tenant configuration, so it is resolved here rather than by a static schema literal."""
     if data.get("pipeline_id"):
         pipeline = get_record(db, tenant_id, "pipelines", data["pipeline_id"], share=True)
@@ -214,6 +214,14 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previ
     stage = next((item for item in pipeline.data["stages"] if item["key"] == data["stage"]), None)
     if stage is None:
         raise HTTPException(422, "Etapa desconhecida neste funil")
+    required_labels = {"contact_id": "Contato", "company_id": "Empresa cadastrada", "owner_id": "Responsável",
+                       "value_cents": "Valor maior que zero", "expected_close": "Previsão de fechamento",
+                       "next_action_at": "Próxima ação"}
+    missing = [field for field in stage.get("required_fields", []) if not data.get(field)]
+    if missing:
+        raise HTTPException(422, {"message": "Complete os campos exigidos na etapa " + stage["label"] + ": "
+                                  + ", ".join(required_labels[field] for field in missing),
+                                  "required_fields": missing, "stage": stage["key"]})
     if stage["outcome"] == "lost" and not data.get("lost_reason", "").strip():
         raise HTTPException(422, "Informe o motivo da perda para encerrar a oportunidade")
     reasons = pipeline.data.get("loss_reasons", [])
@@ -226,6 +234,15 @@ def apply_deal_rules(db, tenant_id, data, keep_probability, previous=None, previ
         data["probability"] = 100 if stage["outcome"] == "won" else 0
     elif not keep_probability:
         data["probability"] = stage["probability"]
+    prior_outcome = before.get("outcome") if before else None
+    if before and prior_outcome is None:
+        # Legacy records have no trustworthy closing instant. Resolve their old outcome without inventing one.
+        old_pipeline = pipeline if previous == pipeline.id else get_record(db, tenant_id, "pipelines", previous, share=True)
+        prior_outcome = next((s["outcome"] for s in old_pipeline.data["stages"] if s["key"] == before.get("stage")), None)
+    outcome = stage["outcome"]
+    data["outcome"] = outcome
+    data["closed_at"] = (None if outcome == "open" else
+                         before.get("closed_at") if before and prior_outcome == outcome else now().isoformat())
     # Server-owned and deliberately outside the schema, so it survives edits and no client can forge it.
     data["last_activity_at"] = now().isoformat()
 
@@ -356,7 +373,10 @@ def create_record(db, tenant_id, actor_id, kind, payload):
     db.flush()
     if kind == "pipelines" and data["is_default"]:
         promote_default_pipeline(db, tenant_id, record.id)
-    audit_event(db, tenant_id, actor_id, f"{kind}.created", record.id, {"version": 1})
+    details = {"version": 1}
+    if kind == "deals":
+        details.update(outcome=data["outcome"], closed_at=data["closed_at"])
+    audit_event(db, tenant_id, actor_id, f"{kind}.created", record.id, details)
     return record
 
 
@@ -380,18 +400,25 @@ def promote_lead(db, tenant_id, contact, interest):
     so repeat form fills cannot inflate the pipeline the sales team reads.
     """
     pipeline = default_pipeline(db, tenant_id)
+    if pipeline:
+        pipeline = get_record(db, tenant_id, "pipelines", pipeline.id, share=True)
     stage = next((item for item in (pipeline.data["stages"] if pipeline else []) if item["outcome"] == "open"), None)
-    if stage is None:
-        return None
     opened = open_stage_keys(db, tenant_id)
     deal = next((record for record in db.scalars(scoped(tenant_id, "deals").where(
         Record.data["contact_id"].as_string() == contact.id))
         if record.data.get("stage") in opened.get(record.data.get("pipeline_id"), set())), None)
-    if deal is None:
-        deal = create_record(db, tenant_id, None, "deals", {
+    if deal is None and stage and pipeline.data.get("status") == "active":
+        candidate = {
             "title": f"{contact.data['name']} · {interest or 'Contato pelo site'}"[:200],
             "contact_id": contact.id, "pipeline_id": pipeline.id, "stage": stage["key"],
-            "position": next_position(db, tenant_id, pipeline.id, stage["key"])})
+            "position": next_position(db, tenant_id, pipeline.id, stage["key"])}
+        missing = [field for field in stage.get("required_fields", []) if not candidate.get(field)]
+        if missing:
+            # Capture remains durable while qualification awaits a person; never bypass stage requirements.
+            audit_event(db, tenant_id, None, "contacts.qualification_pending", contact.id,
+                        {"pipeline_id": pipeline.id, "required_fields": missing})
+        else:
+            deal = create_record(db, tenant_id, None, "deals", candidate)
     # One open next action per contact: ten form fills must not become ten identical reminders.
     pending = any(record.data.get("status") != "done" for record in db.scalars(
         scoped(tenant_id, "tasks").where(Record.data["contact_id"].as_string() == contact.id)))
@@ -400,7 +427,7 @@ def promote_lead(db, tenant_id, contact, interest):
             "title": f"Responder {contact.data['name']}"[:200],
             "description": f"Lead recebido pelo site.\n{interest}".strip()[:20000],
             "priority": "high", "due_date": (now() + timedelta(days=1)).date().isoformat(),
-            "contact_id": contact.id, "deal_id": deal.id})
+            "contact_id": contact.id, "deal_id": deal.id if deal else None})
     return deal
 
 
@@ -482,9 +509,13 @@ def update_record(db, principal, kind, record_id, payload):
     if kind == "deals":
         same_stage = data.get("pipeline_id") == record.data.get("pipeline_id") and data["stage"] == record.data["stage"]
         apply_deal_rules(db, principal.tenant_id, data, "probability" in changes or same_stage,
-                         record.data.get("pipeline_id"), record.data.get("lost_reason"))
+                         record.data.get("pipeline_id"), record.data.get("lost_reason"), before=record.data)
     if kind == "pipelines":
         guard_stage_removal(db, principal.tenant_id, record_id, record.data["stages"], data["stages"])
+    details = {"version": version + 1, "fields": sorted(changes)}
+    if kind == "deals":
+        details.update(previous_outcome=record.data.get("outcome"), outcome=data["outcome"],
+                       closed_at=data["closed_at"], previous_closed_at=record.data.get("closed_at"))
     result = db.execute(update(Record).where(Record.id == record_id, Record.tenant_id == principal.tenant_id,
                                            Record.version == version, Record.deleted.is_(False))
                         .values(data=data, version=version + 1, updated_at=now()))
@@ -492,8 +523,7 @@ def update_record(db, principal, kind, record_id, payload):
         raise HTTPException(409, "O registro foi alterado por outra pessoa. Atualize e tente novamente.")
     if kind == "pipelines" and data["is_default"]:
         promote_default_pipeline(db, principal.tenant_id, record_id)
-    audit_event(db, principal.tenant_id, principal.actor_id, f"{kind}.updated", record_id,
-                {"version": version + 1, "fields": sorted(changes)})
+    audit_event(db, principal.tenant_id, principal.actor_id, f"{kind}.updated", record_id, details)
     db.flush()
     db.refresh(record)
     return record

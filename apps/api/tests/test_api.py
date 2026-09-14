@@ -605,6 +605,8 @@ def test_health_and_openapi_report_the_same_version(system):
         "pyproject": tomllib.loads((root / "apps/api/pyproject.toml").read_text(encoding="utf-8"))["project"]["version"],
         "monorepo": json.loads((root / "package.json").read_text(encoding="utf-8"))["version"],
         "web": json.loads((root / "apps/web/package.json").read_text(encoding="utf-8"))["version"],
+        # Prose drifts more quietly than a manifest: this header sat a release behind before it was noticed.
+        "api_doc": (root / "apps/api/API.md").read_text(encoding="utf-8").split("aplicação ", 1)[1].split()[0],
     }
     assert set(manifests.values()) == {APP_VERSION}, manifests
     assert client.get("/api/health").json()["version"] == APP_VERSION

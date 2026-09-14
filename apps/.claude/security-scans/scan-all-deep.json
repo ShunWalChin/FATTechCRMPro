@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-09-14T02:39:39.807Z",
+  "target": "../../apps",
+  "depth": "deep",
+  "type": "all",
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 0,
+    "total": 2
+  },
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "type": "React XSS",
+      "location": "web\\app\\blog\\artigos\\[slug]\\page.tsx:9",
+      "description": "React XSS risk"
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "React XSS",
+      "location": "web\\app\\page.tsx:7",
+      "description": "React XSS risk"
+    }
+  ]
+}

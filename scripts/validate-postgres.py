@@ -1,7 +1,13 @@
-"""Run the isolated PostgreSQL security suite over SSH. Never emits generated credentials."""
+"""Run the test suite against the isolated PostgreSQL over SSH. Never emits generated credentials.
+
+The whole suite runs, not only the isolation tests: the `refined` fixture exists so business rules are
+exercised on the real engine, and CI already does that. A local check narrower than CI proves less than
+it appears to.
+"""
 import json
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -29,7 +35,8 @@ try:
     env["FATTECH_TEST_POSTGRES_APP_URL"] = f"postgresql+psycopg://fattech_app:{credentials['app_password']}@127.0.0.1:15441/fattech_test"
     env["FATTECH_TEST_DB_APP_PASSWORD"] = credentials["app_password"]
     python = root / ("apps/api/.venv/Scripts/python.exe" if os.name == "nt" else "apps/api/.venv/bin/python")
-    subprocess.run([str(python), "-m", "pytest", "tests/test_postgres.py", "-q"],
+    selection = sys.argv[1:] or ["tests"]
+    subprocess.run([str(python), "-m", "pytest", *selection, "-q"],
                    cwd=root / "apps/api", env=env, check=True)
 finally:
     tunnel.terminate()

@@ -140,3 +140,18 @@ com namespace lógico `contact_import` por tenant e credencial. Um recibo bem-su
 é confirmado junto dos contatos e eventos de auditoria; um lote inválido não deixa
 recibo parcial. Regras e compatibilidade estão em
 `docs/releases/2026-09-13-versao-0.3.md`.
+# Contratos de domínio adicionados em 0.4
+
+As etapas armazenam `required_fields`, lista permitida vazia por padrão. A exigência se aplica
+a toda escrita de oportunidade naquela etapa, inclusive edição sem troca de etapa. Configurar
+um requisito novo não preenche registros antigos; eles precisam ser completados na próxima edição
+ou movidos para uma etapa adequada. Relações continuam validadas por tenant e responsável ativo.
+
+`deals.outcome` e `deals.closed_at` pertencem ao servidor. Criação terminal ou mudança de resultado
+para ganho/perda registra o instante UTC; edição mantendo o resultado preserva-o. Reabertura limpa
+o instante. Legado terminal sem data permanece sem data até uma nova mudança de resultado.
+Auditoria e outbox registram resultado/data anterior e novo em cada edição de oportunidade.
+Não há migração nova nem backfill presumindo datas históricas.
+
+Campos ISO com horário são normalizados em UTC na validação; sem horário permanecem datas.
+A fila usa consultas SQL sobre tarefas existentes; não há tabela duplicada de lembretes.

@@ -8,11 +8,11 @@ import {PageHeader,EmptyState,LoadState} from './crm-ui';
 import {useUser} from './auth-context';
 type Goal={id:string;owner_id:string;period:string;target_cents:number};
 type Report={deal_count:number;open_count:number;won_count:number;lost_count:number;pipeline_cents:number;
- weighted_pipeline_cents:number;won_cents:number;lost_reasons:Record<string,number>;date_basis:string;goals:Goal[]};
-type Filters={owner_id:string;source:string;date_from:string;date_to:string;period:string};
-const empty:Filters={owner_id:'',source:'',date_from:'',date_to:'',period:''};
+ weighted_pipeline_cents:number;won_cents:number;lost_reasons:Record<string,number>;date_basis:string;excluded_missing_closed_at:number;goals:Goal[]};
+type Filters={owner_id:string;source:string;date_from:string;date_to:string;period:string;date_basis:'created'|'closed'};
+const empty:Filters={owner_id:'',source:'',date_from:'',date_to:'',period:'',date_basis:'created'};
 const iso=(date:Date)=>date.toISOString().slice(0,10);
-/** O relatório conta pela data de criação em UTC; os atalhos precisam falar a mesma língua. */
+/** Ambas as bases de data usam dias em UTC. */
 function monthRange(period:string){const [year,month]=period.split('-').map(Number);
  return {date_from:`${period}-01`,date_to:iso(new Date(Date.UTC(year,month,0)))}}
 function presets(){const today=new Date();const start=(days:number)=>iso(new Date(Date.now()-days*86400000));
@@ -42,7 +42,7 @@ export function SalesReport(){
  const worst=losses[0]?.[1]||1;
  // Comparar meta com resultado só é honesto quando o recorte cobre exatamente o mês da meta e o mesmo responsável.
  const comparable=(goal:Goal)=>{const range=monthRange(goal.period);
-  return applied.owner_id===goal.owner_id&&applied.date_from===range.date_from&&applied.date_to===range.date_to};
+  return applied.date_basis==='closed'&&!applied.source&&(applied.owner_id||(!admin?user?.id:''))===goal.owner_id&&applied.date_from===range.date_from&&applied.date_to===range.date_to};
  function apply(next:Partial<Filters>){const merged={...form,...next};setForm(merged);setApplied(merged)}
  function exportReport(){if(!data)return;
   downloadCsv([['Indicador','Valor'],['Oportunidades no recorte',String(data.deal_count)],['Em aberto',String(data.open_count)],
@@ -50,16 +50,21 @@ export function SalesReport(){
    ['Pipeline em aberto',money(data.pipeline_cents)],['Pipeline ponderado',money(data.weighted_pipeline_cents)],['Valor ganho',money(data.won_cents)],
    ['Responsável',admin?names[applied.owner_id]||'Toda a equipe':textValue(user?.name)],['Origem',applied.source||'Todas'],
    ['De',applied.date_from||'início'],['Até',applied.date_to||'hoje'],['Base de data',data.date_basis],
+   ['Encerradas sem data confiável (fora do recorte)',String(data.excluded_missing_closed_at)],
    [],['Motivo da perda','Oportunidades'],...losses.map(([reason,count])=>[reason,String(count)])],
    `fattech-relatorio-${applied.date_from||'tudo'}.csv`)}
  return <><PageHeader eyebrow="RESULTADO COMERCIAL" title="Relatórios" description="O recorte que você escolher, com o que está em aberto, o que fechou e por que se perdeu."
-   action={<><Link href="/crm/metas" className="panel-link">Gerenciar metas</Link><Button variant="secondary" isDisabled={!data} onPress={exportReport}><Download size={16}/>Exportar recorte</Button>
+   action={<><Link href="/crm/metas" className="panel-link">Gerenciar metas</Link><Button variant="secondary" isDisabled={!data||loading} onPress={exportReport}><Download size={16}/>Exportar recorte</Button>
    <Link href="/crm/radar" className="panel-link">Ver radar <ArrowUpRight size={15}/></Link></>}/>
   <form className="crm-panel report-filters" onSubmit={event=>{event.preventDefault();setApplied(form)}}>
    <div className="report-presets">{presets().map(([label,range])=><button type="button" key={label}
     className={form.date_from===range.date_from&&form.date_to===range.date_to?'is-current':''}
     onClick={()=>apply(range)}>{label}</button>)}</div>
    <div className="report-fields">
+    <label className="select-field"><span>Base do período</span>
+     <select value={form.date_basis} onChange={event=>setForm({...form,date_basis:event.target.value as Filters['date_basis']})}>
+      <option value="created">Criação da oportunidade</option><option value="closed">Último fechamento</option>
+     </select><small className="field-help">Fechamento considera somente oportunidades atualmente ganhas ou perdidas.</small></label>
     {admin?<label className="select-field"><span>Responsável</span>
      <select value={form.owner_id} onChange={event=>setForm({...form,owner_id:event.target.value})}>
       <option value="">Toda a equipe</option>
@@ -71,9 +76,9 @@ export function SalesReport(){
      <input list="report-sources" value={form.source} placeholder="Todas" onChange={event=>setForm({...form,source:event.target.value})}/>
      <datalist id="report-sources">{sources.map(source=><option key={source} value={source}/>)}</datalist>
      <small className="field-help">A origem vem do contato ligado à oportunidade.</small></label>
-    <label className="select-field"><span>Criadas de</span>
+    <label className="select-field"><span>{form.date_basis==='closed'?'Fechadas de':'Criadas de'}</span>
      <input type="date" value={form.date_from} onChange={event=>setForm({...form,date_from:event.target.value})}/></label>
-    <label className="select-field"><span>Criadas até</span>
+    <label className="select-field"><span>{form.date_basis==='closed'?'Fechadas até':'Criadas até'}</span>
      <input type="date" value={form.date_to} onChange={event=>setForm({...form,date_to:event.target.value})}/></label>
     <label className="select-field"><span>Mês da meta</span>
      <input type="month" value={form.period} onChange={event=>setForm({...form,period:event.target.value})}/>
@@ -85,10 +90,10 @@ export function SalesReport(){
     <Button isIconOnly variant="secondary" aria-label="Atualizar relatório" onPress={()=>setTick(count=>count+1)}><RefreshCw size={16}/></Button>
    </div>
   </form>
-  <LoadState loading={loading&&!data} error={error} reload={()=>setTick(count=>count+1)}/>
-  {data&&<>
+  <LoadState loading={loading} error={error} reload={()=>setTick(count=>count+1)}/>
+  {data&&!loading&&<>
    <div className="metrics-grid">
-    {([['Oportunidades',data.deal_count,'Criadas no recorte'],['Em aberto',data.open_count,'Ainda em etapas abertas'],
+    {([['Oportunidades',data.deal_count,applied.date_basis==='closed'?'Fechadas no recorte':'Criadas no recorte'],['Em aberto',data.open_count,'Ainda em etapas abertas'],
       ['Ganhas',data.won_count,'Etapa de desfecho ganho'],['Perdidas',data.lost_count,'Etapa de desfecho perdido']] as const).map(([label,value,hint])=>
      <div className="metric-card" key={label}><div className="metric-top"><span>{label}</span></div>
       <strong>{value}</strong><div className="metric-bottom"><small>{hint}</small></div></div>)}
@@ -98,7 +103,7 @@ export function SalesReport(){
     <div><span>Pipeline ponderado</span><strong>{money(data.weighted_pipeline_cents)}</strong></div>
     <div><span>Valor ganho</span><strong>{money(data.won_cents)}</strong></div>
    </div>
-   <p className="subtle-notice">O ponderado multiplica cada oportunidade aberta pela probabilidade da etapa e arredonda uma única vez, no fim.
+   <p className="subtle-notice">O ponderado multiplica cada oportunidade aberta pela sua probabilidade registrada e arredonda uma única vez, no fim.
     {conversion!==null&&<> Entre as {closed} fechadas no recorte, <strong>{conversion}% foram ganhas</strong>.</>}</p>
    <div className="dashboard-two">
     <div className="crm-panel report-block"><h3><TrendingDown size={17}/>Por que se perdeu</h3>
@@ -114,14 +119,18 @@ export function SalesReport(){
        return <li key={goal.id}>
         <div><strong>{names[goal.owner_id]||'Responsável removido'}</strong><small>{goal.period} · meta {money(goal.target_cents)}</small></div>
         {percent===null
-         ?<button type="button" className="text-button" onClick={()=>apply({owner_id:goal.owner_id,...monthRange(goal.period)})}>
+         ?<button type="button" className="text-button" onClick={()=>apply({owner_id:goal.owner_id,source:'',date_basis:'closed',...monthRange(goal.period)})}>
            <CircleAlert size={13}/>Alinhar o recorte para comparar</button>
          :<div><span className={`goal-attainment ${percent>=100?'is-reached':''}`}>{percent}% · {money(data.won_cents)}</span>
-          <small>Previsão ponderada do recorte: {money(data.weighted_pipeline_cents)} ({Math.round(data.weighted_pipeline_cents/goal.target_cents*100)}% da meta)</small></div>}
+          <small>Valor ganho no mês pelo responsável, considerando o último fechamento.</small></div>}
        </li>})}</ul>}
     </div>
    </div>
-   <p className="subtle-notice">O recorte conta pela data de criação da oportunidade em UTC, porque oportunidades antigas não têm data de fechamento confiável.
-    O atingimento só é calculado quando o recorte cobre exatamente o mês da meta e o mesmo responsável.</p>
+   <p className="subtle-notice">{applied.date_basis==='closed'
+    ?'O recorte usa o último fechamento em UTC. Reabrir retira a oportunidade deste resultado; fechar novamente usa a nova data. Valores ganhos não representam receita recebida.'
+    :'O recorte usa a criação em UTC e mostra o resultado atual dessas oportunidades.'}
+    {' '}O atingimento exige fechamento, mês completo, mesmo responsável e todas as origens.</p>
+   {applied.date_basis==='closed'&&data.excluded_missing_closed_at>0&&<p className="subtle-notice" role="status">
+    {data.excluded_missing_closed_at} oportunidade(s) encerrada(s) sem data confiável foram excluídas. A contagem respeita responsável e origem, mas não pode ser atribuída a um período.</p>}
   </>}</>;
 }

@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {Button,TextField,Label,Input,TextArea} from '@heroui/react';
 import {X,Plus,Check,LoaderCircle,Trash2,ArrowUp,ArrowDown,Layers3,Star,MoreHorizontal} from 'lucide-react';
 import {api} from '@/lib/api';
-import {PipelineRecord,Stage,emptyStage,outcomes,stageKey} from '@/lib/resources';
+import {PipelineRecord,Stage,emptyStage,outcomes,stageKey,stageRequiredFields} from '@/lib/resources';
 import {PageHeader,EmptyState,LoadState,StatusBadge,useRecords} from './crm-ui';
 type Row=Stage&{saved?:boolean};
 type Draft={id?:string;version?:number;name:string;description:string;status:string;is_default:boolean;stages:Row[];loss_reasons:string[]};
@@ -31,7 +31,7 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
  const move=(index:number,delta:number)=>setForm(f=>{const stages=[...f.stages];const [row]=stages.splice(index,1);stages.splice(index+delta,0,row);return {...f,stages}});
  async function save(){
   setError('');
-  const stages=form.stages.map(stage=>({key:stage.key||stageKey(stage.label),label:stage.label.trim(),probability:stage.probability,outcome:stage.outcome,expected_duration_hours:stage.expected_duration_hours??72}));
+  const stages=form.stages.map(stage=>({key:stage.key||stageKey(stage.label),label:stage.label.trim(),probability:stage.probability,outcome:stage.outcome,expected_duration_hours:stage.expected_duration_hours??72,required_fields:stage.required_fields??[]}));
   if(stages.some(stage=>!stage.label))return setError('Toda etapa precisa de um nome.');
   if(new Set(stages.map(stage=>stage.key)).size!==stages.length)return setError('Duas etapas não podem ter o mesmo identificador.');
   setBusy(true);
@@ -62,6 +62,11 @@ function PipelineEditor({draft,onClose,onSaved}:{draft:Draft;onClose:()=>void;on
        <Button isIconOnly variant="tertiary" aria-label={`Remover ${stage.label||`etapa ${index+1}`}`} isDisabled={form.stages.length===1} onPress={()=>setForm({...form,stages:form.stages.filter((_,i)=>i!==index)})}><Trash2 size={16}/></Button>
       </div>
       {stage.saved&&<code className="stage-key">{stage.key}</code>}
+      <fieldset className="stage-requirements" disabled={busy}>
+       <legend>Campos obrigatórios · {stage.label||`Etapa ${index+1}`}</legend>
+       <p className="field-help">Exigir estes dados para criar ou mover oportunidades para esta etapa.</p>
+       <div className="stage-requirements-options">{stageRequiredFields.map(option=><label className="checkbox-field" key={option.value}><input type="checkbox" checked={(stage.required_fields??[]).includes(option.value)} onChange={event=>patch(index,{required_fields:event.target.checked?[...(stage.required_fields??[]),option.value]:(stage.required_fields??[]).filter(field=>field!==option.value)})}/>{option.label}</label>)}</div>
+      </fieldset>
      </div>)}
      <Button variant="secondary" onPress={()=>setForm({...form,stages:[...form.stages,emptyStage()]})}><Plus size={15}/>Adicionar etapa</Button>
     </fieldset>

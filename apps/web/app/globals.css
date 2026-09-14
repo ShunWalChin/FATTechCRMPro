@@ -91,3 +91,8 @@
 .import-list li svg{flex-shrink:0;margin-top:3px;color:#8f6413}
 
 .commercial-form fieldset{border:0;padding:0;display:grid;gap:20px;min-width:0}.commercial-list{display:grid;gap:20px}.proposal-line{display:grid;grid-template-columns:minmax(0,1fr) 140px 44px;gap:16px;align-items:end}.proposal-line button{min-height:44px}.proposal-total{padding:16px 0}.commercial-form{max-width:900px}.commercial-list .data-table-wrap{margin-top:18px}.commercial-form .select-field input{min-height:44px}@media(max-width:600px){.proposal-line{grid-template-columns:minmax(0,1fr) 44px}.proposal-line>.select-field:first-child{grid-column:1/-1}.proposal-total{line-height:1.8}}
+.stage-requirements{grid-column:1/-1;min-width:0;border:0;padding:8px 0 0}
+.stage-requirements-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
+.stage-requirements-options .checkbox-field{min-height:44px;align-items:center;cursor:pointer}
+.stage-requirements-options input{margin-top:0}
+.resource-toolbar.queue-toolbar .button{display:inline-flex;min-height:44px;height:auto}

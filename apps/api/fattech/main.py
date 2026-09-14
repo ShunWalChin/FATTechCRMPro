@@ -34,7 +34,7 @@ from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
@@ -649,6 +649,8 @@ def create_app(settings: Settings | None = None, engine=None):
 
     # Proposals, goals and reports live in their own router; mounting it is what makes them exist.
     app.include_router(sales_router)
+    from .work_queue import router as work_queue_router
+    app.include_router(work_queue_router)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

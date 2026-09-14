@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator, model_validator
@@ -18,8 +18,11 @@ DEFAULT_STAGE_HOURS = 72
 def iso_date(value: str):
     if len(value) < 10 or value[4] != "-" or value[7] != "-":
         raise ValueError("Data ISO-8601 obrigatória")
-    datetime.fromisoformat(value)
-    return value
+    parsed = datetime.fromisoformat(value)
+    if len(value) == 10:
+        return parsed.date().isoformat()
+    # The database and UI share one representation, including offsets and naive ISO input.
+    return (parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)).isoformat()
 
 
 DateText = Annotated[str, StringConstraints(max_length=40), AfterValidator(iso_date)]
@@ -62,6 +65,14 @@ class PipelineStage(StrictModel):
     outcome: Literal["open", "won", "lost"] = "open"
     # How long a deal is expected to sit here; the radar measures staleness against this, not a global constant.
     expected_duration_hours: int = Field(default=DEFAULT_STAGE_HOURS, strict=True, ge=1, le=8760)
+    required_fields: list[Literal["contact_id", "company_id", "owner_id", "value_cents", "expected_close", "next_action_at"]] = Field(default_factory=list, max_length=6)
+
+    @field_validator("required_fields")
+    @classmethod
+    def unique_requirements(cls, values):
+        if len(values) != len(set(values)):
+            raise ValueError("Campos obrigatórios não podem se repetir")
+        return values
 
     @model_validator(mode="after")
     def terminal_probability(self):
@@ -100,18 +111,25 @@ DEFAULT_PIPELINE = {"name": "Funil comercial", "status": "active", "is_default":
                     "description": "Etapas iniciais do processo comercial. Ajuste conforme a sua operação.",
                     # Durations only steer the radar, and 72h is what an absent field already resolved to,
                     # so adding them here changes no behaviour for a database migrated before this field existed.
+                    # An empty requirement list is the only default that keeps legacy funnels advancing.
                     "stages": [{"key": "lead", "label": "Entrada", "probability": 10, "outcome": "open",
-                                "expected_duration_hours": 48},
+                                "expected_duration_hours": 48,
+                                "required_fields": []},
                                {"key": "qualified", "label": "Qualificação", "probability": 30, "outcome": "open",
-                                "expected_duration_hours": 72},
+                                "expected_duration_hours": 72,
+                                "required_fields": []},
                                {"key": "proposal", "label": "Proposta", "probability": 60, "outcome": "open",
-                                "expected_duration_hours": 120},
+                                "expected_duration_hours": 120,
+                                "required_fields": []},
                                {"key": "negotiation", "label": "Negociação", "probability": 80, "outcome": "open",
-                                "expected_duration_hours": 120},
+                                "expected_duration_hours": 120,
+                                "required_fields": []},
                                {"key": "won", "label": "Ganho", "probability": 100, "outcome": "won",
-                                "expected_duration_hours": 72},
+                                "expected_duration_hours": 72,
+                                "required_fields": []},
                                {"key": "lost", "label": "Perdido", "probability": 0, "outcome": "lost",
-                                "expected_duration_hours": 72}]}
+                                "expected_duration_hours": 72,
+                                "required_fields": []}]}
 
 
 class Deal(StrictModel):
