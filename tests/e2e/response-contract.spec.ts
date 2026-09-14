@@ -60,23 +60,9 @@ test('login requires a JSON session contract before navigating',async({page})=>{
   await expect(page.locator('.dashboard-welcome')).toBeVisible();
 });
 
-test('public lead never reports HTML as accepted and preserves structured API errors',async({page})=>{
-  await page.goto('/');
-  await page.getByLabel('Seu nome').fill('Contato sem confirmação');
-  await page.getByLabel('E-mail profissional').fill('unconfirmed@example.com');
-  await page.locator('input[name="consent"]').check();
-  let response={status:200,contentType:'text/html',body:html};
-  await page.route('**/api/v1/public/leads',route=>route.fulfill(response));
-  await page.getByRole('button',{name:'Agendar meu diagnóstico'}).click();
-  await expect(page.locator('.lead-form').getByRole('alert')).toContainText(invalidResponse);
-  await expect(page.getByRole('heading',{name:'Conversa iniciada.'})).toHaveCount(0);
-  await expect(page.getByLabel('Seu nome')).toHaveValue('Contato sem confirmação');
-  response={status:409,contentType:'application/problem+json',body:JSON.stringify({detail:{message:'Confira o e-mail antes de continuar.'}})};
-  await page.getByRole('button',{name:'Agendar meu diagnóstico'}).click();
-  await expect(page.locator('.lead-form').getByRole('alert')).toHaveText('Confira o e-mail antes de continuar.');
-  await expect(page.getByRole('heading',{name:'Conversa iniciada.'})).toHaveCount(0);
-});
-
+// The browser test for the public lead form was removed with the form itself: the company's own site
+// posts its contact form to WhatsApp, so no page renders components/lead-form.tsx today. The response
+// contract it proved is still enforced by lib/api.ts and exercised by the record editor test above.
 test('a malformed collection displays a retry error instead of an empty contact base',async({page})=>{
   await login(page);
   await page.route('**/api/v1/contacts?*',route=>route.fulfill({status:200,contentType:'application/json',body:'{"items":null,"total":0}'}));

@@ -90,7 +90,7 @@ apps/web/app/(site)/blog/artigos/scripts-vendas-ia/page.tsx,7945,09e58dece063c64
 apps/web/app/(site)/blog/artigos/transformacao-digital-pme/page.tsx,8894,3d73b4f4c84f4d8ae927dc1bba8227b3b55a5ec570906e10f4e487176e82011b
 apps/web/app/(site)/blog/artigos/whatsapp-api-oficial/page.tsx,7207,0ecd93984048858a602541dfee8a02ebb3f9c3f78f3ec2042a910951f961fbeb
 apps/web/app/(site)/blog/page.tsx,27964,60f50911bf641d388c214987ec846f751717684ec58396acd5d912ed8c3199fc
-apps/web/app/(site)/crm.html/page.tsx,64653,a9dc1ec549b957c26ab64767aa649a3052ed1786f755887dadba103fd3eb2c3c
+apps/web/app/(site)/crm.html/page.tsx,64703,d881216e2994ab310f5fb7b90d5b4c1ad60d531dfb39dc9ff7e84cb3fd166435
 apps/web/app/(site)/integracoes/page.tsx,18046,72aedf324f045dafa370e4caa8df41cc820466ef6459e72ed6794a77f85f0c92
 apps/web/app/(site)/lp/advocacia/page.tsx,13395,dea20c97ea6bd92c864335537c67890e503aa0d5be4c56cee66a3c358183f839
 apps/web/app/(site)/lp/agentes-ia-conversacionais/page.tsx,14740,049511e15c24448f6935d804a6f8b15ad74bfbb6300957b6783409e651383895
@@ -113,7 +113,7 @@ apps/web/app/(site)/lp/servicos/page.tsx,13397,4f3884c9c7941e1261bdd8c5250b6b8c0
 apps/web/app/(site)/lp/sites-landing-pages/page.tsx,14754,607cdf482f7bdc500e09dc12e6c0981332dd604df4b69e25016ea1917f22833f
 apps/web/app/(site)/lp/varejo/page.tsx,13285,7f0fda65ef374c126283b070982344ddb79a5f5eb8fdf6effb44d01917a94154
 apps/web/app/(site)/lp/veiculos/page.tsx,13371,90cf3f9d4c0ce3097b6c06949bfa43a6d199760ee2d7b983358764c65ebab604
-apps/web/app/(site)/page.tsx,82015,c7c73bd16a2d3a924b06b24ee492f41ed4c92efe8e7944ece19aecd3138ec454
+apps/web/app/(site)/page.tsx,82040,531f1fd5233fc752059035a7164c0e2875d0fec3d9db0f68fc13802ca459688b
 apps/web/app/(site)/privacidade/page.tsx,13935,89a62ab86e196a12bdef97d9fe7d5405832226282526d0e5068b209473807446
 apps/web/app/(site)/redirects.json,110,1c9bbf98ebb675a6a4f9fdb192507b21dbc39d2a805af23c1c22e6bbfb0b647e
 apps/web/app/crm/[resource]/[id]/page.tsx,480,c7799a487cf0b798ceb0013021811ae88e4f771255a4b5480eb905c92cbcaa94
@@ -132,7 +132,7 @@ apps/web/app/crm/radar/page.tsx,90,8034136c14293f58bc501c9a6c08012a4b45fbbf0af5f
 apps/web/app/crm/relatorios/page.tsx,215,a005835d80a16d4fcce627c6674ba07fa6fdc5cb6b468468695a5a9a1bd34d87
 apps/web/app/crm/tarefas/page.tsx,205,cb87f6999deb95b33f1f1ce599eec01a15396ba89939fc3b920976a9b4e21be5
 apps/web/app/globals.css,85455,c83ff59a0ffe700ca0f1215155e232ba2e62652eaff30d92ab633f4069bd0697
-apps/web/app/layout.tsx,506,244e866eb0c7dfa4af00e3881ced41fa76010cef70aea152ed9a9dd553fe4160
+apps/web/app/layout.tsx,727,e0514a8e774af4275fcf662f202710823a7287c42a482c5c9a7636f0ed8f08db
 apps/web/app/login/layout.tsx,263,c4fd8a10e8e3ffa50bfc36061b3cd93f5b54d3dda1637ee8ef094a114d76d3a3
 apps/web/app/login/page.tsx,1444,4587abd3732bde4d68694303982c238ca1aea9615ab63797707b825432d79cbe
 apps/web/app/not-found.tsx,676,ccb26e07028fde8f56579249a18d223d4e2ceb4cddcafaace2a689e930c3162e
@@ -297,15 +297,15 @@ scripts/inventory.py,1126,0e83768a092d241ea45f7b92df7014fc92d4f558314a753b0107ab
 scripts/release.py,862,067a04c3af01a04b4ea49dfba10499eb33c25a4586092521d82cf09d93867f93
 scripts/restore-company-site.py,2005,a06e053ef79307704e8863426830bd0412a7c46ec651079b6f83d54b3505a6ac
 scripts/ruflo.mjs,1009,20298e17dbfa1306392f26c0ebaabf7e4091134f4e709a6945949ecab0c4d653
-scripts/transcribe-site.py,16743,0d134f0bce398d26e39b3806718e3ea1c46496a22dee1d1f237c4d95824535bd
+scripts/transcribe-site.py,16925,120a0c76d9400b845c24815efa33ffd5d8b2fdf0e41d0b2e7b3896ad3b1b5bd5
 scripts/update-knowledge-graph.py,2091,7164cc3881eb5c294fe1d1fb3101813974b873643b438db78cb91ae89bf43d97
 scripts/validate-postgres.py,2122,c08aebc37680ee43fb72f5bc83c20cf4cf2e4e64df9373a6e38769a1437b3d16
 scripts/verify-site-fidelity.py,8101,6794c52155061bda182defbea8abfe60ba4f882202c9ef92887595c04b184f59
 tests/e2e/access.spec.ts,2572,e2835335abfc41b334bacfa35815692db804c4bfd7f354a6f288ded9cff4a8e9
 tests/e2e/board-and-reports.spec.ts,6260,057f7f4b107789dec71ae80b3d806df8f5d11c601460d820d0db24007e8fa79f
 tests/e2e/commercial.spec.ts,4654,74d633a75587d1ac3697102d886f2124d95df3ce677d394893eab48d017bd321
-tests/e2e/crm.spec.ts,12374,5f11fd4b5f343649bb752282f6f78fcd97a6e41eb3e1d63db31528e2187e7ca5
+tests/e2e/crm.spec.ts,13126,6a78461cc29a2c59d2f04386f3f77805b543711d4cb5776ea25db26fad219279
 tests/e2e/parity-0.4.spec.ts,8414,784d00f67b93968d108dd3c9cb2194677af68f71e5d770c18885554fd618a387
 tests/e2e/relationships.spec.ts,5645,95663316095536e8edc05117ee837ae3ed44ad699a0464e0aeafb0ddd425ff5c
 tests/e2e/release-04.spec.ts,4739,1923c86e56a9f326f50607b4d2b98e520a97f003508567485afa9e4fc3a624e2
-tests/e2e/response-contract.spec.ts,8462,3f28a0ea5d8e00f1b7dc2f5040bd315866b59adbf3dfc940374d1d2d902de7a8
+tests/e2e/response-contract.spec.ts,7529,2ab3eb2e6ff824b67755f2823fecd256400d2964878f35065e4d91e2fd9638e9

@@ -198,6 +198,9 @@ class Transcriber(HTMLParser):
                 rendered.append(f"{react}={json.dumps(resolve_reference(html.unescape(value), self.page_dir))}")
             else:
                 rendered.append(f"{react}={json.dumps(html.unescape(value))}")
+        if tag == "canvas":
+            # global-particles.js sizes the canvas before hydration; the difference is the point.
+            rendered.append("suppressHydrationWarning")
         joined = (" " + " ".join(rendered)) if rendered else ""
         # A single-line transcription of 100KB of markup is faithful and unreadable; break on blocks.
         lead = "\n" if tag in BLOCK else ""

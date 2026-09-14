@@ -19,25 +19,40 @@ test('private workspace requires login', async ({page}) => {
   expect(response.status()).toBe(401);
 });
 
-test('legacy standalone CRM landing URLs preserve their public destination', async ({request}) => {
-  for (const path of ['/lp/impulse-crm/', '/lp/impulse-crm.html', '/lp/impulse-crm/index.html']) {
+test('every URL shape the original site published still resolves', async ({request}) => {
+  // The site is the company's own again, so the check is that its addresses survived the move to
+  // this stack: the pages answer, and the .html forms people may have linked redirect into them.
+  for (const [path, expected] of [
+    ['/', '/'],
+    ['/index.html', '/'],
+    ['/blog/index.html', '/blog'],
+    ['/blog/artigos/crm-ia-vendas.html', '/blog/artigos/crm-ia-vendas'],
+    ['/lp/crm-inteligente.html', '/lp/crm-inteligente'],
+    ['/lp/impulse-crm.html', '/lp/impulse-crm'],
+    ['/lp/impulse-crm/index.html', '/lp/impulse-crm'],
+    ['/privacidade.html', '/privacidade'],
+    ['/integracoes.html', '/integracoes'],
+    ['/crm.html', '/crm.html'],
+  ] as const) {
     const response = await request.get(path);
-    expect(response.ok()).toBeTruthy();
-    expect(new URL(response.url()).pathname).toBe('/lp/crm-inteligente');
+    expect(response.ok(), path).toBeTruthy();
+    expect(new URL(response.url()).pathname, path).toBe(expected);
   }
+  // /crm stays the private workspace, which is why the original page kept its own address.
+  expect((await request.get('/crm')).url()).toContain('/login');
 });
 
-test('public form persists consent and attribution in the private CRM', async ({page}) => {
+test('the public capture endpoint still records consent and attribution', async ({page}) => {
+  // The original site sends its form to WhatsApp, not to the CRM, so this guarantee now lives at the
+  // API: whatever is wired to it later must still land as a contact with consent and attribution.
   const name = `Lead do site ${Date.now()}`;
-  await page.goto('/?utm_source=e2e&utm_campaign=integracao');
-  await page.getByLabel('Seu nome').fill(name);
-  await page.getByLabel('Empresa', {exact: true}).fill('Empresa Teste do Site');
-  await page.getByLabel('E-mail profissional').fill('lead-test@example.com');
-  await page.getByLabel('WhatsApp', {exact: true}).fill('5535999990000');
-  await page.getByLabel('O que você quer transformar?').fill('Integração entre site e CRM.');
-  await page.locator('input[name="consent"]').check();
-  await page.getByRole('button', {name: 'Agendar meu diagnóstico'}).click();
-  await expect(page.getByRole('heading', {name: 'Conversa iniciada.'})).toBeVisible();
+  const created = await page.request.post('/api/v1/public/leads', {
+    data: {name, email: `lead-${Date.now()}@example.com`, phone: '5535999990000', company: 'Empresa Teste do Site',
+           message: 'Integração entre site e CRM.', consent: true,
+           utm_source: 'e2e', utm_campaign: 'integracao'},
+  });
+  expect(created.ok(), await created.text()).toBeTruthy();
+  expect(await created.json()).toMatchObject({status: 'accepted'});
   await login(page);
   const result = await page.request.get(`/api/v1/contacts?q=${encodeURIComponent(name)}`);
   expect(result.ok()).toBeTruthy();
@@ -61,6 +76,7 @@ test('create, edit, search and reload contact', async ({page}) => {
   await page.getByRole('button', {name: `Editar ${name}`, exact: true}).click();
   await dialog.getByLabel('Notas').fill('Contato atualizado.');
   await dialog.getByRole('button', {name: 'Salvar contato'}).click();
+  await expect(dialog).not.toBeVisible();
   await page.reload();
   await page.getByRole('searchbox', {name: 'Buscar contatos'}).fill(name);
   await expect(page.getByRole('button', {name: `Editar ${name}`, exact: true})).toBeVisible();

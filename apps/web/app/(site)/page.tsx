@@ -39,7 +39,7 @@ export default function Page(){
        no fundo com interação mouse. Título com glitch.
        Contadores animados quando visíveis.
   ════════════════════════════════════════════════ */}
-<section id="inicio" className="hero hero--split" aria-label="P\u00e1gina inicial">{/* Canvas de partículas interativas (script.js) */}<canvas id="particleCanvas" aria-hidden="true"></canvas>{/* Grade decorativa de fundo */}
+<section id="inicio" className="hero hero--split" aria-label="P\u00e1gina inicial">{/* Canvas de partículas interativas (script.js) */}<canvas id="particleCanvas" aria-hidden="true" suppressHydrationWarning></canvas>{/* Grade decorativa de fundo */}
 <div className="hero-grid" aria-hidden="true"></div>
 <div className="container">
 <div className="hero-content">
