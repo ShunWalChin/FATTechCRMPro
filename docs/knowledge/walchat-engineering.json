@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "subject": "WalChat",
+  "reviewed_at": "2026-09-15",
+  "source_repository": "ShunWalChin/WalChat",
+  "source_commit": "511283a",
+  "provenance": "Leitura do codigo e dos 41 documentos do proprio WalChat, mais o grafo AST gerado pelo Graphify (2779 nos, 6762 arestas). Nao ha execucao do WalChat nesta leitura; o que esta marcado como transferido foi verificado no codigo do FAT Tech CRM.",
+  "merge_note": "Nos semanticos usam este artefato como source_file para que a extracao AST nao os substitua. IDs no namespace walchat.",
+  "nodes": [
+    {
+      "id": "fattech:walchat:compliance-order",
+      "label": "Ordem de decisao do envio",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/SEGURANCA_E_COMPLIANCE.md secao 2",
+      "status": "ja_transferido",
+      "rule": "Opt-out, blocklist, private reply repetida, janela de private reply 7d, inbound conversacional, cooldown, janela de 24h, HUMAN_AGENT 7d. A ordem e contrato, nao preferencia: inverter dois passos muda quem recebe mensagem.",
+      "onde_no_fattech": "apps/api/fattech/compliance.py, funcao evaluate()",
+      "verification": "portado e coberto por teste no FAT Tech CRM"
+    },
+    {
+      "id": "fattech:walchat:opt-out-footer",
+      "label": "Rodape de opt-out antes da avaliacao",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/SEGURANCA_E_COMPLIANCE.md",
+      "status": "ja_transferido",
+      "rule": "Mensagem automatica recebe 'Responda PARAR' antes da avaliacao de conteudo e antes de chamar a Meta, e a truncagem conta o rodape.",
+      "onde_no_fattech": "apps/api/fattech/compliance.py, with_opt_out()",
+      "verification": "portado e coberto por teste"
+    },
+    {
+      "id": "fattech:walchat:exactly-one-destination",
+      "label": "Exatamente um destino, garantido pelo banco",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/LOGICA_DE_NEGOCIO_SEQUENCIAS.md",
+      "status": "aplicavel",
+      "rule": "check (num_nonnulls(response_text, sequence_id, flow_id) = 1). Um gatilho aponta para um destino e o banco recusa dois ou zero, em vez de a aplicacao escolher o primeiro que encontrar.",
+      "por_que_importa": "Estado ambiguo que a aplicacao resolve por ordem de leitura vira comportamento que muda quando a consulta muda. O banco recusando torna o estado impossivel.",
+      "onde_caberia": "automations e deals do FAT Tech CRM, onde campos alternativos convivem sem restricao"
+    },
+    {
+      "id": "fattech:walchat:oldest-trigger-wins",
+      "label": "Precedencia por idade, e a armadilha que ela cria",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/LOGICA_DE_NEGOCIO_SEQUENCIAS.md",
+      "status": "licao",
+      "rule": "Quando dois gatilhos casam, vence o mais antigo. Nao ha desempate por especificidade, entao um gatilho global criado antes anula um gatilho especifico criado depois, sempre.",
+      "por_que_importa": "O comportamento e deterministico, o que e bom, mas contraintuitivo: quem depura 'meu gatilho novo nao funciona' procura erro onde nao ha. A licao e que precedencia implicita precisa estar documentada na tela, nao so no codigo.",
+      "onde_caberia": "qualquer regra do FAT Tech CRM que resolva conflito por ordem de criacao"
+    },
+    {
+      "id": "fattech:walchat:security-invoker-views",
+      "label": "Leitura agregada como view que preserva o RLS do chamador",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/BANCO_DE_DADOS.md secao 4",
+      "status": "aplicavel",
+      "rule": "dashboard_last_7_days e contact_messaging_eligibility sao views com security_invoker: agregam no banco e continuam sujeitas ao RLS de quem consulta.",
+      "por_que_importa": "O FAT Tech CRM monta o painel e a elegibilidade em Python, trazendo linhas para a aplicacao. Uma view com security_invoker faz o mesmo trabalho no banco sem abrir mao do isolamento por organizacao.",
+      "onde_caberia": "apps/api/fattech/main.py /dashboard e services.py build_radar"
+    },
+    {
+      "id": "fattech:walchat:paginated-rls-function",
+      "label": "Busca paginada como funcao do banco, sem furar o isolamento",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/BANCO_DE_DADOS.md, list_workspace_contacts_crm",
+      "status": "aplicavel",
+      "rule": "Uma funcao security invoker faz busca textual, combina filtros de canal, estagio, tag, responsavel e arquivo, agrega tags e devolve o total filtrado, tudo dentro do RLS do workspace.",
+      "por_que_importa": "E o mesmo problema que o list_records do FAT Tech CRM resolve em SQLAlchemy. O valor da forma do WalChat e devolver o total filtrado junto da pagina, sem uma segunda consulta.",
+      "onde_caberia": "apps/api/fattech/services.py list_records"
+    },
+    {
+      "id": "fattech:walchat:eligibility-is-preview",
+      "label": "Elegibilidade pre-calculada e previa, nunca autorizacao",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/BANCO_DE_DADOS.md, contact_messaging_eligibility",
+      "status": "aplicavel",
+      "rule": "A view calcula elegibilidade para a tela, mas o envio chama o motor de compliance de novo com os dados do momento. A previa nunca autoriza.",
+      "por_que_importa": "Estado derivado envelhece entre o calculo e o uso. Tratar previa como decisao e como um CRM envia mensagem para quem pediu para parar tres minutos antes.",
+      "onde_no_fattech": "mesmo principio ja adotado em /notifications, que deriva na leitura e nao armazena"
+    },
+    {
+      "id": "fattech:walchat:two-engines-debt",
+      "label": "Dois motores de automacao no mesmo produto",
+      "type": "licao_de_debito",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "WalChat docs/LOGICA_DE_NEGOCIO_SEQUENCIAS.md",
+      "status": "licao",
+      "rule": "Existem sequencias lineares (modelo sequences, com API e sem tela) e jornadas DAG (automation_flows, com editor). A tela chamada Sequencias edita o DAG, nao as sequencias.",
+      "por_que_importa": "Dois motores para o mesmo proposito dobram a superficie de teste e produzem nomes que mentem. A licao para o FAT Tech CRM e recusar o segundo motor enquanto o primeiro puder ser estendido.",
+      "onde_caberia": "automations do FAT Tech CRM, hoje com um unico motor simulado"
+    },
+    {
+      "id": "fattech:walchat:cross-cutting-hubs",
+      "label": "Preocupacoes transversais com um dono unico",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "source_location": "Graphify god-nodes do WalChat",
+      "status": "ja_transferido",
+      "rule": "Os nos mais conectados do grafo sao funcoes transversais, nao telas: apiErrorResponse (143 arestas), requireWorkspaceContext (131), assertTrustedOrigin (120), readJsonBody (114), apiFetch (110), getServerEnv (97), assertRateLimit (85).",
+      "por_que_importa": "Erro, tenancy, origem confiavel, parse de corpo, ambiente e limite de taxa tem um dono so cada. E o mesmo desenho do FAT Tech CRM, onde require_auth, validate e ApiError concentram as mesmas responsabilidades.",
+      "onde_no_fattech": "security.py require_auth, services.py validate, lib/api.ts ApiError e validResponse"
+    }
+  ],
+  "edges": [
+    {
+      "id": "fattech:rel:walchat:compliance-order:protege:opt-out-footer",
+      "source": "fattech:walchat:compliance-order",
+      "target": "fattech:walchat:opt-out-footer",
+      "relation": "precede",
+      "label": "precede",
+      "action": "O rodape entra antes da avaliacao de conteudo.",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:walchat:eligibility:depende:compliance-order",
+      "source": "fattech:walchat:eligibility-is-preview",
+      "target": "fattech:walchat:compliance-order",
+      "relation": "reavalia_com",
+      "label": "reavalia com",
+      "action": "A previa e recalculada pelo motor no instante do envio.",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:walchat:exactly-one:evita:oldest-wins",
+      "source": "fattech:walchat:exactly-one-destination",
+      "target": "fattech:walchat:oldest-trigger-wins",
+      "relation": "contrasta_com",
+      "label": "contrasta com",
+      "action": "Um estado o banco recusa; o outro o banco permite e a aplicacao desempata por idade.",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "confidence": "INFERRED"
+    },
+    {
+      "id": "fattech:rel:walchat:views:aliviam:paginated-rls-function",
+      "source": "fattech:walchat:security-invoker-views",
+      "target": "fattech:walchat:paginated-rls-function",
+      "relation": "mesma_familia",
+      "label": "mesma familia",
+      "action": "Agregar no banco preservando o isolamento de quem consulta.",
+      "source_file": "docs/knowledge/walchat-engineering.json",
+      "confidence": "INFERRED"
+    }
+  ]
+}

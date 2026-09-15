@@ -29,9 +29,14 @@ defina se entra agora ou depois da homologação.
 
 ### 3. Alguém precisa ser avisado quando cair · **medido, não suposto**
 
-Não há nenhum serviço de monitoramento na instância: zero. Os contêineres sobem sozinhos depois de
-queda ou reinício (`unless-stopped`), o que resolve o caso comum, mas **ninguém é avisado**. Se o
-sistema parar às duas da manhã de sábado, a descoberta é alguém tentar usar na segunda.
+Correção de uma afirmação anterior: existe um agente ativo, o `unified-monitoring-agent` da Oracle.
+Eu havia procurado por Prometheus, Grafana, Zabbix, Netdata e Datadog e concluído "zero", o que estava
+errado. O agente da Oracle coleta métricas de infraestrutura — CPU, memória, disco da instância.
+
+O que continua não existindo é verificação da **aplicação**: ninguém consulta `/api/health` nem avisa
+quando ele para de responder. Os contêineres sobem sozinhos depois de queda ou reinício
+(`unless-stopped`), o que resolve o caso comum, mas se o sistema parar às duas da manhã de sábado a
+descoberta é alguém tentar usar na segunda.
 
 Para uma operação comercial isso é diferente de um risco técnico: é o intervalo entre a falha e a
 descoberta. Um alerta simples sobre `/api/health` já elimina a maior parte dele.
