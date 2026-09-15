@@ -27,7 +27,23 @@ O acesso é por e-mail e senha, com sessões revogáveis e limite de tentativas.
 Para uma base com dados de clientes sob LGPD, isso é uma decisão consciente, não um esquecimento:
 defina se entra agora ou depois da homologação.
 
-### 3. Chave do n8n
+### 3. Alguém precisa ser avisado quando cair · **medido, não suposto**
+
+Não há nenhum serviço de monitoramento na instância: zero. Os contêineres sobem sozinhos depois de
+queda ou reinício (`unless-stopped`), o que resolve o caso comum, mas **ninguém é avisado**. Se o
+sistema parar às duas da manhã de sábado, a descoberta é alguém tentar usar na segunda.
+
+Para uma operação comercial isso é diferente de um risco técnico: é o intervalo entre a falha e a
+descoberta. Um alerta simples sobre `/api/health` já elimina a maior parte dele.
+
+### 4. A instância é compartilhada
+
+O servidor roda **71 contêineres**, dos quais quatro são deste sistema. São 4 vCPU e 22 GB para todos.
+Não há isolamento de recursos entre o CRM e as outras 67 cargas: um vizinho barulhento afeta o seu
+CRM, e um problema no host atinge tudo junto. Enquanto o volume for pequeno, funciona. Vale saber que
+é assim, e não descobrir no dia de pico.
+
+### 5. Chave do n8n
 
 A fila de eventos acumula e reentrega; ninguém a consome porque não há credencial que autentique na
 sua instância n8n. Sem isso, o CRM registra tudo e integra nada.
