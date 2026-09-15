@@ -182,3 +182,37 @@
 .data-table td:last-child .button:focus-visible{opacity:1}
 /* The sidebar was clipping its last items behind the footer. */
 .sidebar nav{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2c4154 transparent;padding-bottom:6px}
+
+/* Coerência com o site principal: os tokens são os do site, a superfície é a de uma ferramenta.
+   O site é marketing — neon sobre preto, movimento. O workspace é lido oito horas por dia, e texto
+   claro sobre fundo escuro com alta saturação cansa e prejudica a leitura de tabela. Uma marca, duas
+   expressões: mesma marca, mesma tipografia de título, mesma paleta; densidade e fundo próprios. */
+:root{--fat-cyan:#00f0ff;--fat-cyan-dim:#00b8cc;--fat-pink:#ff2d78;--fat-pink-dim:#cc1a58;
+ --fat-purple:#a855f7;--fat-green:#00ff88;--fat-gold:#f5c518;--fat-base:#06060e;--fat-card:#0f0f1e;
+ --fat-display:'Orbitron',ui-monospace,monospace}
+/* O lockup é o mesmo do site, com as mesmas cores por parte. */
+.brand{display:inline-flex;align-items:baseline;gap:1px;font-family:var(--fat-display);font-weight:700;
+ font-size:19px;letter-spacing:.5px;line-height:1}
+.logo-bracket{color:var(--fat-cyan-dim)}
+.logo-fat{color:#1a2b3c;margin:0 2px}
+.logo-tech{color:var(--fat-pink-dim)}
+.brand-light .logo-bracket{color:var(--fat-cyan)}
+.brand-light .logo-fat{color:#eef6f8}
+.brand-light .logo-tech{color:var(--fat-pink)}
+.brand-context{font-family:var(--fat-display);font-size:9px;letter-spacing:2px;color:#7c8f9c;margin-left:8px;align-self:center}
+.brand-light .brand-context{color:#5d7486}
+/* Títulos na tipografia do site; dados continuam em Inter, que é o que se lê em tabela. */
+.crm-page-header h1,.dashboard-welcome h2,.login-content h2,.login-story h2{font-family:var(--fat-display);letter-spacing:-.5px;font-weight:700}
+.crm-page-header h1{font-size:23px}
+.eyebrow{font-family:var(--fat-display);font-size:9px;letter-spacing:2.2px;color:var(--fat-cyan-dim)}
+/* As superfícies escuras do workspace passam a ser exatamente as do site. */
+.sidebar,.login-story{background:var(--fat-base)}
+.sidebar{border-right:1px solid #16162a}
+.workspace-switch{background:var(--fat-card);border-color:#1d1d33}
+.sidebar .nav-group a:hover{background:#15152a}
+.sidebar .nav-group a.active,.sidebar .nav-group a[aria-current=page]{background:#12263180;color:#d8f3f8;box-shadow:inset 2px 0 0 var(--fat-cyan)}
+.workspace-live .status-dot{background:var(--fat-green);box-shadow:0 0 0 4px #00ff8818}
+.fat-button{background:linear-gradient(103deg,var(--fat-cyan-dim),#0b8fa3)!important;color:#02121a!important;font-weight:650}
+.fat-button:hover{background:linear-gradient(103deg,#00a8bd,#0a7f92)!important}
+.metric-icon{background:#e6fbff;color:#0b7f92;border:1px solid #cdf1f7}
+.avatar{background:#e6fbff;color:#0b6f80}

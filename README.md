@@ -5,6 +5,7 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 
 - [Site publicado](https://fattechcrmpro.64.181.178.125.nip.io)
 - [Entrar no CRM](https://fattechcrmpro.64.181.178.125.nip.io/login)
+- [**Dia zero: colocar a equipe para operar**](docs/DIA-ZERO.md)
 - [Contrato interativo da API](https://fattechcrmpro.64.181.178.125.nip.io/api/docs)
 - [Estado da entrega, provas e pendências](docs/releases/2026-09-11.md)
 - [Funis configuráveis e motivo de perda, publicado em 11/09](docs/releases/2026-09-11-funis-configuraveis.md)
