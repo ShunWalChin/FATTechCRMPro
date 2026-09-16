@@ -47,6 +47,9 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     if(path==='/contacts/import')return ['total','ready','created'].every(key=>Number.isInteger(data[key]))&&typeof data.committed==='boolean'&&Array.isArray(data.invalid)&&Array.isArray(data.duplicates);
     return hasId(data);
   }
+  // O grafo do conhecimento responde com familias, nos e arestas, nunca com um registro.
+  if(path==='/knowledge/graph')return Array.isArray(data.nodes)&&Array.isArray(data.edges)&&
+    Array.isArray(data.families)&&isObject(data.counts)&&data.nodes.every(hasId);
   if(path==='/sales/report')return ['deal_count','open_count','won_count','lost_count','pipeline_cents','weighted_pipeline_cents','won_cents'].every(key=>Number.isInteger(data[key]))&&isObject(data.lost_reasons)&&Array.isArray(data.goals)&&data.goals.every(hasId)&&nonemptyString(data.date_basis);
   if(path==='/health')return data.status==='ok'&&nonemptyString(data.version);
   if(/^\/records\/[^/]+\/[^/]+\/overview$/.test(path))return hasId(data.record)&&['activities','deals','tasks','conversations','history'].every(key=>isObject(data[key])&&Array.isArray(data[key].items)&&Number.isInteger(data[key].total));

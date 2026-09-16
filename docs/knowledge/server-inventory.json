@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "measured_at": "2026-09-15",
+  "provenance": "docker ps e docker stats na instância Oracle, agrupados por projeto. Números são de uma amostra instantânea, não médias.",
+  "host": {
+    "label": "Instância Oracle 64.181.178.125",
+    "summary": "4 vCPU, 22 GB de memória, 183 GB de disco com 49% usado. 71 contêineres de nove projetos, sem isolamento de recursos entre eles.",
+    "where": "palantyr (ssh)"
+  },
+  "services": [
+    {
+      "slug": "fattechcrmpro",
+      "label": "FAT Tech CRM Pro",
+      "containers": 5,
+      "status": "producao",
+      "summary": "api, web, worker e postgres, mais a base descartável de validação. 0,25 GB de memória e 0,1% de CPU: o menor consumidor com carga real da máquina.",
+      "why": "O risco de vizinhança não é este CRM incomodar os outros — é o contrário.",
+      "where": "/opt/fattechcrmpro"
+    },
+    {
+      "slug": "walchat",
+      "label": "WalChat",
+      "containers": 16,
+      "status": "marcado_para_remocao",
+      "summary": "App, redis, scheduler e webhooks mais uma pilha Supabase completa de 12 contêineres. 2,29 GB, o maior consumidor de memória do host. Banco de 1,5 GB.",
+      "why": "Origem da inteligência de compliance e de automação já portada para o CRM. Remoção pedida; exige backup verificado antes.",
+      "where": "/opt/wal-chat"
+    },
+    {
+      "slug": "medify",
+      "label": "Medify",
+      "containers": 17,
+      "status": "marcado_para_remocao",
+      "summary": "App, worker, scheduler, redis, waha (API do WhatsApp) e outra pilha Supabase de 11 contêineres. 2,09 GB e 19,6% de CPU contínuos, o maior consumidor de processamento.",
+      "why": "Remoção pedida. Tem dados de produção próprios que não foram citados no pedido de backup; serão preservados mesmo assim.",
+      "where": "/opt/medify"
+    },
+    {
+      "slug": "supabase-avulso",
+      "label": "Supabase sem projeto",
+      "containers": 11,
+      "status": "ativo",
+      "summary": "Uma terceira pilha Supabase, sem prefixo de projeto. 1,52 GB. O pooler dela ocupa a porta 5432 em loopback.",
+      "why": "Três pilhas Supabase completas somam 34 contêineres e 84% da memória em uso. Se esta for resíduo de desenvolvimento, é a maior economia disponível no host.",
+      "where": "host"
+    },
+    {
+      "slug": "team-tupina",
+      "label": "Team Tupina",
+      "containers": 7,
+      "status": "ativo",
+      "summary": "Plataforma wger de treino: web, público, celery worker e beat, postgres 18, redis 8 e site. 0,43 GB.",
+      "why": "",
+      "where": "host"
+    },
+    {
+      "slug": "walhospeda",
+      "label": "WalHospeda",
+      "containers": 6,
+      "status": "marcado_para_remocao",
+      "summary": "api, gateway nginx, postgres 16 e redis, mais wh-test-pg e wh-test-redis de pé há seis semanas. 0,09 GB. Banco de 67 MB.",
+      "why": "Remoção pedida. Os dois contêineres de teste sugerem que parte disso já era resíduo.",
+      "where": "/opt/wal-hospeda"
+    },
+    {
+      "slug": "granaos",
+      "label": "GranaOS",
+      "containers": 2,
+      "status": "ativo",
+      "summary": "Aplicação e postgres 16. 0,07 GB.",
+      "why": "",
+      "where": "/opt/grana-os"
+    },
+    {
+      "slug": "sites-avulsos",
+      "label": "Sites avulsos",
+      "containers": 6,
+      "status": "ativo",
+      "summary": "agrofort-web, casaduque-ecommerce, minaspecas, viva-hotel, januaria-portal e fortcrm-app. 0,23 GB somados, praticamente sem CPU.",
+      "why": "Permanecem no ar por decisão do dono. Documentados aqui para que a próxima limpeza do host não os confunda com resíduo.",
+      "where": "/opt/casaduque-ecommerce, /opt/minaspecas, /opt/fortcrm e outros"
+    },
+    {
+      "slug": "portainer",
+      "label": "Portainer",
+      "containers": 1,
+      "status": "ativo",
+      "summary": "Interface de gestão de contêineres, em 127.0.0.1:9000.",
+      "why": "",
+      "where": "host"
+    },
+    {
+      "slug": "monitoramento",
+      "label": "Agente de monitoramento Oracle",
+      "containers": 0,
+      "status": "ativo",
+      "summary": "unified-monitoring-agent, ativo como serviço do sistema. Coleta métricas de infraestrutura da instância.",
+      "why": "Não verifica a aplicação: ninguém consulta /api/health nem avisa quando ele para de responder. O intervalo entre a falha e a descoberta continua sendo até alguém tentar usar.",
+      "where": "/opt/unified-monitoring-agent"
+    }
+  ]
+}

@@ -2,7 +2,32 @@
   "name": "@fattech/web",
   "version": "0.5.0",
   "private": true,
-  "scripts": { "dev": "next dev --hostname 0.0.0.0", "build": "next build", "start": "next start --hostname 0.0.0.0", "typecheck": "tsc --noEmit", "content:import": "python scripts/import-content.py" },
-  "dependencies": { "next": "16.3.4", "react": "19.3.0", "react-dom": "19.3.0", "@heroui/react": "3.2.5", "@heroui/styles": "3.2.5", "tailwind-variants": "^3.2.2", "lucide-react": "^0.577.0", "@fontsource-variable/inter": "^5.2.8" },
-  "devDependencies": { "@tailwindcss/postcss": "^4.2.1", "tailwindcss": "^4.2.1", "postcss": "^8.5.8", "typescript": "^5.9.3", "@types/node": "^24.12.0", "@types/react": "^19.2.14", "@types/react-dom": "^19.2.3" }
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "content:import": "python scripts/import-content.py"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "@heroui/react": "3.2.5",
+    "@heroui/styles": "3.2.5",
+    "d3-force": "^3.0.0",
+    "lucide-react": "^0.577.0",
+    "next": "16.3.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-variants": "^3.2.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/d3-force": "^3.0.10",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3"
+  }
 }

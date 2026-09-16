@@ -216,3 +216,40 @@
 .fat-button:hover{background:linear-gradient(103deg,#00a8bd,#0a7f92)!important}
 .metric-icon{background:#e6fbff;color:#0b7f92;border:1px solid #cdf1f7}
 .avatar{background:#e6fbff;color:#0b6f80}
+
+/* Base de conhecimento: o grafo curado, desenhado em canvas para o visual ser o da marca. */
+.knowledge-toolbar{flex-wrap:wrap;gap:14px;align-items:center}
+.knowledge-families{display:flex;flex-wrap:wrap;gap:7px}
+.knowledge-families button{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:#5f7583;
+ background:#fff;border:1px solid #dce3e8;border-radius:20px;padding:7px 13px;transition:border-color .14s,color .14s}
+.knowledge-families button:hover{border-color:#b9ccd6}
+.knowledge-families button.is-current{border-color:var(--familia,#0b8fa3);color:#26414f;background:#f2fbfd}
+.knowledge-families small{color:#93a7b2;font-weight:600}
+.familia-ponto{width:8px;height:8px;border-radius:50%;background:var(--familia,#0b8fa3);flex:none;
+ box-shadow:0 0 0 3px color-mix(in srgb,var(--familia,#0b8fa3) 22%,transparent)}
+/* Fundo escuro: o grafo é a superfície onde a marca aparece inteira, e neon só lê sobre escuro. */
+.knowledge-stage{position:relative;height:min(68vh,720px);min-height:460px;margin:4px 0 14px;
+ border-radius:14px;overflow:hidden;background:radial-gradient(120% 120% at 30% 10%,#0d1b24,var(--fat-base));
+ border:1px solid #16303b;box-shadow:inset 0 0 90px #00f0ff0a}
+.knowledge-stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+.knowledge-stage canvas:active{cursor:grabbing}
+.knowledge-card{position:absolute;right:16px;top:16px;width:min(360px,calc(100% - 32px));max-height:calc(100% - 32px);
+ overflow:auto;background:#0d1a22ee;border:1px solid #1e3d4a;border-radius:12px;padding:16px 17px;
+ color:#cfe3ea;backdrop-filter:blur(7px);box-shadow:0 18px 48px #00000055}
+.knowledge-card header{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.knowledge-card header small{font-family:var(--fat-display);font-size:9px;letter-spacing:1.6px;color:#7fa3b2;text-transform:uppercase}
+.knowledge-card header button{margin-left:auto;color:#7fa3b2;background:none;border:0;display:flex}
+.knowledge-card header button:hover{color:#d9eef5}
+.knowledge-card h3{font-family:var(--fat-display);font-size:15px;color:#eaf7fb;line-height:1.4;margin-bottom:9px}
+.knowledge-card p{font-size:13px;line-height:1.75;color:#a9c6d2;margin-bottom:10px}
+.knowledge-card .knowledge-why{color:#9fd8e4;border-left:2px solid #17505f;padding-left:11px}
+.knowledge-card dl{display:grid;gap:9px;margin:12px 0}
+.knowledge-card dt{font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:#6d8f9e;font-weight:600}
+.knowledge-card dd{margin:3px 0 0;font-size:12.5px;color:#bcd8e2}
+.knowledge-card code{font-size:11.5px;color:#7fe3f5;background:#0a2630;padding:2px 6px;border-radius:4px;overflow-wrap:anywhere}
+.knowledge-card footer{display:grid;gap:6px;border-top:1px solid #1b3b47;padding-top:11px;margin-top:4px}
+.knowledge-card footer button{display:flex;align-items:center;gap:7px;text-align:left;font-size:12px;color:#bcd8e2;
+ background:none;border:0;padding:5px 0}
+.knowledge-card footer button:hover{color:#8fe8f7}
+.knowledge-card footer span{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:#6d8f9e;flex:none}
+@media(max-width:760px){.knowledge-stage{height:62vh}.knowledge-card{right:10px;left:10px;width:auto;top:10px}}

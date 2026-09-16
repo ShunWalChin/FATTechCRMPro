@@ -1,0 +1,1099 @@
+{
+ "generated_from": "docs/knowledge/*.json, apps/api schemas, docs/releases",
+ "families": [
+  {
+   "key": "business_rule",
+   "label": "Regra de negócio",
+   "tone": "#00b8cc"
+  },
+  {
+   "key": "engineering_pattern",
+   "label": "Padrão de engenharia",
+   "tone": "#a855f7"
+  },
+  {
+   "key": "licao",
+   "label": "Lição",
+   "tone": "#f5c518"
+  },
+  {
+   "key": "licao_de_debito",
+   "label": "Lição",
+   "tone": "#f5c518"
+  },
+  {
+   "key": "domain",
+   "label": "Domínio do CRM",
+   "tone": "#00ff88"
+  },
+  {
+   "key": "release",
+   "label": "Publicação",
+   "tone": "#ff2d78"
+  },
+  {
+   "key": "service",
+   "label": "Serviço no servidor",
+   "tone": "#7c8f9c"
+  },
+  {
+   "key": "guarantee",
+   "label": "Garantia verificada",
+   "tone": "#00f0ff"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "fattech:business:lead-capture",
+   "label": "Captura pública preservada",
+   "family": "business_rule",
+   "summary": "Contato deduplicado e histórico preservados; recaptura não desfaz opt-out.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:business:report-basis",
+   "label": "Coortes comerciais explícitas",
+   "family": "business_rule",
+   "summary": "Relatório distingue criação e fechamento UTC, expõe exclusão de legados sem data e soma valores inteiros no banco.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:eligibility-is-preview",
+   "label": "Elegibilidade pre-calculada e previa, nunca autorizacao",
+   "family": "business_rule",
+   "summary": "A view calcula elegibilidade para a tela, mas o envio chama o motor de compliance de novo com os dados do momento. A previa nunca autoriza.",
+   "why": "Estado derivado envelhece entre o calculo e o uso. Tratar previa como decisao e como um CRM envia mensagem para quem pediu para parar tres minutos antes.",
+   "status": "aplicavel",
+   "where": "mesmo principio ja adotado em /notifications, que deriva na leitura e nao armazena",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:business:closing-authority",
+   "label": "Fechamento com autoridade do servidor",
+   "family": "business_rule",
+   "summary": "Servidor grava outcome e closed_at. Reabertura limpa fechamento; edição no mesmo resultado preserva a data, inclusive ausência legada.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:business:work-queue",
+   "label": "Fila paginada de follow-up",
+   "family": "business_rule",
+   "summary": "Consulta SQL filtra responsável, prioridade, estado, prazo e busca; pagina com desempate por identificador.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 4
+  },
+  {
+   "id": "fattech:business:deal-write",
+   "label": "Mutação concorrente de oportunidade",
+   "family": "business_rule",
+   "summary": "Versão antiga retorna conflito; validação antecede atualização e auditoria.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:walchat:compliance-order",
+   "label": "Ordem de decisao do envio",
+   "family": "business_rule",
+   "summary": "Opt-out, blocklist, private reply repetida, janela de private reply 7d, inbound conversacional, cooldown, janela de 24h, HUMAN_AGENT 7d. A ordem e contrato, nao preferencia: inverter dois passos muda quem recebe mensagem.",
+   "why": "",
+   "status": "ja_transferido",
+   "where": "apps/api/fattech/compliance.py, funcao evaluate()",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:business:queue-scope",
+   "label": "Permissões na fila e nomes relacionados",
+   "family": "business_rule",
+   "summary": "Requer tasks:read e tenant autenticado; nomes de contatos, oportunidades e equipe dependem de seus escopos de leitura.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:oldest-trigger-wins",
+   "label": "Precedencia por idade, e a armadilha que ela cria",
+   "family": "business_rule",
+   "summary": "Quando dois gatilhos casam, vence o mais antigo. Nao ha desempate por especificidade, entao um gatilho global criado antes anula um gatilho especifico criado depois, sempre.",
+   "why": "O comportamento e deterministico, o que e bom, mas contraintuitivo: quem depura 'meu gatilho novo nao funciona' procura erro onde nao ha. A licao e que precedencia implicita precisa estar documentada na tela, nao so no codigo.",
+   "status": "licao",
+   "where": "qualquer regra do FAT Tech CRM que resolva conflito por ordem de criacao",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:business:lead-qualification",
+   "label": "Qualificação humana após captura",
+   "family": "business_rule",
+   "summary": "Falta de campos na etapa inicial registra qualificação pendente e permite tarefa vinculada somente ao contato.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 3
+  },
+  {
+   "id": "fattech:business:stage-gates",
+   "label": "Qualificação validada no serviço",
+   "family": "business_rule",
+   "summary": "Criação e edição exigem os campos configurados na etapa; valor zero não satisfaz requisito de valor.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 3
+  },
+  {
+   "id": "fattech:business:stage-configuration",
+   "label": "Requisitos nativos por etapa",
+   "family": "business_rule",
+   "summary": "Lista fechada de seis campos, sem duplicatas e vazia por padrão.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:opt-out-footer",
+   "label": "Rodape de opt-out antes da avaliacao",
+   "family": "business_rule",
+   "summary": "Mensagem automatica recebe 'Responda PARAR' antes da avaliacao de conteudo e antes de chamar a Meta, e a truncagem conta o rodape.",
+   "why": "",
+   "status": "ja_transferido",
+   "where": "apps/api/fattech/compliance.py, with_opt_out()",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:business:queue-deadline",
+   "label": "Semântica temporal da fila",
+   "family": "business_rule",
+   "summary": "Resposta informa UTC e instante de referência; datas sem horário vencem após o dia e instantes vencem conforme horário.",
+   "why": "",
+   "status": "implemented",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:business:saved-views",
+   "label": "Visões salvas compartilhadas",
+   "family": "business_rule",
+   "summary": "Persistência e compartilhamento de visões requerem política própria; filtros disponíveis não comprovam recurso entregue.",
+   "why": "",
+   "status": "planned",
+   "where": "",
+   "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:domain:agents",
+   "label": "agents",
+   "family": "domain",
+   "summary": "8 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:approvals",
+   "label": "approvals",
+   "family": "domain",
+   "summary": "5 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:automations",
+   "label": "automations",
+   "family": "domain",
+   "summary": "6 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:campaigns",
+   "label": "campaigns",
+   "family": "domain",
+   "summary": "8 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:companies",
+   "label": "companies",
+   "family": "domain",
+   "summary": "8 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 4
+  },
+  {
+   "id": "fattech:domain:contacts",
+   "label": "contacts",
+   "family": "domain",
+   "summary": "12 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 5
+  },
+  {
+   "id": "fattech:domain:conversations",
+   "label": "conversations",
+   "family": "domain",
+   "summary": "7 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 2
+  },
+  {
+   "id": "fattech:domain:deals",
+   "label": "deals",
+   "family": "domain",
+   "summary": "13 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 4
+  },
+  {
+   "id": "fattech:domain:invoices",
+   "label": "invoices",
+   "family": "domain",
+   "summary": "7 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 2
+  },
+  {
+   "id": "fattech:domain:knowledge",
+   "label": "knowledge",
+   "family": "domain",
+   "summary": "5 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:messages",
+   "label": "messages",
+   "family": "domain",
+   "summary": "4 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 1
+  },
+  {
+   "id": "fattech:domain:pipelines",
+   "label": "pipelines",
+   "family": "domain",
+   "summary": "6 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 1
+  },
+  {
+   "id": "fattech:domain:products",
+   "label": "products",
+   "family": "domain",
+   "summary": "6 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:projects",
+   "label": "projects",
+   "family": "domain",
+   "summary": "8 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 2
+  },
+  {
+   "id": "fattech:domain:tasks",
+   "label": "tasks",
+   "family": "domain",
+   "summary": "9 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 3
+  },
+  {
+   "id": "fattech:walchat:paginated-rls-function",
+   "label": "Busca paginada como funcao do banco, sem furar o isolamento",
+   "family": "engineering_pattern",
+   "summary": "Uma funcao security invoker faz busca textual, combina filtros de canal, estagio, tag, responsavel e arquivo, agrega tags e devolve o total filtrado, tudo dentro do RLS do workspace.",
+   "why": "E o mesmo problema que o list_records do FAT Tech CRM resolve em SQLAlchemy. O valor da forma do WalChat e devolver o total filtrado junto da pagina, sem uma segunda consulta.",
+   "status": "aplicavel",
+   "where": "apps/api/fattech/services.py list_records",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:exactly-one-destination",
+   "label": "Exatamente um destino, garantido pelo banco",
+   "family": "engineering_pattern",
+   "summary": "check (num_nonnulls(response_text, sequence_id, flow_id) = 1). Um gatilho aponta para um destino e o banco recusa dois ou zero, em vez de a aplicacao escolher o primeiro que encontrar.",
+   "why": "Estado ambiguo que a aplicacao resolve por ordem de leitura vira comportamento que muda quando a consulta muda. O banco recusando torna o estado impossivel.",
+   "status": "aplicavel",
+   "where": "automations e deals do FAT Tech CRM, onde campos alternativos convivem sem restricao",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:security-invoker-views",
+   "label": "Leitura agregada como view que preserva o RLS do chamador",
+   "family": "engineering_pattern",
+   "summary": "dashboard_last_7_days e contact_messaging_eligibility sao views com security_invoker: agregam no banco e continuam sujeitas ao RLS de quem consulta.",
+   "why": "O FAT Tech CRM monta o painel e a elegibilidade em Python, trazendo linhas para a aplicacao. Uma view com security_invoker faz o mesmo trabalho no banco sem abrir mao do isolamento por organizacao.",
+   "status": "aplicavel",
+   "where": "apps/api/fattech/main.py /dashboard e services.py build_radar",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:walchat:cross-cutting-hubs",
+   "label": "Preocupacoes transversais com um dono unico",
+   "family": "engineering_pattern",
+   "summary": "Os nos mais conectados do grafo sao funcoes transversais, nao telas: apiErrorResponse (143 arestas), requireWorkspaceContext (131), assertTrustedOrigin (120), readJsonBody (114), apiFetch (110), getServerEnv (97), assertRateLimit (85).",
+   "why": "Erro, tenancy, origem confiavel, parse de corpo, ambiente e limite de taxa tem um dono so cada. E o mesmo desenho do FAT Tech CRM, onde require_auth, validate e ApiError concentram as mesmas responsabilidades.",
+   "status": "ja_transferido",
+   "where": "security.py require_auth, services.py validate, lib/api.ts ApiError e validResponse",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 0
+  },
+  {
+   "id": "fattech:walchat:two-engines-debt",
+   "label": "Dois motores de automacao no mesmo produto",
+   "family": "licao_de_debito",
+   "summary": "Existem sequencias lineares (modelo sequences, com API e sem tela) e jornadas DAG (automation_flows, com editor). A tela chamada Sequencias edita o DAG, nao as sequencias.",
+   "why": "Dois motores para o mesmo proposito dobram a superficie de teste e produzem nomes que mentem. A licao para o FAT Tech CRM e recusar o segundo motor enquanto o primeiro puder ser estendido.",
+   "status": "licao",
+   "where": "automations do FAT Tech CRM, hoje com um unico motor simulado",
+   "source": "walchat-engineering.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
+  },
+  {
+   "id": "fattech:release:2026-09-12-acabamento-e-ficha",
+   "label": "Acabamento, ficha do registro e busca global — 12/09/2026",
+   "family": "release",
+   "summary": "Quinta publicação na Oracle. Reúne duas frentes que correram em paralelo na mesma árvore: a correção",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-acabamento-e-ficha.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12",
+   "label": "Acessos administrativos e integridade de leads — 12/09/2026",
+   "family": "release",
+   "summary": "O CRM distingue Root, Super Admin, Admin, Integrante e Somente leitura. Todos os",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12-compliance-e-radar",
+   "label": "Compliance de envio, radar comercial e destino externo — 12/09/2026",
+   "family": "release",
+   "summary": "Terceira publicação na Oracle. Reescreve no FAT Tech CRM Pro as funções extraídas do WalChat que",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-compliance-e-radar.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12-lead-para-trabalho",
+   "label": "Do lead ao trabalho, kanban arrastável e ferramental — 12/09/2026",
+   "family": "release",
+   "summary": "Quarta publicação na Oracle. Fecha o primeiro fluxo de receita, liga o campo de ordenação que a",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-lead-para-trabalho.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-11-funis-configuraveis",
+   "label": "Funis configuráveis e motivo de perda — 11/09/2026",
+   "family": "release",
+   "summary": "Segunda publicação na Oracle, sobre a base de 11/09. Release `git-23c04e6`, commit",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-11-funis-configuraveis.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 1
+  },
+  {
+   "id": "fattech:release:2026-09-11",
+   "label": "Primeira publicação operacional — 11/09/2026",
+   "family": "release",
+   "summary": "Site: https://fattechcrmpro.64.181.178.125.nip.io",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-11.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12-versao-0.2",
+   "label": "Versão 0.2 — avisos, importação e operação comercial ligada — 12/09/2026",
+   "family": "release",
+   "summary": "Sexta publicação na Oracle e a primeira a mudar o número da versão. A aplicação passa a declarar",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-versao-0.2.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12-versao-0.2.1",
+   "label": "Versão 0.2.1 — relatórios com tela e quadro que funciona no celular — 12/09/2026",
+   "family": "release",
+   "summary": "Fecha as duas pendências que a versão 0.2 deixou anotadas: o endpoint de relatório existia sem tela,",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-versao-0.2.1.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-12-versao-0.2.2",
+   "label": "Versão 0.2.2 — propostas e metas na operação",
+   "family": "release",
+   "summary": "As rotas comerciais da versão 0.2 agora têm telas para a equipe. O menu contém",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-12-versao-0.2.2.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-13-versao-0.3",
+   "label": "Versão 0.3.0 — integridade e previsibilidade do backend",
+   "family": "release",
+   "summary": "Esta rodada fecha falhas concretas encontradas na revisão dos fluxos existentes.",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-13-versao-0.3.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-13-versao-0.4",
+   "label": "Versão 0.4 — qualificação por etapa, fechamento real e fila de trabalho — 13/09/2026",
+   "family": "release",
+   "summary": "Rodada de paridade operacional. Os três incrementos saíram do levantamento em",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-13-versao-0.4.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-14-versao-0.5",
+   "label": "Versão 0.5 — o site da empresa de volta, e um workspace que se lê — 14/09/2026",
+   "family": "release",
+   "summary": "Duas frentes nesta publicação: o site público voltou a ser o da FAT Tech, reescrito nesta stack com",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-14-versao-0.5.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:monitoramento",
+   "label": "Agente de monitoramento Oracle",
+   "family": "service",
+   "summary": "unified-monitoring-agent, ativo como serviço do sistema. Coleta métricas de infraestrutura da instância.",
+   "why": "Não verifica a aplicação: ninguém consulta /api/health nem avisa quando ele para de responder. O intervalo entre a falha e a descoberta continua sendo até alguém tentar usar.",
+   "status": "ativo",
+   "where": "/opt/unified-monitoring-agent",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:fattechcrmpro",
+   "label": "FAT Tech CRM Pro",
+   "family": "service",
+   "summary": "api, web, worker e postgres, mais a base descartável de validação. 0,25 GB de memória e 0,1% de CPU: o menor consumidor com carga real da máquina.",
+   "why": "O risco de vizinhança não é este CRM incomodar os outros — é o contrário.",
+   "status": "producao",
+   "where": "/opt/fattechcrmpro",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:granaos",
+   "label": "GranaOS",
+   "family": "service",
+   "summary": "Aplicação e postgres 16. 0,07 GB.",
+   "why": "",
+   "status": "ativo",
+   "where": "/opt/grana-os",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:host",
+   "label": "Instância Oracle 64.181.178.125",
+   "family": "service",
+   "summary": "4 vCPU, 22 GB de memória, 183 GB de disco com 49% usado. 71 contêineres de nove projetos, sem isolamento de recursos entre eles.",
+   "why": "",
+   "status": "ativo",
+   "where": "palantyr (ssh)",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 10
+  },
+  {
+   "id": "fattech:infra:medify",
+   "label": "Medify",
+   "family": "service",
+   "summary": "App, worker, scheduler, redis, waha (API do WhatsApp) e outra pilha Supabase de 11 contêineres. 2,09 GB e 19,6% de CPU contínuos, o maior consumidor de processamento.",
+   "why": "Remoção pedida. Tem dados de produção próprios que não foram citados no pedido de backup; serão preservados mesmo assim.",
+   "status": "marcado_para_remocao",
+   "where": "/opt/medify",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:portainer",
+   "label": "Portainer",
+   "family": "service",
+   "summary": "Interface de gestão de contêineres, em 127.0.0.1:9000.",
+   "why": "",
+   "status": "ativo",
+   "where": "host",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:sites-avulsos",
+   "label": "Sites avulsos",
+   "family": "service",
+   "summary": "agrofort-web, casaduque-ecommerce, minaspecas, viva-hotel, januaria-portal e fortcrm-app. 0,23 GB somados, praticamente sem CPU.",
+   "why": "Permanecem no ar por decisão do dono. Documentados aqui para que a próxima limpeza do host não os confunda com resíduo.",
+   "status": "ativo",
+   "where": "/opt/casaduque-ecommerce, /opt/minaspecas, /opt/fortcrm e outros",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:supabase-avulso",
+   "label": "Supabase sem projeto",
+   "family": "service",
+   "summary": "Uma terceira pilha Supabase, sem prefixo de projeto. 1,52 GB. O pooler dela ocupa a porta 5432 em loopback.",
+   "why": "Três pilhas Supabase completas somam 34 contêineres e 84% da memória em uso. Se esta for resíduo de desenvolvimento, é a maior economia disponível no host.",
+   "status": "ativo",
+   "where": "host",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:team-tupina",
+   "label": "Team Tupina",
+   "family": "service",
+   "summary": "Plataforma wger de treino: web, público, celery worker e beat, postgres 18, redis 8 e site. 0,43 GB.",
+   "why": "",
+   "status": "ativo",
+   "where": "host",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:walchat",
+   "label": "WalChat",
+   "family": "service",
+   "summary": "App, redis, scheduler e webhooks mais uma pilha Supabase completa de 12 contêineres. 2,29 GB, o maior consumidor de memória do host. Banco de 1,5 GB.",
+   "why": "Origem da inteligência de compliance e de automação já portada para o CRM. Remoção pedida; exige backup verificado antes.",
+   "status": "marcado_para_remocao",
+   "where": "/opt/wal-chat",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  },
+  {
+   "id": "fattech:infra:walhospeda",
+   "label": "WalHospeda",
+   "family": "service",
+   "summary": "api, gateway nginx, postgres 16 e redis, mais wh-test-pg e wh-test-redis de pé há seis semanas. 0,09 GB. Banco de 67 MB.",
+   "why": "Remoção pedida. Os dois contêineres de teste sugerem que parte disso já era resíduo.",
+   "status": "marcado_para_remocao",
+   "where": "/opt/wal-hospeda",
+   "source": "server-inventory",
+   "familyLabel": "Serviço no servidor",
+   "tone": "#7c8f9c",
+   "degree": 1
+  }
+ ],
+ "edges": [
+  {
+   "source": "fattech:business:stage-configuration",
+   "target": "fattech:business:stage-gates",
+   "relation": "configures",
+   "note": "Campos selecionados tornam-se pré-condições no serviço."
+  },
+  {
+   "source": "fattech:business:stage-gates",
+   "target": "fattech:business:deal-write",
+   "relation": "protects",
+   "note": "Erro impede atualização e evento de sucesso."
+  },
+  {
+   "source": "fattech:business:lead-qualification",
+   "target": "fattech:business:lead-capture",
+   "relation": "preserves",
+   "note": "Qualificação pendente não precisa descartar o contato recebido."
+  },
+  {
+   "source": "fattech:business:stage-gates",
+   "target": "fattech:business:lead-qualification",
+   "relation": "requires",
+   "note": "A captura não contorna a qualificação do funil."
+  },
+  {
+   "source": "fattech:business:deal-write",
+   "target": "fattech:business:closing-authority",
+   "relation": "applies",
+   "note": "Transição comercial calcula fechamento no servidor."
+  },
+  {
+   "source": "fattech:business:closing-authority",
+   "target": "fattech:business:report-basis",
+   "relation": "determines",
+   "note": "Data e resultado persistidos delimitam a coorte de fechamento."
+  },
+  {
+   "source": "fattech:business:queue-scope",
+   "target": "fattech:business:work-queue",
+   "relation": "restricts",
+   "note": "Escopo e tenant limitam consulta e enriquecimento."
+  },
+  {
+   "source": "fattech:business:queue-deadline",
+   "target": "fattech:business:work-queue",
+   "relation": "orders_and_filters",
+   "note": "Prazos determinam seleção e prioridade cronológica."
+  },
+  {
+   "source": "fattech:business:lead-qualification",
+   "target": "fattech:business:work-queue",
+   "relation": "creates_followup",
+   "note": "Tarefa pendente torna o lead qualificável pela equipe."
+  },
+  {
+   "source": "fattech:business:saved-views",
+   "target": "fattech:business:work-queue",
+   "relation": "may_extend",
+   "note": "Sugestão futura; não é implementação de visões persistentes."
+  },
+  {
+   "source": "fattech:walchat:compliance-order",
+   "target": "fattech:walchat:opt-out-footer",
+   "relation": "precede",
+   "note": "O rodape entra antes da avaliacao de conteudo."
+  },
+  {
+   "source": "fattech:walchat:eligibility-is-preview",
+   "target": "fattech:walchat:compliance-order",
+   "relation": "reavalia_com",
+   "note": "A previa e recalculada pelo motor no instante do envio."
+  },
+  {
+   "source": "fattech:walchat:exactly-one-destination",
+   "target": "fattech:walchat:oldest-trigger-wins",
+   "relation": "contrasta_com",
+   "note": "Um estado o banco recusa; o outro o banco permite e a aplicacao desempata por idade."
+  },
+  {
+   "source": "fattech:walchat:security-invoker-views",
+   "target": "fattech:walchat:paginated-rls-function",
+   "relation": "mesma_familia",
+   "note": "Agregar no banco preservando o isolamento de quem consulta."
+  },
+  {
+   "source": "fattech:domain:contacts",
+   "target": "fattech:domain:companies",
+   "relation": "referencia",
+   "note": "company_id"
+  },
+  {
+   "source": "fattech:domain:conversations",
+   "target": "fattech:domain:contacts",
+   "relation": "referencia",
+   "note": "contact_id"
+  },
+  {
+   "source": "fattech:domain:deals",
+   "target": "fattech:domain:contacts",
+   "relation": "referencia",
+   "note": "contact_id"
+  },
+  {
+   "source": "fattech:domain:deals",
+   "target": "fattech:domain:companies",
+   "relation": "referencia",
+   "note": "company_id"
+  },
+  {
+   "source": "fattech:domain:deals",
+   "target": "fattech:domain:pipelines",
+   "relation": "referencia",
+   "note": "pipeline_id"
+  },
+  {
+   "source": "fattech:domain:invoices",
+   "target": "fattech:domain:companies",
+   "relation": "referencia",
+   "note": "company_id"
+  },
+  {
+   "source": "fattech:domain:invoices",
+   "target": "fattech:domain:contacts",
+   "relation": "referencia",
+   "note": "contact_id"
+  },
+  {
+   "source": "fattech:domain:messages",
+   "target": "fattech:domain:conversations",
+   "relation": "referencia",
+   "note": "conversation_id"
+  },
+  {
+   "source": "fattech:domain:projects",
+   "target": "fattech:domain:companies",
+   "relation": "referencia",
+   "note": "company_id"
+  },
+  {
+   "source": "fattech:domain:tasks",
+   "target": "fattech:domain:contacts",
+   "relation": "referencia",
+   "note": "contact_id"
+  },
+  {
+   "source": "fattech:domain:tasks",
+   "target": "fattech:domain:deals",
+   "relation": "referencia",
+   "note": "deal_id"
+  },
+  {
+   "source": "fattech:domain:tasks",
+   "target": "fattech:domain:projects",
+   "relation": "referencia",
+   "note": "project_id"
+  },
+  {
+   "source": "fattech:release:2026-09-11-funis-configuraveis",
+   "target": "fattech:release:2026-09-11",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-11",
+   "target": "fattech:release:2026-09-12-acabamento-e-ficha",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-acabamento-e-ficha",
+   "target": "fattech:release:2026-09-12-compliance-e-radar",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-compliance-e-radar",
+   "target": "fattech:release:2026-09-12-lead-para-trabalho",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-lead-para-trabalho",
+   "target": "fattech:release:2026-09-12-versao-0.2.1",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-versao-0.2.1",
+   "target": "fattech:release:2026-09-12-versao-0.2.2",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-versao-0.2.2",
+   "target": "fattech:release:2026-09-12-versao-0.2",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12-versao-0.2",
+   "target": "fattech:release:2026-09-12",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-12",
+   "target": "fattech:release:2026-09-13-versao-0.3",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-13-versao-0.3",
+   "target": "fattech:release:2026-09-13-versao-0.4",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-13-versao-0.4",
+   "target": "fattech:release:2026-09-14-versao-0.5",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:fattechcrmpro",
+   "relation": "hospeda",
+   "note": "5 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:walchat",
+   "relation": "hospeda",
+   "note": "16 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:medify",
+   "relation": "hospeda",
+   "note": "17 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:supabase-avulso",
+   "relation": "hospeda",
+   "note": "11 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:team-tupina",
+   "relation": "hospeda",
+   "note": "7 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:walhospeda",
+   "relation": "hospeda",
+   "note": "6 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:granaos",
+   "relation": "hospeda",
+   "note": "2 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:sites-avulsos",
+   "relation": "hospeda",
+   "note": "6 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:portainer",
+   "relation": "hospeda",
+   "note": "1 contêineres"
+  },
+  {
+   "source": "fattech:infra:host",
+   "target": "fattech:infra:monitoramento",
+   "relation": "hospeda",
+   "note": "0 contêineres"
+  }
+ ],
+ "counts": {
+  "nodes": 58,
+  "edges": 47,
+  "por_familia": {
+   "business_rule": 15,
+   "engineering_pattern": 4,
+   "licao": 0,
+   "licao_de_debito": 1,
+   "domain": 15,
+   "release": 12,
+   "service": 11,
+   "guarantee": 0
+  }
+ }
+}
