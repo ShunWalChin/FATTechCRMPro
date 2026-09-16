@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "subject": "Mano Chat no FAT Tech CRM Pro",
+  "reviewed_at": "2026-09-16",
+  "provenance": "Fase 0 da ordem de engenharia. Leitura do codigo do CRM, do esquema real do Mano Chat em /opt/mano-chat (530 linhas, 26 tabelas) e consultas Graphify. Nenhuma funcionalidade implementada.",
+  "merge_note": "Nos semanticos usam este artefato como source_file para que a extracao AST nao os substitua.",
+  "nodes": [
+    {
+      "id": "fattech:mano:ja-existe",
+      "label": "O Mano Chat existe e tem esquema proprio",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "/opt/mano-chat/app/supabase/migrations/20260721120000_mano_chat_core.sql",
+      "status": "diagnosticado",
+      "rule": "Dezesseis conteineres parados ha oito semanas e 26 tabelas em 530 linhas, incluindo campanhas, agentes de IA, base de conhecimento e insights diarios que a ordem nao menciona.",
+      "por_que_importa": "A ordem descreve sete tabelas a criar. Tratar como especificacao em branco perderia metade do que o sistema ja sabia fazer, e recriaria o que ja foi desenhado.",
+      "onde_caberia": "docs/discovery/mano-chat-fase-0.md"
+    },
+    {
+      "id": "fattech:mano:lacuna-real",
+      "label": "A lacuna e a conta por organizacao, nao o webhook",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "apps/api/fattech/instagram_webhook.py:42",
+      "status": "diagnosticado",
+      "rule": "O webhook Instagram ja existe montado, com assinatura HMAC, idempotencia por entrega, outbox antes do processamento e auditoria. Ele resolve para o tenant publico fixo, e as credenciais Meta sao uma so para a aplicacao inteira.",
+      "por_que_importa": "Cinco das sete fases pedem coisas que ja existem. O que de fato falta e a associacao conta Instagram para organizacao, que e a Fase 1 e sustenta todas as outras.",
+      "onde_no_fattech": "apps/api/fattech/instagram_webhook.py e config.py"
+    },
+    {
+      "id": "fattech:mano:duplicacao",
+      "label": "Conversas, mensagens e elegibilidade ja existem",
+      "type": "licao",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "apps/api/fattech/schemas.py, compliance.py",
+      "status": "diagnosticado",
+      "rule": "conversations e messages sao kinds ativos em records; compliance.evaluate() ja decide na ordem exata que a Fase 3 pede; o worker ja tem retry, backoff, dead-letter e trace.",
+      "por_que_importa": "A propria ordem proibe estruturas duplicadas. Seguir as fases ao pe da letra criaria um segundo motor de decisao ao lado do que ja decide, e duas tabelas ao lado de dois kinds em uso.",
+      "onde_no_fattech": "apps/api/fattech/compliance.py e worker.py"
+    },
+    {
+      "id": "fattech:mano:token-vaza-pela-api",
+      "label": "Token guardado como kind aparece na API",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "apps/api/fattech/main.py:668",
+      "status": "risco_critico",
+      "rule": "Todo kind em RESOURCES ganha GET /api/v1/{kind} que serializa o data inteiro. Credencial guardada assim seria devolvida pela API.",
+      "por_que_importa": "E a razao tecnica de as credenciais irem para tabela propria com grants restritos, e nao para records. O proprio Mano Chat chegou a mesma conclusao e isolou os tokens num schema private.",
+      "onde_caberia": "tabela instagram_credentials com grants proprios"
+    },
+    {
+      "id": "fattech:mano:paradigma-hibrido",
+      "label": "Tabela ou kind, decidido pelo padrao de acesso",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "docs/discovery/mano-chat-fase-0.md secao 3",
+      "status": "proposto",
+      "rule": "Tabela real para volume alto, append-only e restricao de unicidade que so o banco garante: mensagens externas, resposta unica por comentario, cooldown atomico, credenciais. Kind em records para configuracao de baixo volume editada por pessoas: contas, gatilhos, sequencias, blocklist.",
+      "por_que_importa": "O CRM guarda todo dominio em records com kind e JSON. Criar sete tabelas introduz um segundo paradigma sem reuso; guardar tudo em records perde a unicidade de external_message_id, que e a propria idempotencia da Fase 2.",
+      "onde_caberia": "decisao pendente do dono do sistema"
+    },
+    {
+      "id": "fattech:mano:rollback-por-configuracao",
+      "label": "Cada fase entra atras de configuracao ausente",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "source_location": "docs/discovery/mano-chat-fase-0.md secao 6",
+      "status": "proposto",
+      "rule": "Sem conta Instagram conectada o caminho novo nao executa e o CRM opera como hoje. A trava external_sends_enabled desliga envio externo sem publicar nada.",
+      "por_que_importa": "Rollback que depende de republicar e lento na hora em que se precisa dele. Rollback que e uma configuracao ausente e imediato.",
+      "onde_no_fattech": "apps/api/fattech/config.py, infra/install-release.sh"
+    }
+  ],
+  "edges": [
+    {
+      "id": "fattech:rel:mano:lacuna:explica:duplicacao",
+      "source": "fattech:mano:lacuna-real",
+      "target": "fattech:mano:duplicacao",
+      "relation": "explica",
+      "label": "explica",
+      "action": "Cinco fases pedem o que ja existe porque a falta real esta em outro lugar.",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:mano:token:decide:paradigma",
+      "source": "fattech:mano:token-vaza-pela-api",
+      "target": "fattech:mano:paradigma-hibrido",
+      "relation": "decide",
+      "label": "decide",
+      "action": "O vazamento pela API gerada e o que tira as credenciais de records.",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:mano:existe:informa:paradigma",
+      "source": "fattech:mano:ja-existe",
+      "target": "fattech:mano:paradigma-hibrido",
+      "relation": "informa",
+      "label": "informa",
+      "action": "O esquema real do Mano Chat e a referencia de forma, nao a ordem escrita.",
+      "source_file": "docs/knowledge/mano-chat-diagnostico.json",
+      "confidence": "INFERRED"
+    }
+  ]
+}
