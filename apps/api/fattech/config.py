@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./fattech.db"
     allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173"
     webhook_secret: str = ""
+    meta_app_id: str = ""
+    meta_app_secret: str = ""
+    meta_verify_token: str = ""
+    meta_access_token: str = ""
+    meta_publish_token: str = ""
     public_tenant_slug: str = "fattech"
     session_hours: int = 12
     # Credential-stuffing limits. Production keeps the defaults; a loopback test harness may raise them.

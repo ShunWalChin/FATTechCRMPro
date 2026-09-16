@@ -1,5 +1,7 @@
 import hashlib
 import hmac
+import json
+import pathlib
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -26,6 +28,7 @@ from .idempotency import creation_receipt
 from .imports import contact_import
 from .json_input import validate_json_body
 from .record_views import register_record_views
+from .instagram_webhook import register_instagram_webhook
 from .sales_operations import router as sales_router
 from . import compliance
 from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications, build_radar,
@@ -599,6 +602,16 @@ def create_app(settings: Settings | None = None, engine=None):
 
     app.add_api_route("/api/v1/contacts/import", contact_import, methods=["POST"])
 
+    # A base de conhecimento e o grafo curado que acompanha a aplicacao. Ele e lido do pacote, nao
+    # montado em tempo de execucao: a producao precisa responder o mesmo que o repositorio afirma.
+    knowledge_graph = json.loads((pathlib.Path(__file__).parent / "knowledge_graph.json")
+                                 .read_text(encoding="utf-8"))
+
+    @app.get("/api/v1/knowledge/graph")
+    def knowledge(principal=Depends(require_auth)):
+        principal.require("knowledge:read")
+        return knowledge_graph
+
     @app.get("/api/v1/notifications")
     def notifications(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("dashboard:read")
@@ -655,6 +668,7 @@ def create_app(settings: Settings | None = None, engine=None):
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)
     register_record_views(app)
+    register_instagram_webhook(app, settings)
     return app
 
 

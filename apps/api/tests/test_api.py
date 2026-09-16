@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import sys
 import time
 from datetime import timedelta
 
@@ -24,7 +25,8 @@ ORIGIN = "http://localhost:3000"
 @pytest.fixture
 def system(tmp_path):
     settings = Settings(_env_file=None, env="test", database_url=f"sqlite:///{tmp_path / 'test.db'}",
-                        allowed_origins=ORIGIN, webhook_secret="test-webhook-secret-" * 3)
+                        allowed_origins=ORIGIN, webhook_secret="test-webhook-secret-" * 3,
+                        meta_app_secret="meta-test-secret", meta_verify_token="meta-verify-token")
     engine = make_engine(settings.database_url)
     migrate(engine)
     factory = session_factory(engine)
@@ -44,6 +46,22 @@ def post(client, kind, data):
     response = client.post(f"/api/v1/{kind}", json=data)
     assert response.status_code == 201, response.text
     return response.json()
+
+
+def test_instagram_webhook_validates_signature_and_is_idempotent(system):
+    client, _, factory, *_ = system
+    payload = {"object": "instagram", "entry": [{"id": "delivery-1", "messaging": [{"message": {"text": "oi"}}]}]}
+    raw = json.dumps(payload, separators=(",", ":")).encode()
+    signature = "sha256=" + hmac.new(b"meta-test-secret", raw, hashlib.sha256).hexdigest()
+    headers = {"X-Hub-Signature-256": signature, "Content-Type": "application/json"}
+    first = client.post("/api/public/webhooks/instagram", content=raw, headers=headers)
+    assert first.status_code == 202 and first.json()["duplicate"] is False
+    replay = client.post("/api/public/webhooks/instagram", content=raw, headers=headers)
+    assert replay.status_code == 202 and replay.json()["duplicate"] is True
+    assert client.post("/api/public/webhooks/instagram", content=raw,
+                       headers={**headers, "X-Hub-Signature-256": "sha256=" + "0" * 64}).status_code == 401
+    with factory() as db:
+        assert db.query(Outbox).filter(Outbox.event_type == "instagram.webhook.received").count() == 1
 
 
 def test_auth_cookie_csrf_password_and_sessions(system):
@@ -611,3 +629,30 @@ def test_health_and_openapi_report_the_same_version(system):
     assert set(manifests.values()) == {APP_VERSION}, manifests
     assert client.get("/api/health").json()["version"] == APP_VERSION
     assert app.openapi()["info"]["version"] == APP_VERSION
+
+
+def test_knowledge_graph_matches_the_sources_it_was_built_from():
+    """O grafo publicado acompanha a aplicacao, entao nao pode divergir do que o gerou.
+
+    Ele e lido do pacote em tempo de execucao, nao montado: se alguem editar uma regra em
+    docs/knowledge sem reexportar, producao passa a responder uma coisa e o repositorio outra.
+    """
+    import subprocess
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    publicado = root / "apps/api/fattech/knowledge_graph.json"
+    antes = publicado.read_bytes()
+    try:
+        subprocess.run([sys.executable, "scripts/export-knowledge.py"], cwd=root, check=True,
+                       capture_output=True)
+        assert publicado.read_bytes() == antes, (
+            "o grafo publicado esta desatualizado: rode python scripts/export-knowledge.py")
+    finally:
+        publicado.write_bytes(antes)
+    grafo = json.loads(antes.decode("utf-8"))
+    ids = {no["id"] for no in grafo["nodes"]}
+    assert len(ids) == len(grafo["nodes"]), "ha nos com id repetido"
+    orfas = [a for a in grafo["edges"] if a["source"] not in ids or a["target"] not in ids]
+    assert not orfas, f"arestas apontando para nos inexistentes: {orfas[:3]}"
+    assert grafo["counts"]["nodes"] == len(grafo["nodes"])
