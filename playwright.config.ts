@@ -2,7 +2,10 @@ import {defineConfig, devices} from '@playwright/test';
 const python = process.env.E2E_PYTHON || (process.platform === 'win32' ? 'apps\\api\\.venv\\Scripts\\python.exe' : 'apps/api/.venv/bin/python');
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 45_000,
+  // O servidor de desenvolvimento compila cada rota na primeira visita, e o workspace passou de
+  // dezesseis para vinte telas. O que estourava o limite era compilacao, nao lentidao do produto:
+  // baixar o limite de volta so devolveria falhas que passam quando rodam sozinhas.
+  timeout: 90_000,
   fullyParallel: false,
   workers: 1,
   retries: 0,

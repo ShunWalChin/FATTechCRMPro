@@ -83,6 +83,19 @@
    "degree": 2
   },
   {
+   "id": "fattech:aprovacao:segregacao-de-funcoes",
+   "label": "A mesma pessoa nao decide dois niveis",
+   "family": "business_rule",
+   "summary": "Os niveis sao decididos em ordem, quem decide precisa de patente igual ou maior que a exigida, e quem ja decidiu um nivel nao decide outro da mesma cadeia. Uma recusa em qualquer nivel encerra a cadeia.",
+   "why": "Sem a terceira regra, dois niveis sao um nivel escrito duas vezes e a segregacao de funcoes que justifica a cadeia deixa de existir. Sem a quarta, seguir pedindo aprovacao depois de um nao transforma o nao em sugestao.",
+   "status": "implementado",
+   "where": "apps/api/fattech/approval_chain.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:campos:redacao-no-servidor",
    "label": "Campo restrito nao sai da API, nao apenas da tela",
    "family": "business_rule",
@@ -135,6 +148,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:catalogo:custo-zero-nao-e-de-graca",
+   "label": "Custo zero significa nao informado, e por isso a margem nao e gravada",
+   "family": "business_rule",
+   "summary": "O backfill 0006 entra com custo zero nos produtos existentes. A margem nao e persistida: derivar sobre custo zero devolveria cem por cento.",
+   "why": "Um indicador que mente quando falta dado e pior do que um indicador ausente, porque ninguem duvida dele.",
+   "status": "implementado",
+   "where": "apps/api/fattech/migrate.py e schemas.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:eligibility-is-preview",
    "label": "Elegibilidade pre-calculada e previa, nunca autorizacao",
    "family": "business_rule",
@@ -143,6 +169,19 @@
    "status": "aplicavel",
    "where": "mesmo principio ja adotado em /notifications, que deriva na leitura e nao armazena",
    "source": "walchat-engineering.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:contrato:ativar-exige-cadeia",
+   "label": "Entrar em vigor exige a cadeia completa",
+   "family": "business_rule",
+   "summary": "Passar para aprovado com nivel pendente responde 409 com o resumo da cadeia. Uma recusa devolve o contrato ao rascunho. Editar um contrato ja aprovado tambem e recusado.",
+   "why": "Um contrato que entra em vigor sem passar pelos niveis torna os niveis enfeite, e editar depois de aprovado desfaz a aprovacao sem que ninguem perceba.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py",
+   "source": "ordem-principal-onda-2.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
@@ -158,7 +197,7 @@
    "source": "mano-chat-fase-1.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
-   "degree": 2
+   "degree": 3
   },
   {
    "id": "fattech:business:closing-authority",
@@ -239,6 +278,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:contrato:texto-de-cada-revisao",
+   "label": "O contrato guarda o texto de cada revisao, nao so a corrente",
+   "family": "business_rule",
+   "summary": "Cada criacao, edicao e renovacao grava uma linha em contract_revisions com o conteudo inteiro, o valor e o motivo. O kind fica fora de RESOURCES de proposito.",
+   "why": "Guardar so a revisao corrente responde o que vale hoje e nao responde o que a outra parte leu quando concordou. E um registro legal append-only nao pode ganhar PATCH e DELETE automaticos, que e o que entrar em RESOURCES daria.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
    "id": "fattech:walchat:compliance-order",
    "label": "Ordem de decisao do envio",
    "family": "business_rule",
@@ -250,6 +302,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 2
+  },
+  {
+   "id": "fattech:contrato:assinatura-recusa",
+   "label": "Pedir assinatura recusa com motivo em vez de simular",
+   "family": "business_rule",
+   "summary": "Sem provedor configurado a rota responde 503 dizendo que o contrato esta pronto e que nada foi enviado, lista os signatarios e audita a recusa. O contrato nao muda de estado.",
+   "why": "Registrar assinado sem assinatura e a pior mentira que um CRM pode contar. A rota existe para provar o caminho e recusar exatamente onde faltaria o provedor.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py e config.py signature_provider",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
   },
   {
    "id": "fattech:business:queue-scope",
@@ -354,6 +419,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
+  },
+  {
+   "id": "fattech:contrato:so-proposta-aceita",
+   "label": "So proposta aceita vira contrato, e so uma vez",
+   "family": "business_rule",
+   "summary": "Gerar contrato de proposta em rascunho ou emitida responde 409 com o status atual. Uma proposta que ja gerou contrato responde 409 com o id do contrato existente.",
+   "why": "Um contrato so tem uma chance de nascer com o valor certo, e duas vias do mesmo acordo sao a forma silenciosa de cobrar duas vezes.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
   },
   {
    "id": "fattech:mano:conta-por-organizacao",
@@ -473,6 +551,19 @@
    "degree": 5
   },
   {
+   "id": "fattech:domain:contract_templates",
+   "label": "contract_templates",
+   "family": "domain",
+   "summary": "8 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
    "id": "fattech:domain:conversations",
    "label": "conversations",
    "family": "domain",
@@ -580,7 +671,7 @@
    "id": "fattech:domain:products",
    "label": "products",
    "family": "domain",
-   "summary": "6 campos declarados no schema.",
+   "summary": "12 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -837,6 +928,32 @@
    "degree": 2
   },
   {
+   "id": "fattech:contrato:variavel-sem-valor",
+   "label": "Variavel sem valor vira marca visivel, nunca some",
+   "family": "engineering_pattern",
+   "summary": "Uma chave sem valor e substituida por [chave nao informado] no texto, e as obrigatorias faltantes bloqueiam o envio para revisao com a lista.",
+   "why": "Uma variavel que some em silencio produz um contrato com uma frase sem sentido que ninguem nota ate a leitura final. Uma marca visivel e impossivel de ignorar.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 0
+  },
+  {
+   "id": "fattech:contrato:alerta-derivado",
+   "label": "Vencido e vencendo sao avisos diferentes, e ambos derivados",
+   "family": "engineering_pattern",
+   "summary": "O aviso nasce da vigencia lida no momento da leitura, nunca de uma fila guardada. Vencido e critico, vencendo dentro do aviso e atencao, e aguardando aprovacao e um terceiro.",
+   "why": "O primeiro ja custou, o segundo ainda da tempo. E derivar significa que renovar o contrato faz o aviso sumir sozinho, sem processo de fundo reconciliando fila com realidade.",
+   "status": "implementado",
+   "where": "apps/api/fattech/services.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:ordem:denominador",
    "label": "A ordem foi medida, nao estimada",
    "family": "licao",
@@ -848,6 +965,19 @@
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 2
+  },
+  {
+   "id": "fattech:contrato:vigencia-aproximada",
+   "label": "A vigencia calculada declara que e aproximada",
+   "family": "licao",
+   "summary": "Meses do modelo viram dias de trinta, e o contrato carrega term_is_approximate verdadeiro. A tela pede confirmacao da data exata com o juridico.",
+   "why": "Mesma regra da migracao 0005 e do relatorio por fechamento: usar o que existe e declarar o que e vale mais do que apresentar uma aproximacao como dado exato.",
+   "status": "implementado",
+   "where": "apps/api/fattech/contracts.py e apps/web/components/contracts.tsx",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
   },
   {
    "id": "fattech:mano:duplicacao",
@@ -863,6 +993,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:contrato:revisao-fantasma",
+   "label": "Mutar dicionario dentro de coluna JSON nao chega ao banco",
+   "family": "licao",
+   "summary": "A criacao escrevia revision no mesmo dicionario ja preso ao registro. SQLAlchemy nao rastreia mutacao interna de coluna JSON sem MutableDict, entao a resposta dizia revision 1 e o banco guardava 0. Agora um dicionario novo e reatribuido.",
+   "why": "A resposta afirmava o que nao fora gravado, e a segunda edicao nascia com o numero errado. So um teste que le o banco de volta e compara com a resposta encontra isso: asserir sobre a resposta sozinha concordaria com a mentira.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/contracts.py e tests/test_contracts.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
    "id": "fattech:lead:aproximacao-declarada",
    "label": "O backfill declara a aproximacao que faz",
    "family": "licao",
@@ -873,7 +1016,20 @@
    "source": "ordem-principal-onda-1.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
-   "degree": 1
+   "degree": 2
+  },
+  {
+   "id": "fattech:chaves:limite-menor-que-o-catalogo",
+   "label": "O limite de escopos ficou menor que o catalogo oferecido",
+   "family": "licao",
+   "summary": "Cada dominio novo soma dois escopos. Quando passaram de quarenta, a API oferecia escopos que nenhuma chave conseguia pedir.",
+   "why": "So um teste que cria uma chave com tudo que o catalogo oferece encontra isso; testar um escopo por vez nunca encontraria.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/schemas.py e tests/test_api.py",
+   "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
   },
   {
    "id": "fattech:lead:papel-owner-elegivel",
@@ -897,6 +1053,19 @@
    "status": "implementado",
    "where": "apps/api/tests/test_instagram_accounts.py",
    "source": "mano-chat-fase-1.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:contrato:lista-fixa-em-dois-lugares",
+   "label": "Um conjunto escrito em dois lugares diverge no primeiro ajuste",
+   "family": "licao",
+   "summary": "O construtor de avisos passou a derivar contratos, mas o endpoint mantinha a lista de tipos permitidos escrita a mao. O aviso existia e nunca chegava a tela.",
+   "why": "O teste que pegou isso nao olhou o construtor: pediu a rota e procurou o aviso. Testar a funcao teria passado com o defeito intacto.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/main.py",
+   "source": "ordem-principal-onda-2.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
@@ -1447,6 +1616,48 @@
    "note": "Campos personalizados do perdedor entram so onde o sobrevivente nao respondeu."
   },
   {
+   "source": "fattech:contrato:revisao-fantasma",
+   "target": "fattech:contrato:texto-de-cada-revisao",
+   "relation": "corrige",
+   "note": "O numero da revisao precisava chegar ao banco para o historico fazer sentido."
+  },
+  {
+   "source": "fattech:aprovacao:segregacao-de-funcoes",
+   "target": "fattech:contrato:ativar-exige-cadeia",
+   "relation": "sustenta",
+   "note": "A cadeia so vale se a ativacao a respeitar."
+  },
+  {
+   "source": "fattech:contrato:so-proposta-aceita",
+   "target": "fattech:contrato:texto-de-cada-revisao",
+   "relation": "origina",
+   "note": "A proposta aceita e o ponto em que o contrato nasce com valor ja acordado."
+  },
+  {
+   "source": "fattech:contrato:assinatura-recusa",
+   "target": "fattech:mano:conta-desconhecida-recusada",
+   "relation": "acompanha",
+   "note": "Mesma disciplina do webhook e do envio externo: recusar com motivo em vez de simular."
+  },
+  {
+   "source": "fattech:contrato:lista-fixa-em-dois-lugares",
+   "target": "fattech:contrato:alerta-derivado",
+   "relation": "corrige",
+   "note": "O aviso derivado nao chegava a tela por uma lista escrita no endpoint."
+  },
+  {
+   "source": "fattech:contrato:vigencia-aproximada",
+   "target": "fattech:lead:aproximacao-declarada",
+   "relation": "acompanha",
+   "note": "A mesma regra de declarar a aproximacao em vez de apresenta-la como dado."
+  },
+  {
+   "source": "fattech:catalogo:custo-zero-nao-e-de-graca",
+   "target": "fattech:contrato:so-proposta-aceita",
+   "relation": "alimenta",
+   "note": "O catalogo congela o preco na proposta, e a proposta leva o valor ao contrato."
+  },
+  {
    "source": "fattech:walchat:compliance-order",
    "target": "fattech:walchat:opt-out-footer",
    "relation": "precede",
@@ -1676,14 +1887,14 @@
   }
  ],
  "counts": {
-  "nodes": 93,
-  "edges": 70,
+  "nodes": 106,
+  "edges": 77,
   "por_familia": {
-   "business_rule": 27,
-   "engineering_pattern": 17,
-   "licao": 7,
+   "business_rule": 33,
+   "engineering_pattern": 19,
+   "licao": 11,
    "licao_de_debito": 1,
-   "domain": 17,
+   "domain": 18,
    "release": 13,
    "service": 11,
    "guarantee": 0

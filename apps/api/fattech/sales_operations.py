@@ -18,7 +18,7 @@ from .db import get_db
 from .idempotency import creation_receipt
 from .models import Record, User, now
 from .permissions import ADMIN_ROLES
-from .schemas import Cents, Identifier, Name, StrictModel
+from .schemas import Cents, DateText, Identifier, Name, StrictModel
 from .security import require_auth
 from .services import audit_event, get_record, scoped, serialize
 
@@ -38,6 +38,10 @@ class ProposalCreate(StrictModel):
     deal_id: Identifier
     items: list[ProposalItem] = Field(min_length=1, max_length=100)
     discount_cents: Cents = 0
+    # Imposto interno: entra no total e e declarado como interno porque este sistema nao emite
+    # documento fiscal e nao calcula tributo -- quem informa a aliquota e quem responde por ela.
+    tax_cents: Cents = 0
+    valid_until: DateText | None = None
 
     @model_validator(mode="after")
     def distinct_products(self):
@@ -130,11 +134,18 @@ def create_proposal(payload: ProposalCreate, response: Response,
         raise HTTPException(422, "Valor da proposta excede o limite monetário")
     if payload.discount_cents > subtotal:
         raise HTTPException(422, "Desconto não pode exceder o subtotal")
+    if payload.valid_until and payload.valid_until < now().date().isoformat():
+        raise HTTPException(422, "A validade da proposta não pode estar no passado")
+    total = subtotal - payload.discount_cents + payload.tax_cents
+    if total > MAX_CENTS:
+        raise HTTPException(422, "Valor da proposta excede o limite monetário")
     record = Record(tenant_id=principal.tenant_id, kind="sales_proposals", data={
         "title": payload.title, "deal_id": deal.id, "deal_title": deal.data["title"],
+        "contact_id": deal.data.get("contact_id"), "company_id": deal.data.get("company_id"),
         "owner_id": deal.data.get("owner_id"), "items": lines, "currency": "BRL", "status": "draft",
         "subtotal_cents": subtotal, "discount_cents": payload.discount_cents,
-        "total_cents": subtotal - payload.discount_cents, "created_by": principal.actor_id,
+        "tax_cents": payload.tax_cents, "valid_until": payload.valid_until,
+        "total_cents": total, "created_by": principal.actor_id,
     })
     db.add(record)
     db.flush()

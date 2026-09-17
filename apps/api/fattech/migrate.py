@@ -66,10 +66,36 @@ def migrate(engine, app_password: str = ""):
         if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0005'")).scalar():
             backfill_lead_fields(connection, postgres)
             connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0005')"))
+        if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0006'")).scalar():
+            backfill_catalog_fields(connection, postgres)
+            connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0006')"))
 
 
 LEAD_STAGE_POR_STATUS = {"customer": "convertido", "active": "convertido", "qualified": "qualificado",
                          "inactive": "descartado", "new": "novo", "lead": "novo"}
+
+
+def backfill_catalog_fields(connection, postgres):
+    """0006: custo, unidade, recorrencia e pacote no catalogo.
+
+    Aditiva e honesta: custo entra zerado, e zero aqui significa "ninguem informou", nao "de graca".
+    Calcular margem sobre custo zero devolveria 100%, entao a margem nao e gravada -- e derivada na
+    leitura e so existe quando ha custo, que e a unica forma de ela nao mentir.
+    """
+    records = Record.__table__
+    padroes = {"cost_cents": 0, "unit": "unidade", "recurrence": "nenhuma",
+               "bundle_items": [], "catalog_version": 1, "custom": {}}
+    for tenant_id in connection.scalars(select(Tenant.__table__.c.id)):
+        if postgres:
+            connection.execute(text("SELECT set_config('fattech.tenant_id', :tenant, true)"), {"tenant": tenant_id})
+        linhas = connection.execute(select(records.c.id, records.c.data).where(
+            records.c.tenant_id == tenant_id, records.c.kind == "products")).all()
+        for product_id, data in linhas:
+            faltando = {chave: valor for chave, valor in padroes.items() if chave not in data}
+            if not faltando:
+                continue
+            connection.execute(records.update().where(records.c.id == product_id)
+                               .values(data={**data, **faltando}))
 
 
 def backfill_lead_fields(connection, postgres):
@@ -174,7 +200,7 @@ def main():
     engine = make_engine(settings.database_url)
     try:
         migrate(engine, os.environ.get("FATTECH_DB_APP_PASSWORD", ""))
-        print("Schema 0005 ready; lead lifecycle, queryable UTM and last interaction are in place.")
+        print("Schema 0006 ready; catalogue carries cost, unit and recurrence, and contracts have a home.")
     finally:
         engine.dispose()
 

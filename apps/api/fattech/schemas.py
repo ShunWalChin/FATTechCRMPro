@@ -285,13 +285,34 @@ class Invoice(StrictModel):
     notes: Text = ""
 
 
+class BundleItem(StrictModel):
+    product_id: Identifier
+    quantity: int = Field(strict=True, ge=1, le=1000)
+
+
 class Product(StrictModel):
     name: Name
     description: Text = ""
-    sku: str = Field(default="", max_length=100)
+    sku: str = Field(default="", max_length=60)
     price_cents: Cents = 0
-    category: str = Field(default="service", max_length=100)
+    # Custo e preco moram juntos porque margem sem custo e opiniao. Quem le produtos ve o custo:
+    # esconde-lo exigiria redacao por papel em campo declarado, que ainda nao existe.
+    cost_cents: Cents = 0
+    unit: Literal["unidade", "hora", "mes", "projeto", "licenca", "usuario"] = "unidade"
+    recurrence: Literal["nenhuma", "mensal", "trimestral", "semestral", "anual"] = "nenhuma"
+    # Um pacote e uma lista de outros produtos. Nao expande sozinho: quem monta a proposta decide.
+    bundle_items: list[BundleItem] = Field(default_factory=list, max_length=40)
+    catalog_version: int = Field(default=1, strict=True, ge=1, le=9999)
+    category: str = Field(default="", max_length=100)
     status: Literal["active", "inactive"] = "active"
+    custom: dict = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_bundle(self):
+        chaves = [item.product_id for item in self.bundle_items]
+        if len(chaves) != len(set(chaves)):
+            raise ValueError("Um produto do pacote deve aparecer uma única vez; ajuste a quantidade")
+        return self
 
 
 OPERADORES = ("igual", "diferente", "contem", "em", "maior", "maior_igual", "menor", "menor_igual",
@@ -389,11 +410,62 @@ class CustomField(StrictModel):
         return self
 
 
+FONTES_DE_VARIAVEL = ("manual", "company", "contact", "deal", "proposal", "contract")
+
+
+class TemplateVariable(StrictModel):
+    """Uma variavel do modelo. `source` diz de onde o valor vem quando o contrato e montado;
+    `manual` significa que uma pessoa digita, e e o unico caso em que o sistema nao sabe sozinho."""
+    key: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=40,
+                                          pattern=r"^[a-z][a-z0-9_]{0,39}$")]
+    label: Name
+    source: Literal[FONTES_DE_VARIAVEL] = "manual"
+    path: str = Field(default="", max_length=60)
+    required: bool = True
+    help: Text = ""
+
+    @model_validator(mode="after")
+    def validate_path(self):
+        if self.source != "manual" and not self.path:
+            raise ValueError("Uma variável que vem de um registro precisa dizer de qual campo")
+        return self
+
+
+class ApprovalLevel(StrictModel):
+    level: int = Field(strict=True, ge=1, le=6)
+    role: Literal["admin", "owner", "super_admin", "root"] = "admin"
+    label: Name
+
+
+class ContractTemplate(StrictModel):
+    name: Name
+    description: Text = ""
+    # O corpo usa {{chave}}. Nao e HTML nem Markdown por decisao: o que sai do modelo e o que
+    # entra no contrato, sem uma camada de renderizacao que possa mudar o texto depois de assinado.
+    body: Annotated[str, StringConstraints(min_length=1, max_length=200000)]
+    variables: list[TemplateVariable] = Field(default_factory=list, max_length=60)
+    approval_levels: list[ApprovalLevel] = Field(default_factory=list, max_length=6)
+    default_term_months: int = Field(default=12, strict=True, ge=1, le=600)
+    default_notice_days: int = Field(default=30, strict=True, ge=0, le=365)
+    status: Literal["active", "inactive"] = "active"
+
+    @model_validator(mode="after")
+    def validate_keys(self):
+        chaves = [variavel.key for variavel in self.variables]
+        if len(chaves) != len(set(chaves)):
+            raise ValueError("Cada variável precisa de uma chave distinta")
+        niveis = [nivel.level for nivel in self.approval_levels]
+        if len(niveis) != len(set(niveis)):
+            raise ValueError("Cada nível de aprovação precisa ser distinto")
+        return self
+
+
 RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "deals": Deal, "tasks": Task,
              "conversations": Conversation, "messages": Message, "campaigns": Campaign,
              "automations": Automation, "knowledge": Knowledge, "approvals": Approval,
              "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product,
-             "lead_rules": LeadRules, "custom_fields": CustomField}
+             "lead_rules": LeadRules, "custom_fields": CustomField,
+             "contract_templates": ContractTemplate}
 
 
 class ContactImport(StrictModel):
@@ -447,7 +519,10 @@ class Lead(StrictModel):
 
 class KeyCreate(StrictModel):
     name: Name
-    scopes: list[str] = Field(min_length=1, max_length=40)
+    # O limite precisa caber o catalogo inteiro. Quando ficou menor que ele, a API passou a
+    # oferecer escopos que nenhuma chave conseguia pedir -- e so um teste que cria uma chave com
+    # tudo que e oferecido encontra isso.
+    scopes: list[str] = Field(min_length=1, max_length=200)
     expires_in_days: int = Field(default=90, ge=1, le=365)
 
 

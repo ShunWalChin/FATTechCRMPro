@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.0",
+  "subject": "Ordem principal de engenharia — Onda 2: conversao",
+  "reviewed_at": "2026-09-17",
+  "provenance": "Contratos, cadeia de aprovacao em niveis, catalogo enriquecido e a ponte da proposta aceita. Medido em scripts/ordem-principal-matriz.py: comercial de 56% para 75%.",
+  "merge_note": "Nos semanticos usam este artefato como source_file para que a extracao AST nao os substitua.",
+  "nodes": [
+    {
+      "id": "fattech:contrato:texto-de-cada-revisao",
+      "label": "O contrato guarda o texto de cada revisao, nao so a corrente",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py gravar_revisao",
+      "status": "implementado",
+      "rule": "Cada criacao, edicao e renovacao grava uma linha em contract_revisions com o conteudo inteiro, o valor e o motivo. O kind fica fora de RESOURCES de proposito.",
+      "por_que_importa": "Guardar so a revisao corrente responde o que vale hoje e nao responde o que a outra parte leu quando concordou. E um registro legal append-only nao pode ganhar PATCH e DELETE automaticos, que e o que entrar em RESOURCES daria.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py"
+    },
+    {
+      "id": "fattech:contrato:revisao-fantasma",
+      "label": "Mutar dicionario dentro de coluna JSON nao chega ao banco",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py criar",
+      "status": "corrigido",
+      "rule": "A criacao escrevia revision no mesmo dicionario ja preso ao registro. SQLAlchemy nao rastreia mutacao interna de coluna JSON sem MutableDict, entao a resposta dizia revision 1 e o banco guardava 0. Agora um dicionario novo e reatribuido.",
+      "por_que_importa": "A resposta afirmava o que nao fora gravado, e a segunda edicao nascia com o numero errado. So um teste que le o banco de volta e compara com a resposta encontra isso: asserir sobre a resposta sozinha concordaria com a mentira.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py e tests/test_contracts.py"
+    },
+    {
+      "id": "fattech:aprovacao:segregacao-de-funcoes",
+      "label": "A mesma pessoa nao decide dois niveis",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/approval_chain.py decidir",
+      "status": "implementado",
+      "rule": "Os niveis sao decididos em ordem, quem decide precisa de patente igual ou maior que a exigida, e quem ja decidiu um nivel nao decide outro da mesma cadeia. Uma recusa em qualquer nivel encerra a cadeia.",
+      "por_que_importa": "Sem a terceira regra, dois niveis sao um nivel escrito duas vezes e a segregacao de funcoes que justifica a cadeia deixa de existir. Sem a quarta, seguir pedindo aprovacao depois de um nao transforma o nao em sugestao.",
+      "onde_no_fattech": "apps/api/fattech/approval_chain.py"
+    },
+    {
+      "id": "fattech:contrato:ativar-exige-cadeia",
+      "label": "Entrar em vigor exige a cadeia completa",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py transicionar",
+      "status": "implementado",
+      "rule": "Passar para aprovado com nivel pendente responde 409 com o resumo da cadeia. Uma recusa devolve o contrato ao rascunho. Editar um contrato ja aprovado tambem e recusado.",
+      "por_que_importa": "Um contrato que entra em vigor sem passar pelos niveis torna os niveis enfeite, e editar depois de aprovado desfaz a aprovacao sem que ninguem perceba.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py"
+    },
+    {
+      "id": "fattech:contrato:variavel-sem-valor",
+      "label": "Variavel sem valor vira marca visivel, nunca some",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py montar",
+      "status": "implementado",
+      "rule": "Uma chave sem valor e substituida por [chave nao informado] no texto, e as obrigatorias faltantes bloqueiam o envio para revisao com a lista.",
+      "por_que_importa": "Uma variavel que some em silencio produz um contrato com uma frase sem sentido que ninguem nota ate a leitura final. Uma marca visivel e impossivel de ignorar.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py"
+    },
+    {
+      "id": "fattech:contrato:assinatura-recusa",
+      "label": "Pedir assinatura recusa com motivo em vez de simular",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py assinar",
+      "status": "implementado",
+      "rule": "Sem provedor configurado a rota responde 503 dizendo que o contrato esta pronto e que nada foi enviado, lista os signatarios e audita a recusa. O contrato nao muda de estado.",
+      "por_que_importa": "Registrar assinado sem assinatura e a pior mentira que um CRM pode contar. A rota existe para provar o caminho e recusar exatamente onde faltaria o provedor.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py e config.py signature_provider"
+    },
+    {
+      "id": "fattech:contrato:so-proposta-aceita",
+      "label": "So proposta aceita vira contrato, e so uma vez",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py da_proposta",
+      "status": "implementado",
+      "rule": "Gerar contrato de proposta em rascunho ou emitida responde 409 com o status atual. Uma proposta que ja gerou contrato responde 409 com o id do contrato existente.",
+      "por_que_importa": "Um contrato so tem uma chance de nascer com o valor certo, e duas vias do mesmo acordo sao a forma silenciosa de cobrar duas vezes.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py"
+    },
+    {
+      "id": "fattech:contrato:vigencia-aproximada",
+      "label": "A vigencia calculada declara que e aproximada",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/contracts.py criar e renovar",
+      "status": "implementado",
+      "rule": "Meses do modelo viram dias de trinta, e o contrato carrega term_is_approximate verdadeiro. A tela pede confirmacao da data exata com o juridico.",
+      "por_que_importa": "Mesma regra da migracao 0005 e do relatorio por fechamento: usar o que existe e declarar o que e vale mais do que apresentar uma aproximacao como dado exato.",
+      "onde_no_fattech": "apps/api/fattech/contracts.py e apps/web/components/contracts.tsx"
+    },
+    {
+      "id": "fattech:contrato:alerta-derivado",
+      "label": "Vencido e vencendo sao avisos diferentes, e ambos derivados",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/services.py build_notifications",
+      "status": "implementado",
+      "rule": "O aviso nasce da vigencia lida no momento da leitura, nunca de uma fila guardada. Vencido e critico, vencendo dentro do aviso e atencao, e aguardando aprovacao e um terceiro.",
+      "por_que_importa": "O primeiro ja custou, o segundo ainda da tempo. E derivar significa que renovar o contrato faz o aviso sumir sozinho, sem processo de fundo reconciliando fila com realidade.",
+      "onde_no_fattech": "apps/api/fattech/services.py"
+    },
+    {
+      "id": "fattech:contrato:lista-fixa-em-dois-lugares",
+      "label": "Um conjunto escrito em dois lugares diverge no primeiro ajuste",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/main.py notifications",
+      "status": "corrigido",
+      "rule": "O construtor de avisos passou a derivar contratos, mas o endpoint mantinha a lista de tipos permitidos escrita a mao. O aviso existia e nunca chegava a tela.",
+      "por_que_importa": "O teste que pegou isso nao olhou o construtor: pediu a rota e procurou o aviso. Testar a funcao teria passado com o defeito intacto.",
+      "onde_no_fattech": "apps/api/fattech/main.py"
+    },
+    {
+      "id": "fattech:catalogo:custo-zero-nao-e-de-graca",
+      "label": "Custo zero significa nao informado, e por isso a margem nao e gravada",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/migrate.py backfill_catalog_fields",
+      "status": "implementado",
+      "rule": "O backfill 0006 entra com custo zero nos produtos existentes. A margem nao e persistida: derivar sobre custo zero devolveria cem por cento.",
+      "por_que_importa": "Um indicador que mente quando falta dado e pior do que um indicador ausente, porque ninguem duvida dele.",
+      "onde_no_fattech": "apps/api/fattech/migrate.py e schemas.py"
+    },
+    {
+      "id": "fattech:chaves:limite-menor-que-o-catalogo",
+      "label": "O limite de escopos ficou menor que o catalogo oferecido",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "source_location": "apps/api/fattech/schemas.py KeyCreate",
+      "status": "corrigido",
+      "rule": "Cada dominio novo soma dois escopos. Quando passaram de quarenta, a API oferecia escopos que nenhuma chave conseguia pedir.",
+      "por_que_importa": "So um teste que cria uma chave com tudo que o catalogo oferece encontra isso; testar um escopo por vez nunca encontraria.",
+      "onde_no_fattech": "apps/api/fattech/schemas.py e tests/test_api.py"
+    }
+  ],
+  "edges": [
+    {
+      "id": "fattech:rel:onda2:revisao:sustenta:texto",
+      "source": "fattech:contrato:revisao-fantasma",
+      "target": "fattech:contrato:texto-de-cada-revisao",
+      "relation": "corrige",
+      "label": "corrige",
+      "action": "O numero da revisao precisava chegar ao banco para o historico fazer sentido.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda2:cadeia:bloqueia:ativacao",
+      "source": "fattech:aprovacao:segregacao-de-funcoes",
+      "target": "fattech:contrato:ativar-exige-cadeia",
+      "relation": "sustenta",
+      "label": "sustenta",
+      "action": "A cadeia so vale se a ativacao a respeitar.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda2:proposta:origina:contrato",
+      "source": "fattech:contrato:so-proposta-aceita",
+      "target": "fattech:contrato:texto-de-cada-revisao",
+      "relation": "origina",
+      "label": "origina",
+      "action": "A proposta aceita e o ponto em que o contrato nasce com valor ja acordado.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda2:assinatura:ecoa:recusa",
+      "source": "fattech:contrato:assinatura-recusa",
+      "target": "fattech:mano:conta-desconhecida-recusada",
+      "relation": "acompanha",
+      "label": "acompanha",
+      "action": "Mesma disciplina do webhook e do envio externo: recusar com motivo em vez de simular.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "INFERRED"
+    },
+    {
+      "id": "fattech:rel:onda2:lista-fixa:revela:alerta",
+      "source": "fattech:contrato:lista-fixa-em-dois-lugares",
+      "target": "fattech:contrato:alerta-derivado",
+      "relation": "corrige",
+      "label": "corrige",
+      "action": "O aviso derivado nao chegava a tela por uma lista escrita no endpoint.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda2:vigencia:ecoa:aproximacao",
+      "source": "fattech:contrato:vigencia-aproximada",
+      "target": "fattech:lead:aproximacao-declarada",
+      "relation": "acompanha",
+      "label": "acompanha",
+      "action": "A mesma regra de declarar a aproximacao em vez de apresenta-la como dado.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda2:catalogo:alimenta:contrato",
+      "source": "fattech:catalogo:custo-zero-nao-e-de-graca",
+      "target": "fattech:contrato:so-proposta-aceita",
+      "relation": "alimenta",
+      "label": "alimenta",
+      "action": "O catalogo congela o preco na proposta, e a proposta leva o valor ao contrato.",
+      "source_file": "docs/knowledge/ordem-principal-onda-2.json",
+      "confidence": "DOCUMENTED"
+    }
+  ]
+}

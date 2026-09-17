@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     login_attempts_per_ip: int = 30
     max_body_bytes: int = 1_048_576
     external_sends_enabled: bool = False
+    # Vazio de proposito: pedir assinatura recusa com motivo enquanto nao houver provedor.
+    signature_provider: str = ""
     capture_creates_deal: bool = True
     blocked_terms: str = ""
     n8n_outbound_url: str = ""

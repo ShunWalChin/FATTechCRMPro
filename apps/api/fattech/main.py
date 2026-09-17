@@ -85,7 +85,10 @@ def integration_status(key, settings, contas_instagram):
 def api_scopes():
     return {f"{kind}:{op}" for kind in RESOURCES for op in ("read", "write")} | {
         "webhooks:write", "events:read", "dashboard:read", "integrations:read",
-        "integrations:write", "team:read"}
+        "integrations:write", "team:read",
+        # contracts vive fora de RESOURCES porque tem transicoes que o PATCH generico burlaria;
+        # o escopo precisa existir aqui ou nenhuma chave de API jamais poderia recebe-lo.
+        "contracts:read", "contracts:write"}
 
 
 COMPLIANCE_REASONS = {
@@ -687,7 +690,9 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.get("/api/v1/notifications")
     def notifications(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("dashboard:read")
-        allowed = {kind for kind in ("tasks", "approvals", "deals")
+        # A lista fixa aqui foi o que manteve contratos fora dos avisos mesmo depois de o
+        # construtor passar a deriva-los: um conjunto escrito em dois lugares diverge no primeiro.
+        allowed = {kind for kind in ("tasks", "approvals", "deals", "contracts")
                    if not principal.key or f"{kind}:read" in principal.key.scopes}
         return build_notifications(db, principal.tenant_id, allowed=allowed)
 
@@ -743,6 +748,8 @@ def create_app(settings: Settings | None = None, engine=None):
     # Antes do laco de RESOURCES: /contacts/duplicates precisa vencer /contacts/{record_id}.
     from .merge import register_merge
     register_merge(app)
+    from .contracts import register_contracts
+    register_contracts(app)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

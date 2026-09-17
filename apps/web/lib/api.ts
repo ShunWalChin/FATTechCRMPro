@@ -68,6 +68,17 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     return hasId(data)&&typeof data.explained==='boolean'&&nonnegativeInteger(data.score)&&
       (data.breakdown===null||(isObject(data.breakdown)&&Array.isArray(data.breakdown.criteria)));
   // Grupos de duplicata nao sao registros: cada um carrega a chave que casou e os candidatos.
+  // Um contrato carrega o resumo da cadeia de aprovação; a lista carrega o resumo da carteira.
+  if(path.startsWith('/contracts')){
+    const contrato=(v:unknown)=>isObject(v)&&hasId(v)&&Number.isInteger(v.version)&&
+      nonemptyString(v.status)&&isObject(v.approval)&&typeof (v.approval as Record<string,unknown>).blocking==='boolean';
+    if(/^\/contracts\/[^/]+\/revisions$/.test(path))
+      return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&
+        data.items.every(r=>isObject(r)&&Number.isInteger(r.revision)&&typeof r.content==='string');
+    if(path==='/contracts'&&method==='GET')
+      return Array.isArray(data.items)&&data.items.every(contrato)&&nonnegativeInteger(data.total)&&isObject(data.summary);
+    return contrato(data);
+  }
   if(path==='/contacts/duplicates')
     return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&
       data.items.every(g=>isObject(g)&&nonemptyString(g.survivor_id)&&Array.isArray(g.records)&&g.records.every(hasId));

@@ -315,7 +315,7 @@ def build_notifications(db, tenant_id, limit=25, allowed=None):
     reconciles it. Deriving means a closed task or a scheduled next action simply stops appearing.
     """
     from .compliance import instant
-    allowed = {"tasks", "approvals", "deals"} if allowed is None else allowed
+    allowed = {"tasks", "approvals", "deals", "contracts"} if allowed is None else allowed
     moment = now()
     today = moment.date().isoformat()
     items = []
@@ -346,6 +346,29 @@ def build_notifications(db, tenant_id, limit=25, allowed=None):
                           "detail": f"Etapa {entry['stage_label']}, {waited}",
                           "href": f"/crm/pipeline?abrir={entry['id']}",
                           "at": entry["last_activity_at"] or ""})
+    for record in (db.scalars(scoped(tenant_id, "contracts")) if "contracts" in allowed else []):
+        from .contracts import dias_para_fim
+        if record.data.get("status") not in ("active", "renewed", "in_review"):
+            continue
+        if record.data.get("status") == "in_review":
+            items.append({"kind": "contract_awaiting_approval", "severity": "attention", "id": record.id,
+                          "title": record.data.get("title", ""), "detail": "Aguarda decisão de aprovação",
+                          "href": f"/crm/contratos?abrir={record.id}",
+                          "at": record.data.get("in_review_at", "")})
+            continue
+        restantes = dias_para_fim(record.data)
+        aviso = record.data.get("notice_days", 30)
+        if restantes is None or restantes > aviso:
+            continue
+        # Vencido e vencendo sao avisos diferentes: o primeiro ja custou, o segundo ainda da tempo.
+        vencido = restantes < 0
+        items.append({"kind": "contract_expired" if vencido else "contract_expiring",
+                      "severity": "critical" if vencido else "attention", "id": record.id,
+                      "title": record.data.get("title", ""),
+                      "detail": (f"Vigência encerrou há {abs(restantes)} dias" if vencido
+                                 else f"Vigência encerra em {restantes} dias"),
+                      "href": f"/crm/contratos?abrir={record.id}",
+                      "at": str(record.data.get("ends_on") or "")})
     items.sort(key=lambda item: (-NOTICE_ORDER[item["severity"]], item["at"] or ""))
     counts = {severity: sum(1 for item in items if item["severity"] == severity) for severity in NOTICE_ORDER}
     return {"items": items[:limit], "total": len(items), "counts": counts}
