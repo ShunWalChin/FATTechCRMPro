@@ -3027,6 +3027,15 @@ body.nav-menu-open {
   }
   .scanlines,
   .noise { display: none !important; }
+
+  /* Camadas decorativas cujo estado de repouso vive DENTRO do keyframe, e nao na regra base.
+     Encurtar a duracao para 0.001ms encerra a animacao e devolve o elemento ao estado base --
+     que, para estas, e o estado ligado. O resultado era o oposto do pretendido: em vez de
+     desligar o glitch, ele ficava congelado aceso sobre o titulo, lendo "NEGOCIOCIO".
+     Declarar o repouso aqui e o que faz movimento reduzido significar sem efeito. */
+  .glitch-text::before,
+  .glitch-text::after { opacity: 0 !important; }
+  .cat-featured-badge { background-position: 0 0 !important; }
 }
 
 

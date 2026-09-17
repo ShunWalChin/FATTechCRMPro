@@ -1,7 +1,0 @@
-Contact: mailto:contato@fattech.com.br
-Contact: https://wa.me/+5535998491017
-Preferred-Languages: pt-BR, en
-Canonical: https://fattech.com.br/.well-known/security.txt
-Policy: https://fattech.com.br/privacidade.html
-Acknowledgments: https://fattech.com.br
-Expires: 2027-03-23T00:00:00.000Z

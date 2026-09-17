@@ -19,27 +19,79 @@ test('private workspace requires login', async ({page}) => {
   expect(response.status()).toBe(401);
 });
 
-test('every URL shape the original site published still resolves', async ({request}) => {
-  // The site is the company's own again, so the check is that its addresses survived the move to
-  // this stack: the pages answer, and the .html forms people may have linked redirect into them.
-  for (const [path, expected] of [
-    ['/', '/'],
-    ['/index.html', '/'],
-    ['/blog/index.html', '/blog'],
-    ['/blog/artigos/crm-ia-vendas.html', '/blog/artigos/crm-ia-vendas'],
-    ['/lp/crm-inteligente.html', '/lp/crm-inteligente'],
-    ['/lp/impulse-crm.html', '/lp/impulse-crm'],
-    ['/lp/impulse-crm/index.html', '/lp/impulse-crm'],
-    ['/privacidade.html', '/privacidade'],
-    ['/integracoes.html', '/integracoes'],
-    ['/crm.html', '/crm.html'],
+test('the public site is served as the original bytes, at the original addresses', async ({request}) => {
+  // O site voltou a ser o HTML puro do repositório oficial. A verificação deixa de ser "o conteúdo
+  // parece o mesmo" e passa a ser "são os mesmos bytes": uma transcrição pode empatar em texto e
+  // divergir em comportamento, que foi exatamente o que aconteceu com as animações do original.
+  const {readFileSync} = await import('node:fs');
+  const {join} = await import('node:path');
+  const raiz = join(process.cwd(), 'apps', 'web', 'public');
+  for (const [rota, arquivo] of [
+    ['/', 'index.html'],
+    ['/index.html', 'index.html'],
+    ['/blog/index.html', 'blog/index.html'],
+    ['/blog', 'blog/index.html'],
+    ['/blog/artigos/crm-ia-vendas.html', 'blog/artigos/crm-ia-vendas.html'],
+    ['/lp/crm-inteligente.html', 'lp/crm-inteligente.html'],
+    ['/lp/impulse-crm.html', 'lp/impulse-crm.html'],
+    ['/lp/impulse-crm/index.html', 'lp/impulse-crm/index.html'],
+    ['/privacidade.html', 'privacidade.html'],
+    ['/integracoes.html', 'integracoes.html'],
+    ['/crm.html', 'crm.html'],
+    ['/style.css', 'style.css'],
+    ['/script.js', 'script.js'],
   ] as const) {
-    const response = await request.get(path);
-    expect(response.ok(), path).toBeTruthy();
-    expect(new URL(response.url()).pathname, path).toBe(expected);
+    const response = await request.get(rota);
+    expect(response.ok(), rota).toBeTruthy();
+    const servido = Buffer.from(await response.body());
+    const disco = readFileSync(join(raiz, arquivo));
+    expect(servido.equals(disco), `${rota} precisa ser byte a byte igual a public/${arquivo}`).toBeTruthy();
   }
-  // /crm stays the private workspace, which is why the original page kept its own address.
+  // /crm continua sendo o workspace privado, e é por isso que a página original manteve /crm.html.
   expect((await request.get('/crm')).url()).toContain('/login');
+});
+
+test('the original page behaves, not only renders', async ({page}) => {
+  // O conteúdo já batia na versão transcrita; o que quebrava era o comportamento. Este teste olha
+  // o que só existe quando os scripts do original rodam num DOM que eles reconhecem.
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/js-ready/);
+  const titulo = page.locator('.hero h1');
+  await expect(titulo).toHaveText(/Transforme Seu\s+NEGÓCIO\s+Com Agentes de IA/);
+  await expect(page.locator('#particles-canvas, canvas').first()).toBeVisible();
+});
+
+test.describe('the hero glitch', () => {
+  // O glitch é intencional: faz sentido no contexto do negócio. O que estava errado era o repouso.
+  test.use({reducedMotion: 'no-preference'});
+  test('animates when motion is allowed', async ({page}) => {
+    await page.goto('/');
+    const amostras = await page.evaluate(async () => {
+      const alvo = document.querySelector('.glitch-text') as HTMLElement;
+      const vistas = new Set<string>();
+      // O glitch acende em cerca de 8% de um ciclo de 3s, então amostrar pouco não o encontraria.
+      for (let i = 0; i < 70; i++) {
+        vistas.add(getComputedStyle(alvo, '::before').opacity);
+        await new Promise(r => setTimeout(r, 55));
+      }
+      return [...vistas];
+    });
+    expect(amostras.length, `o glitch precisa variar de opacidade; observado: ${amostras}`).toBeGreaterThan(1);
+    expect(amostras).toContain('0');
+  });
+});
+
+test.describe('with reduced motion', () => {
+  test.use({reducedMotion: 'reduce'});
+  test('the glitch rests hidden instead of freezing switched on', async ({page}) => {
+    await page.goto('/');
+    // Antes da correção, encurtar a duração devolvia o elemento ao estado base — que é opaco —
+    // e o título aparecia como "NEGÓCIOCIO" para todo mundo com movimento reduzido ligado.
+    const opacidade = await page.evaluate(() =>
+      getComputedStyle(document.querySelector('.glitch-text') as HTMLElement, '::before').opacity);
+    expect(opacidade).toBe('0');
+    await expect(page.locator('.hero h1')).toHaveText(/Transforme Seu\s+NEGÓCIO\s+Com Agentes de IA/);
+  });
 });
 
 test('the public capture endpoint still records consent and attribution', async ({page}) => {

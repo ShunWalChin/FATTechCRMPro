@@ -1,0 +1,6 @@
+{
+  "porque": "O site e servido byte a byte a partir do repositorio oficial. Toda diferenca em relacao a ele precisa estar declarada aqui, com motivo, ou a auditoria falha. Estas correcoes devem voltar para ShunWalChin/FAT-Tech---Website.",
+  "arquivos": {
+    "style.css": "A regra @media (prefers-reduced-motion: reduce) encurtava a duracao de toda animacao para 0.001ms. Com animation-fill-mode none, o elemento volta ao estado base ao terminar -- e para .glitch-text::before/::after o estado base e opaco, porque o repouso (opacity 0) so existe dentro do keyframe. Em qualquer navegador com movimento reduzido ligado, o titulo da home aparecia com as duas copias do glitch grudadas, lendo NEGOCIOCIO, e o badge do plano em destaque congelava o sweep. A correcao declara o repouso dentro do proprio bloco."
+  }
+}
