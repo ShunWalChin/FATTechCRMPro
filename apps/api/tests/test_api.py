@@ -67,6 +67,7 @@ def test_instagram_webhook_validates_signature_and_is_idempotent(system):
                        headers={**headers, "X-Hub-Signature-256": "sha256=" + "0" * 64}).status_code == 401
     with factory() as db:
         assert db.query(Outbox).filter(Outbox.event_type == "instagram.webhook.received").count() == 1
+    # Entrega autentica de conta que ninguem conectou: recusada, e nada entra na outbox.
     estranha = json.dumps({"object": "instagram", "entry": [{"id": "17841400000000777"}]},
                           separators=(",", ":")).encode()
     assinatura = "sha256=" + hmac.new(b"meta-test-secret", estranha, hashlib.sha256).hexdigest()
@@ -75,6 +76,15 @@ def test_instagram_webhook_validates_signature_and_is_idempotent(system):
     assert recusada.status_code == 404
     with factory() as db:
         assert db.query(Outbox).filter(Outbox.event_type == "instagram.webhook.received").count() == 1
+
+
+def test_knowledge_search_returns_tenant_scoped_citations(system):
+    client, _, _, *_ = system
+    post(client, "knowledge", {"title": "Playbook comercial", "content": "Qualificacao de lead FAT Tech", "source": "manual"})
+    response = client.get("/api/v1/knowledge/search", params={"q": "lead"})
+    assert response.status_code == 200
+    assert response.json()["provider"] == "lexical"
+    assert any(item["citation"]["kind"] == "knowledge" for item in response.json()["items"])
 
 
 def test_auth_cookie_csrf_password_and_sessions(system):

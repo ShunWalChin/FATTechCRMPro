@@ -12,7 +12,7 @@ from . import models  # noqa: F401 - register metadata
 UNRECORDED_LOSS = "Motivo não registrado antes da migração 0002."
 # instagram_accounts fica fora de proposito: o webhook resolve o tenant antes de haver contexto
 # de tenant, entao a consulta que descobre o dono nao pode estar sujeita a politica que usa o dono.
-TENANT_TABLES = ("records", "audit_log", "event_outbox", "idempotency_keys", "instagram_credentials")
+TENANT_TABLES = ("records", "audit_log", "event_outbox", "idempotency_keys", "instagram_credentials", "knowledge_chunks")
 RUNTIME_TABLES = tuple(Base.metadata.tables)
 
 

@@ -44,6 +44,19 @@
  ],
  "nodes": [
   {
+   "id": "fattech:campos:chave-imutavel",
+   "label": "A chave de um campo nao muda e uma definicao em uso nao some",
+   "family": "business_rule",
+   "summary": "Trocar key ou entity responde 409. Excluir uma definicao que ja tem valor gravado responde 409 com a contagem, e sugere inativar.",
+   "why": "A chave e o nome sob o qual os valores gravados vivem: renomea-la orfanaria todo dado existente, e apagar a definicao deixaria respostas sem pergunta.",
+   "status": "implementado",
+   "where": "apps/api/fattech/services.py e custom_fields.py",
+   "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 0
+  },
+  {
    "id": "fattech:lead:fila-propria",
    "label": "A fila de leads responde outra pergunta que a de tarefas",
    "family": "business_rule",
@@ -65,6 +78,19 @@
    "status": "diagnosticado",
    "where": "apps/api/fattech/instagram_webhook.py e config.py",
    "source": "mano-chat-diagnostico.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:campos:redacao-no-servidor",
+   "label": "Campo restrito nao sai da API, nao apenas da tela",
+   "family": "business_rule",
+   "summary": "visibility=admin remove o valor do corpo da resposta para quem nao e administrador; editable_by=admin recusa a edicao com 403. A redacao roda onde ha principal, nas rotas de recurso.",
+   "why": "Esconder so no navegador deixa o valor viajando na resposta, e a ordem proibe regra implementada somente no frontend. O teste procura o valor no texto da resposta, nao na tela.",
+   "status": "implementado",
+   "where": "apps/api/fattech/main.py redact() e custom_fields.py",
+   "source": "ordem-principal-onda-1.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 2
@@ -161,6 +187,19 @@
    "degree": 4
   },
   {
+   "id": "fattech:merge:historico-reapontado",
+   "label": "Mesclar sem repontar o historico perde o historico",
+   "family": "business_rule",
+   "summary": "Oportunidades, tarefas, conversas, faturas e atividades do contato absorvido passam a apontar para o sobrevivente, e a auditoria registra quantos de cada.",
+   "why": "Resolver a duplicata perdendo a oportunidade em aberto seria trocar um problema visivel por um invisivel.",
+   "status": "implementado",
+   "where": "apps/api/fattech/merge.py",
+   "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:business:deal-write",
    "label": "Mutação concorrente de oportunidade",
    "family": "business_rule",
@@ -172,6 +211,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 2
+  },
+  {
+   "id": "fattech:merge:sobrevivente-manda",
+   "label": "Na mesclagem o sobrevivente manda; o perdedor so preenche buraco",
+   "family": "business_rule",
+   "summary": "Campo preenchido no sobrevivente nao e tocado. Vazio recebe o do perdedor. Listas viram uniao sem repetir, notas sao concatenadas com marca, e campos personalizados entram so onde o sobrevivente nao respondeu.",
+   "why": "Um merge que sobrescreve o registro bom com o ruim e pior do que a duplicata que ele resolveu.",
+   "status": "implementado",
+   "where": "apps/api/fattech/merge.py",
+   "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
   },
   {
    "id": "fattech:mano:ja-existe",
@@ -398,7 +450,7 @@
    "id": "fattech:domain:companies",
    "label": "companies",
    "family": "domain",
-   "summary": "8 campos declarados no schema.",
+   "summary": "9 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -411,7 +463,7 @@
    "id": "fattech:domain:contacts",
    "label": "contacts",
    "family": "domain",
-   "summary": "22 campos declarados no schema.",
+   "summary": "23 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -434,10 +486,23 @@
    "degree": 2
   },
   {
+   "id": "fattech:domain:custom_fields",
+   "label": "custom_fields",
+   "family": "domain",
+   "summary": "12 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
    "id": "fattech:domain:deals",
    "label": "deals",
    "family": "domain",
-   "summary": "13 campos declarados no schema.",
+   "summary": "14 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -528,7 +593,7 @@
    "id": "fattech:domain:projects",
    "label": "projects",
    "family": "domain",
-   "summary": "8 campos declarados no schema.",
+   "summary": "9 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -590,6 +655,19 @@
    "degree": 0
   },
   {
+   "id": "fattech:campos:estende-sem-furar",
+   "label": "Campo personalizado estende o esquema estrito, nao o fura",
+   "family": "engineering_pattern",
+   "summary": "O valor chega numa chave declarada, data.custom, e e conferido contra as definicoes que a organizacao criou. Chave sem definicao continua sendo recusada com 422.",
+   "why": "extra=forbid e o que impede o CRM de virar um deposito de chaves soltas. Campos proprios precisavam de um lugar previsto, e nao de uma excecao a regra.",
+   "status": "implementado",
+   "where": "apps/api/fattech/custom_fields.py e schemas.py",
+   "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
+  },
+  {
    "id": "fattech:lead:menor-carga",
    "label": "Distribuicao por menor carga, nao por ponteiro rotativo",
    "family": "engineering_pattern",
@@ -637,6 +715,19 @@
    "status": "aplicavel",
    "where": "apps/api/fattech/main.py /dashboard e services.py build_radar",
    "source": "walchat-engineering.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:merge:destrutivo-declarado",
+   "label": "Mesclar e destrutivo e o sistema diz isso",
+   "family": "engineering_pattern",
+   "summary": "As duas versoes viajam na requisicao e qualquer uma desatualizada responde 409. O perdedor nao e apagado: fica excluido logicamente com merged_into e merged_at. Desfazer nao e automatico, e a tela nao promete que seja.",
+   "why": "Guardar o perdedor permite investigar uma mesclagem errada. Prometer reversao automatica sem implementa-la seria a promessa que quebra na hora em que se precisa dela.",
+   "status": "implementado",
+   "where": "apps/api/fattech/merge.py e apps/web/components/duplicates.tsx",
+   "source": "ordem-principal-onda-1.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 1
@@ -806,6 +897,19 @@
    "status": "implementado",
    "where": "apps/api/tests/test_instagram_accounts.py",
    "source": "mano-chat-fase-1.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:campos:redacao-no-lugar-errado",
+   "label": "Uma redacao que nao apaga nada parece funcionar",
+   "family": "licao",
+   "summary": "A primeira versao de ocultar() procurava corpo['data']['custom'], mas serialize() achata data no topo do corpo. A funcao rodava, nao encontrava nada e devolvia tudo.",
+   "why": "E a pior forma de um controle falhar: sem erro, sem log, e com aparencia de estar ativo. So um teste que procura o valor no corpo da resposta pega isso.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/custom_fields.py",
+   "source": "ordem-principal-onda-1.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
@@ -1319,6 +1423,30 @@
    "note": "O mesmo backfill que promove a UTM e o que aproxima a ultima interacao."
   },
   {
+   "source": "fattech:campos:redacao-no-lugar-errado",
+   "target": "fattech:campos:redacao-no-servidor",
+   "relation": "corrige",
+   "note": "O controle existia e nao agia; o teste que le o corpo da resposta revelou."
+  },
+  {
+   "source": "fattech:campos:estende-sem-furar",
+   "target": "fattech:campos:redacao-no-servidor",
+   "relation": "sustenta",
+   "note": "So se pode redigir o que tem definicao conhecida pelo servidor."
+  },
+  {
+   "source": "fattech:merge:destrutivo-declarado",
+   "target": "fattech:merge:historico-reapontado",
+   "relation": "protege",
+   "note": "Guardar o perdedor e repontar o historico sao as duas metades de uma mesclagem honesta."
+  },
+  {
+   "source": "fattech:merge:sobrevivente-manda",
+   "target": "fattech:campos:estende-sem-furar",
+   "relation": "referencia",
+   "note": "Campos personalizados do perdedor entram so onde o sobrevivente nao respondeu."
+  },
+  {
    "source": "fattech:walchat:compliance-order",
    "target": "fattech:walchat:opt-out-footer",
    "relation": "precede",
@@ -1548,14 +1676,14 @@
   }
  ],
  "counts": {
-  "nodes": 85,
-  "edges": 66,
+  "nodes": 93,
+  "edges": 70,
   "por_familia": {
-   "business_rule": 23,
-   "engineering_pattern": 15,
-   "licao": 6,
+   "business_rule": 27,
+   "engineering_pattern": 17,
+   "licao": 7,
    "licao_de_debito": 1,
-   "domain": 16,
+   "domain": 17,
    "release": 13,
    "service": 11,
    "guarantee": 0

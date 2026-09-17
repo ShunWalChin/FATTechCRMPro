@@ -44,6 +44,9 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     return path==='/integrations/instagram/accounts'&&method==='GET'?
       Array.isArray(data.items)&&data.items.every(conta)&&nonnegativeInteger(data.total):conta(data);
   }
+  if(/^\/contacts\/[^/]+\/merge$/.test(path))
+    return hasId(data)&&Number.isInteger(data.version)&&isObject(data.merge)&&
+      Array.isArray((data.merge as Record<string,unknown>).inherited_fields);
   if(method==='DELETE')return path.startsWith('/auth/sessions/')||path.startsWith('/api-keys/')?data.revoked===true:data.deleted===true;
   if(method!=='GET') {
     if(path==='/auth/logout'||path==='/auth/password'||/^\/team\/[^/]+\/password$/.test(path))return data.ok===true;
@@ -64,6 +67,10 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
   if(/^\/crm\/leads\/[^/]+\/score$/.test(path))
     return hasId(data)&&typeof data.explained==='boolean'&&nonnegativeInteger(data.score)&&
       (data.breakdown===null||(isObject(data.breakdown)&&Array.isArray(data.breakdown.criteria)));
+  // Grupos de duplicata nao sao registros: cada um carrega a chave que casou e os candidatos.
+  if(path==='/contacts/duplicates')
+    return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&
+      data.items.every(g=>isObject(g)&&nonemptyString(g.survivor_id)&&Array.isArray(g.records)&&g.records.every(hasId));
   if(path==='/crm/leads')
     return Array.isArray(data.items)&&data.items.every(hasId)&&nonnegativeInteger(data.total)&&
       isObject(data.summary)&&(data.rules===null||isObject(data.rules));

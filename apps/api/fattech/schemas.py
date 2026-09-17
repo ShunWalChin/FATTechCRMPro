@@ -69,6 +69,7 @@ class Contact(StrictModel):
     utm_campaign: str = Field(default="", max_length=200)
     utm_content: str = Field(default="", max_length=200)
     utm_term: str = Field(default="", max_length=200)
+    custom: dict = Field(default_factory=dict)
 
 
 class Company(StrictModel):
@@ -80,6 +81,7 @@ class Company(StrictModel):
     document: str = Field(default="", max_length=40)
     status: Literal["active", "inactive", "prospect"] = "active"
     notes: Text = ""
+    custom: dict = Field(default_factory=dict)
 
 
 class PipelineStage(StrictModel):
@@ -170,6 +172,7 @@ class Deal(StrictModel):
     owner_id: Identifier | None = None
     lost_reason: str = Field(default="", max_length=500)
     notes: Text = ""
+    custom: dict = Field(default_factory=dict)
 
 
 class Task(StrictModel):
@@ -269,6 +272,7 @@ class Project(StrictModel):
     budget_cents: Cents = 0
     due_date: DateText | None = None
     progress: int = Field(default=0, ge=0, le=100)
+    custom: dict = Field(default_factory=dict)
 
 
 class Invoice(StrictModel):
@@ -334,11 +338,62 @@ class LeadRules(StrictModel):
         return self
 
 
+class CustomFieldRule(StrictModel):
+    """Validacao declarada pela organizacao. Vazia significa sem restricao, nao restricao zero."""
+    minimum: float | None = None
+    maximum: float | None = None
+    max_length: int | None = Field(default=None, strict=True, ge=1, le=20000)
+    pattern: str = Field(default="", max_length=200)
+
+    @model_validator(mode="after")
+    def validate_range(self):
+        if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
+            raise ValueError("O mínimo precisa ser menor ou igual ao máximo")
+        if self.pattern:
+            import re as _re
+            try:
+                _re.compile(self.pattern)
+            except _re.error as erro:
+                raise ValueError("Expressão regular inválida") from erro
+        return self
+
+
+class CustomField(StrictModel):
+    """Campo proprio da organizacao. A chave e imutavel depois de criada porque ela e o nome
+    sob o qual os valores ja gravados vivem: renomeá-la orfanaria todo dado existente."""
+    entity: Literal["contacts", "companies", "deals", "projects"]
+    key: Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, max_length=40,
+                                          pattern=r"^[a-z][a-z0-9_]{0,39}$")]
+    label: Name
+    type: Literal["text", "textarea", "number", "money", "date", "select", "multiselect",
+                  "checkbox", "email", "url", "phone"]
+    required: bool = False
+    options: list[Name] = Field(default_factory=list, max_length=60)
+    help: Text = ""
+    position: int = Field(default=0, strict=True, ge=0, le=999)
+    # Visibilidade e edicao sao decididas no servidor. Esconder so na tela seria enfeite, nao regra.
+    visibility: Literal["all", "admin"] = "all"
+    editable_by: Literal["all", "admin"] = "all"
+    status: Literal["active", "inactive"] = "active"
+    validation: CustomFieldRule = Field(default_factory=CustomFieldRule)
+
+    @model_validator(mode="after")
+    def validate_options(self):
+        if self.type in ("select", "multiselect") and not self.options:
+            raise ValueError("Um campo de escolha precisa de pelo menos uma opção")
+        if self.type not in ("select", "multiselect") and self.options:
+            raise ValueError("Somente campos de escolha aceitam opções")
+        rotulos = [opcao.strip().lower() for opcao in self.options]
+        if len(rotulos) != len(set(rotulos)):
+            raise ValueError("Cada opção precisa ser distinta")
+        return self
+
+
 RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "deals": Deal, "tasks": Task,
              "conversations": Conversation, "messages": Message, "campaigns": Campaign,
              "automations": Automation, "knowledge": Knowledge, "approvals": Approval,
              "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product,
-             "lead_rules": LeadRules}
+             "lead_rules": LeadRules, "custom_fields": CustomField}
 
 
 class ContactImport(StrictModel):

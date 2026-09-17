@@ -422,7 +422,12 @@ def marcar_interacao(db, tenant_id, contact_id, *, por_pessoa):
                .values(data=data))
 
 
-def create_record(db, tenant_id, actor_id, kind, payload):
+def aplicar_personalizados(db, tenant_id, kind, enviados, anteriores, role, *, exigir):
+    from .custom_fields import aplicar
+    return aplicar(db, tenant_id, kind, enviados, anteriores, role, exigir=exigir)
+
+
+def create_record(db, tenant_id, actor_id, kind, payload, role=""):
     if kind == "pipelines":
         lock_pipeline_configuration(db, tenant_id)
     if kind == "contacts":
@@ -434,6 +439,10 @@ def create_record(db, tenant_id, actor_id, kind, payload):
         data = pontuar_contato(db, tenant_id, data, alterou_score=bool(payload.get("score")))
         if not data.get("owner_id"):
             data["owner_id"] = distribuir_lead(db, tenant_id, regras_de_lead(db, tenant_id))
+    # Obrigatorios so valem quando ha uma pessoa escrevendo: a captura publica nao conhece os
+    # campos proprios da organizacao, e recusar o lead por isso perderia o lead.
+    data["custom"] = aplicar_personalizados(db, tenant_id, kind, data.get("custom"), None, role,
+                                            exigir=actor_id is not None)
     validate_relations(db, tenant_id, data)
     if kind == "automations":
         validate_flow(data)
@@ -441,6 +450,10 @@ def create_record(db, tenant_id, actor_id, kind, payload):
         apply_deal_rules(db, tenant_id, data, "probability" in payload)
         if not data.get("position"):
             data["position"] = next_position(db, tenant_id, data["pipeline_id"], data["stage"])
+    if kind == "custom_fields":
+        from .custom_fields import chave_duplicada
+        if chave_duplicada(db, tenant_id, data):
+            raise HTTPException(409, f"Já existe um campo com a chave {data['key']} em {data['entity']}")
     if kind == "approvals":
         data.update(requested_by=actor_id, expires_at=(now() + timedelta(hours=24)).isoformat())
     record = Record(tenant_id=tenant_id, kind=kind, data=data)
@@ -582,6 +595,11 @@ def update_record(db, principal, kind, record_id, payload):
         ensure_unique_contact(db, principal.tenant_id, data, record_id)
         data = pontuar_contato(db, principal.tenant_id, data,
                                alterou_score="score" in changes and changes["score"] != record.data.get("score"))
+    data["custom"] = aplicar_personalizados(db, principal.tenant_id, kind, changes.get("custom"),
+                                            record.data.get("custom"),
+                                            # Principal sem papel declarado vale como nao administrador:
+                                            # falhar fechado e o padrao seguro para permissao de campo.
+                                            getattr(principal, "role", ""), exigir=True)
     validate_relations(db, principal.tenant_id, data)
     if kind == "automations":
         validate_flow(data)
@@ -591,6 +609,13 @@ def update_record(db, principal, kind, record_id, payload):
                          record.data.get("pipeline_id"), record.data.get("lost_reason"), before=record.data)
     if kind == "pipelines":
         guard_stage_removal(db, principal.tenant_id, record_id, record.data["stages"], data["stages"])
+    if kind == "custom_fields":
+        from .custom_fields import chave_duplicada
+        if data["key"] != record.data.get("key") or data["entity"] != record.data.get("entity"):
+            # A chave e o nome sob o qual os valores ja gravados vivem; troca-la os orfanaria.
+            raise HTTPException(409, "A chave e a entidade de um campo personalizado não podem mudar")
+        if chave_duplicada(db, principal.tenant_id, data, excluindo=record_id):
+            raise HTTPException(409, f"Já existe um campo com a chave {data['key']}")
     details = {"version": version + 1, "fields": sorted(changes)}
     if kind == "deals":
         details.update(previous_outcome=record.data.get("outcome"), outcome=data["outcome"],
@@ -613,7 +638,10 @@ def delete_record(db, principal, kind, record_id, version):
         lock_pipeline_configuration(db, principal.tenant_id)
     if kind == "contacts":
         lock_contacts(db, principal.tenant_id)
-    get_record(db, principal.tenant_id, kind, record_id, lock=True)
+    alvo = get_record(db, principal.tenant_id, kind, record_id, lock=True)
+    if kind == "custom_fields":
+        from .custom_fields import guardar_remocao
+        guardar_remocao(db, principal.tenant_id, alvo)
     # Prevent dangling relationships rather than silently hiding parent records.
     for field, related_kind in {**RELATIONS, **SHARED_RELATIONS}.items():
         if related_kind == kind:

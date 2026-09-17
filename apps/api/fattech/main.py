@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
-from .models import ApiKey, Audit, Idempotency, LoginSession, Outbox, Record, Tenant, User, now, uid
+from .models import ApiKey, Audit, Idempotency, KnowledgeChunk, LoginSession, Outbox, Record, Tenant, User, now, uid
 from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
                       Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
@@ -630,6 +630,60 @@ def create_app(settings: Settings | None = None, engine=None):
         principal.require("knowledge:read")
         return knowledge_graph
 
+    @app.get("/api/v1/knowledge/search")
+    def knowledge_search(q: str = Query(..., min_length=2, max_length=500), limit: int = Query(10, ge=1, le=50),
+                         principal=Depends(require_auth), db=Depends(get_db)):
+        """Deterministic first-stage retrieval over CRM knowledge and the curated graph.
+
+        This is intentionally provider-neutral: it gives the future RAG adapter a stable, tenant-scoped
+        contract and citations before embeddings or an external NVIDIA deployment are enabled.
+        """
+        principal.require("knowledge:read")
+        terms = {part.casefold() for part in q.split() if len(part) > 1}
+        candidates = []
+        for record in db.scalars(select(Record).where(Record.tenant_id == principal.tenant_id,
+                                                       Record.kind == "knowledge", Record.deleted.is_(False))):
+            data = record.data
+            text_value = " ".join(str(data.get(key, "")) for key in ("title", "content", "category", "tags", "source"))
+            score = sum(text_value.casefold().count(term) for term in terms)
+            if score:
+                candidates.append({"id": record.id, "kind": "knowledge", "title": data.get("title", ""),
+                                   "text": data.get("content", ""), "source": data.get("source", ""),
+                                   "score": score, "citation": {"kind": "knowledge", "id": record.id}})
+        for node in knowledge_graph.get("nodes", []):
+            text_value = " ".join(str(node.get(key, "")) for key in ("label", "summary", "why", "where", "source"))
+            score = sum(text_value.casefold().count(term) for term in terms)
+            if score:
+                candidates.append({"id": node.get("id"), "kind": "graph", "title": node.get("label", ""),
+                                   "text": node.get("summary", ""), "source": node.get("source", ""),
+                                   "score": score, "citation": {"kind": "graph", "id": node.get("id")}})
+        candidates.sort(key=lambda item: (-item["score"], item["title"]))
+        return {"query": q, "items": candidates[:limit], "total": len(candidates), "provider": "lexical"}
+
+    @app.post("/api/v1/knowledge/{record_id}/index")
+    def index_knowledge(record_id: str, principal=Depends(require_auth), db=Depends(get_db)):
+        """Create deterministic retrieval chunks; embeddings are added by a provider adapter later."""
+        principal.require("knowledge:write")
+        record = get_record(db, principal.tenant_id, "knowledge", record_id, lock=True)
+        content = str(record.data.get("content", "")).strip()
+        if not content:
+            raise HTTPException(422, "Documento sem conteúdo para indexação")
+        db.query(KnowledgeChunk).filter(KnowledgeChunk.tenant_id == principal.tenant_id,
+                                        KnowledgeChunk.knowledge_id == record_id).delete(synchronize_session=False)
+        words, chunks = content.split(), []
+        for start in range(0, len(words), 180):
+            chunk = " ".join(words[start:start + 180])
+            chunks.append(KnowledgeChunk(tenant_id=principal.tenant_id, knowledge_id=record_id,
+                chunk_index=len(chunks), content=chunk,
+                meta={"title": record.data.get("title", ""), "category": record.data.get("category", "general"),
+                          "source": record.data.get("source", "")},
+                content_hash=hashlib.sha256(chunk.encode("utf-8")).hexdigest()))
+        db.add_all(chunks)
+        audit_event(db, principal.tenant_id, principal.actor_id, "knowledge.indexed", record_id,
+                    {"chunks": len(chunks), "provider": "lexical"})
+        db.commit()
+        return {"knowledge_id": record_id, "chunks": len(chunks), "provider": "lexical"}
+
     @app.get("/api/v1/notifications")
     def notifications(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("dashboard:read")
@@ -686,6 +740,9 @@ def create_app(settings: Settings | None = None, engine=None):
     app.include_router(instagram_router)
     from .lead_queue import router as lead_router
     app.include_router(lead_router)
+    # Antes do laco de RESOURCES: /contacts/duplicates precisa vencer /contacts/{record_id}.
+    from .merge import register_merge
+    register_merge(app)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)
@@ -741,6 +798,12 @@ def key_dict(key):
             "revoked": key.revoked, "expires_at": key.expires_at.isoformat()}
 
 
+def redact(db, principal, kind, corpo):
+    """Campo restrito nao sai da API para quem nao pode ve-lo. Esconder so na tela seria enfeite."""
+    from .custom_fields import ocultar
+    return ocultar(db, principal.tenant_id, kind, corpo, principal.role)
+
+
 def register_resource(app, kind, schema):
     def listing(principal=Depends(require_auth), db=Depends(get_db), q: str = Query("", max_length=200),
                 status: str | None = None, stage: str | None = None, contact_id: str | None = None,
@@ -748,11 +811,12 @@ def register_resource(app, kind, schema):
                 pipeline_id: str | None = None,
                 limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
         principal.require(f"{kind}:read")
-        return list_records(db, principal.tenant_id, kind, locals())
+        pagina = list_records(db, principal.tenant_id, kind, locals())
+        return {**pagina, "items": [redact(db, principal, kind, item) for item in pagina["items"]]}
 
     def retrieve(record_id: str, principal=Depends(require_auth), db=Depends(get_db)):
         principal.require(f"{kind}:read")
-        return serialize(get_record(db, principal.tenant_id, kind, record_id))
+        return redact(db, principal, kind, serialize(get_record(db, principal.tenant_id, kind, record_id)))
 
     def create(payload: schema, response: Response,
                idempotency_key: str | None = Header(default=None, alias="Idempotency-Key",
@@ -776,8 +840,8 @@ def register_resource(app, kind, schema):
                 return result
         if kind == "deals" and "probability" not in payload.model_fields_set:
             data = {name: value for name, value in data.items() if name != "probability"}
-        record = create_record(db, principal.tenant_id, principal.actor_id, kind, data)
-        result = serialize(record)
+        record = create_record(db, principal.tenant_id, principal.actor_id, kind, data, role=principal.role)
+        result = redact(db, principal, kind, serialize(record))
         if receipt is not None:
             receipt.response = result
         db.commit()
@@ -789,7 +853,7 @@ def register_resource(app, kind, schema):
             principal.admin()
         record = update_record(db, principal, kind, record_id, payload)
         db.commit()
-        return serialize(record)
+        return redact(db, principal, kind, serialize(record))
 
     def remove(record_id: str, version: int = Query(..., ge=1), principal=Depends(require_auth), db=Depends(get_db)):
         principal.require(f"{kind}:write")

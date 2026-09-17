@@ -97,6 +97,24 @@ class Idempotency(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+class KnowledgeChunk(Base):
+    """Versioned retrieval units; embeddings remain provider-neutral until a vector backend is enabled."""
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (UniqueConstraint("tenant_id", "knowledge_id", "chunk_index", name="uq_knowledge_chunk"),
+                      Index("ix_knowledge_chunks_tenant", "tenant_id", "knowledge_id"))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    tenant_id: Mapped[str] = mapped_column(ForeignKey("tenants.id"), index=True)
+    knowledge_id: Mapped[str] = mapped_column(String(36), index=True)
+    chunk_index: Mapped[int] = mapped_column(Integer)
+    content: Mapped[str] = mapped_column(Text)
+    # `metadata` e reservado pela API declarativa do SQLAlchemy e impedia o pacote inteiro de
+    # importar. O atributo passa a ser `meta`; a coluna no banco continua chamando-se metadata.
+    meta: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    embedding: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 class ApiKey(Base):
     __tablename__ = "api_keys"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)

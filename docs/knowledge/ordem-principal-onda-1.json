@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "subject": "Ordem principal de engenharia — Onda 1: fundacao comercial",
   "reviewed_at": "2026-09-17",
-  "provenance": "Medicao de 334 capacidades da ordem contra o sistema real (scripts/ordem-principal-matriz.py) seguida da implementacao do nucleo de leads. Testes contra PostgreSQL real.",
+  "provenance": "Medicao de 334 capacidades da ordem contra o sistema real (scripts/ordem-principal-matriz.py) seguida da implementacao do nucleo de leads. Testes contra PostgreSQL real. Itens 6 e 7 da onda concluidos: campos personalizados e mesclagem de duplicatas.",
   "merge_note": "Nos semanticos usam este artefato como source_file para que a extracao AST nao os substitua.",
   "nodes": [
     {
@@ -125,6 +125,83 @@
       "rule": "last_interaction_at dos contatos antigos recebe updated_at. O instante exato da ultima conversa nunca foi gravado, e a migracao diz isso em vez de apresentar a aproximacao como dado.",
       "por_que_importa": "E a mesma regra do relatorio que exclui negocios sem data confiavel de fechamento: inventar um instante seria pior do que usar o que existe e declarar o que e.",
       "onde_no_fattech": "apps/api/fattech/migrate.py"
+    },
+    {
+      "id": "fattech:campos:estende-sem-furar",
+      "label": "Campo personalizado estende o esquema estrito, nao o fura",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/custom_fields.py",
+      "status": "implementado",
+      "rule": "O valor chega numa chave declarada, data.custom, e e conferido contra as definicoes que a organizacao criou. Chave sem definicao continua sendo recusada com 422.",
+      "por_que_importa": "extra=forbid e o que impede o CRM de virar um deposito de chaves soltas. Campos proprios precisavam de um lugar previsto, e nao de uma excecao a regra.",
+      "onde_no_fattech": "apps/api/fattech/custom_fields.py e schemas.py"
+    },
+    {
+      "id": "fattech:campos:redacao-no-servidor",
+      "label": "Campo restrito nao sai da API, nao apenas da tela",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/custom_fields.py ocultar",
+      "status": "implementado",
+      "rule": "visibility=admin remove o valor do corpo da resposta para quem nao e administrador; editable_by=admin recusa a edicao com 403. A redacao roda onde ha principal, nas rotas de recurso.",
+      "por_que_importa": "Esconder so no navegador deixa o valor viajando na resposta, e a ordem proibe regra implementada somente no frontend. O teste procura o valor no texto da resposta, nao na tela.",
+      "onde_no_fattech": "apps/api/fattech/main.py redact() e custom_fields.py"
+    },
+    {
+      "id": "fattech:campos:redacao-no-lugar-errado",
+      "label": "Uma redacao que nao apaga nada parece funcionar",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/custom_fields.py",
+      "status": "corrigido",
+      "rule": "A primeira versao de ocultar() procurava corpo['data']['custom'], mas serialize() achata data no topo do corpo. A funcao rodava, nao encontrava nada e devolvia tudo.",
+      "por_que_importa": "E a pior forma de um controle falhar: sem erro, sem log, e com aparencia de estar ativo. So um teste que procura o valor no corpo da resposta pega isso.",
+      "onde_no_fattech": "apps/api/fattech/custom_fields.py"
+    },
+    {
+      "id": "fattech:campos:chave-imutavel",
+      "label": "A chave de um campo nao muda e uma definicao em uso nao some",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/services.py",
+      "status": "implementado",
+      "rule": "Trocar key ou entity responde 409. Excluir uma definicao que ja tem valor gravado responde 409 com a contagem, e sugere inativar.",
+      "por_que_importa": "A chave e o nome sob o qual os valores gravados vivem: renomea-la orfanaria todo dado existente, e apagar a definicao deixaria respostas sem pergunta.",
+      "onde_no_fattech": "apps/api/fattech/services.py e custom_fields.py"
+    },
+    {
+      "id": "fattech:merge:sobrevivente-manda",
+      "label": "Na mesclagem o sobrevivente manda; o perdedor so preenche buraco",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/merge.py herdar",
+      "status": "implementado",
+      "rule": "Campo preenchido no sobrevivente nao e tocado. Vazio recebe o do perdedor. Listas viram uniao sem repetir, notas sao concatenadas com marca, e campos personalizados entram so onde o sobrevivente nao respondeu.",
+      "por_que_importa": "Um merge que sobrescreve o registro bom com o ruim e pior do que a duplicata que ele resolveu.",
+      "onde_no_fattech": "apps/api/fattech/merge.py"
+    },
+    {
+      "id": "fattech:merge:destrutivo-declarado",
+      "label": "Mesclar e destrutivo e o sistema diz isso",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/merge.py mesclar",
+      "status": "implementado",
+      "rule": "As duas versoes viajam na requisicao e qualquer uma desatualizada responde 409. O perdedor nao e apagado: fica excluido logicamente com merged_into e merged_at. Desfazer nao e automatico, e a tela nao promete que seja.",
+      "por_que_importa": "Guardar o perdedor permite investigar uma mesclagem errada. Prometer reversao automatica sem implementa-la seria a promessa que quebra na hora em que se precisa dela.",
+      "onde_no_fattech": "apps/api/fattech/merge.py e apps/web/components/duplicates.tsx"
+    },
+    {
+      "id": "fattech:merge:historico-reapontado",
+      "label": "Mesclar sem repontar o historico perde o historico",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/merge.py REFERENCIAS",
+      "status": "implementado",
+      "rule": "Oportunidades, tarefas, conversas, faturas e atividades do contato absorvido passam a apontar para o sobrevivente, e a auditoria registra quantos de cada.",
+      "por_que_importa": "Resolver a duplicata perdendo a oportunidade em aberto seria trocar um problema visivel por um invisivel.",
+      "onde_no_fattech": "apps/api/fattech/merge.py"
     }
   ],
   "edges": [
@@ -195,6 +272,46 @@
       "relation": "acompanha",
       "label": "acompanha",
       "action": "O mesmo backfill que promove a UTM e o que aproxima a ultima interacao.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:redacao:verifica:campos",
+      "source": "fattech:campos:redacao-no-lugar-errado",
+      "target": "fattech:campos:redacao-no-servidor",
+      "relation": "corrige",
+      "label": "corrige",
+      "action": "O controle existia e nao agia; o teste que le o corpo da resposta revelou.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:campos:sustenta:redacao",
+      "source": "fattech:campos:estende-sem-furar",
+      "target": "fattech:campos:redacao-no-servidor",
+      "relation": "sustenta",
+      "label": "sustenta",
+      "action": "So se pode redigir o que tem definicao conhecida pelo servidor.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:merge:protege:historico",
+      "source": "fattech:merge:destrutivo-declarado",
+      "target": "fattech:merge:historico-reapontado",
+      "relation": "protege",
+      "label": "protege",
+      "action": "Guardar o perdedor e repontar o historico sao as duas metades de uma mesclagem honesta.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:merge:usa:campos",
+      "source": "fattech:merge:sobrevivente-manda",
+      "target": "fattech:campos:estende-sem-furar",
+      "relation": "referencia",
+      "label": "referencia",
+      "action": "Campos personalizados do perdedor entram so onde o sobrevivente nao respondeu.",
       "source_file": "docs/knowledge/ordem-principal-onda-1.json",
       "confidence": "DOCUMENTED"
     }
