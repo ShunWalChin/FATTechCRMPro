@@ -2,6 +2,7 @@
 import argparse
 import os
 import re
+import base64
 import secrets
 from pathlib import Path
 
@@ -19,6 +20,9 @@ values = {
     "POSTGRES_PASSWORD": secrets.token_hex(32),
     "FATTECH_DB_APP_PASSWORD": secrets.token_hex(32),
     "FATTECH_WEBHOOK_SECRET": secrets.token_hex(32),
+    # Cofre das credenciais externas: 32 bytes em base64 urlsafe, gerados aqui e nunca impressos.
+    # Perder esta chave torna os tokens guardados ilegiveis -- e o que se quer de um cofre.
+    "FATTECH_CREDENTIAL_KEY": base64.urlsafe_b64encode(secrets.token_bytes(32)).decode(),
     "FATTECH_ALLOWED_ORIGINS": args.origin,
     "FATTECH_SITE_URL": args.origin,
     "FATTECH_PUBLIC_TENANT_SLUG": "fattech",
@@ -29,6 +33,10 @@ values = {
     "API_PORT": "4321",
     "FATTECH_N8N_OUTBOUND_URL": "",
     "FATTECH_N8N_OUTBOUND_TOKEN": "",
+    # Preenchidos pelo dono no painel da Meta; vazios, o webhook do Instagram responde 503.
+    "FATTECH_META_APP_ID": "",
+    "FATTECH_META_APP_SECRET": "",
+    "FATTECH_META_VERIFY_TOKEN": secrets.token_urlsafe(24),
 }
 # O_EXCL protects credentials from accidental replacement on a second run.
 fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

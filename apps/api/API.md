@@ -1,4 +1,4 @@
-# FAT Tech API v1 · aplicação 0.5.0
+# FAT Tech API v1 · aplicação 0.5.1
 
 Base `/api/v1`, JSON UTF-8, dates ISO-8601 UTC, money integer BRL cents. Interactive typed documentation: `/api/docs`; machine contract: `/api/openapi.json`.
 
@@ -68,6 +68,29 @@ Fields (defaults omitted in examples are supplied by the server):
 | products | name (required), description, sku, price_cents=0, category=service, status=active |
 
 `GET /dashboard?pipeline_id=` returns `{contacts,open_deals,pipeline_value_cents,weighted_pipeline_cents,revenue_cents,open_tasks,open_conversations,pending_approvals,active_automations,conversion_rate,pipeline_id,pipeline_name,pipeline:[{stage,label,outcome,count,value_cents,weighted_cents}],recent_activity:[],capabilities:{...}}`. Without `pipeline_id` the tenant default funnel is used; counts are scoped to that funnel. `open_deals` and `pipeline_value_cents` cover stages whose outcome is `open`; `weighted_pipeline_cents` sums `value_cents * probability` across those stages and divides once, so the forecast is exact integer cents. `conversion_rate` is won deals over every deal in the funnel.
+
+## Instagram accounts and the credential vault
+
+`GET /integrations/instagram/accounts` returns `{items:[{id,instagram_user_id,username,label,status,version,connected_at,updated_at,token}],total}`.
+`GET|PATCH|DELETE /integrations/instagram/accounts/{id}`, `POST /integrations/instagram/accounts` and
+`POST /integrations/instagram/accounts/{id}/token` complete the set. Reading requires
+`integrations:read`; every write requires `integrations:write` **and** an administrative role.
+
+**The access token is never returned, by any endpoint, in any form.** `token` is either `null` or
+`{fingerprint,scopes,expires_at,rotated_at}`, where `fingerprint` is 16 hexadecimal characters of
+SHA-256 — enough to confirm a rotation changed the value, not enough to reconstruct it. The token is
+stored AES-256-GCM encrypted, with the key in the server environment and never in the database, and
+the additional authenticated data binds the ciphertext to `instagram:{tenant_id}:{account_id}`, so a
+row copied to another organisation fails to decrypt rather than decrypting silently.
+
+`instagram_user_id` matches `^[0-9]{1,32}$` and is unique across the whole database: a second
+attempt to connect it returns 409, whichever organisation makes it. `PATCH` and the token rotation
+require the current `version`; a mismatch returns 409. With no vault key configured, `POST` returns
+503 and writes nothing. `DELETE` returns `{deleted:true,id}` and removes the credential row.
+
+`POST /api/public/webhooks/instagram` resolves the owning organisation from `entry[].id` against
+connected accounts. An unrecognised account returns **404**, audited with the account id and without
+the body; a delivery spanning accounts of different organisations is refused the same way.
 
 ## Funnels and deal stages
 

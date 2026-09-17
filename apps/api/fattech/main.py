@@ -37,7 +37,7 @@ from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.5.1"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
@@ -73,9 +73,19 @@ def action_label(action: str) -> str:
     return action
 
 
+def integration_status(key, settings, contas_instagram):
+    """O estado vem do que existe, nao de um dicionario escrito a mao que envelhece sozinho."""
+    if key == "n8n":
+        return "available" if settings.webhook_secret else "not_configured"
+    if key == "instagram":
+        return "available" if contas_instagram else ("ready" if settings.credential_key else "not_configured")
+    return "not_configured"
+
+
 def api_scopes():
     return {f"{kind}:{op}" for kind in RESOURCES for op in ("read", "write")} | {
-        "webhooks:write", "events:read", "dashboard:read", "integrations:read", "team:read"}
+        "webhooks:write", "events:read", "dashboard:read", "integrations:read",
+        "integrations:write", "team:read"}
 
 
 COMPLIANCE_REASONS = {
@@ -119,10 +129,11 @@ def create_app(settings: Settings | None = None, engine=None):
                 unsafe = connection.execute(text("SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tableowner = current_user")).scalar_one()
                 if unsafe:
                     raise RuntimeError("API runtime must not own database tables; run migrations with a separate owner")
+                from .migrate import TENANT_TABLES
                 secured = connection.execute(text("SELECT count(*) FROM pg_class c JOIN pg_namespace n "
-                    "ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname IN "
-                    "('records','audit_log','event_outbox','idempotency_keys') AND c.relrowsecurity AND c.relforcerowsecurity")).scalar_one()
-                if secured != 4:
+                    "ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname = ANY(:tabelas) "
+                    "AND c.relrowsecurity AND c.relforcerowsecurity"), {"tabelas": list(TENANT_TABLES)}).scalar_one()
+                if secured != len(TENANT_TABLES):
                     raise RuntimeError("Tenant tables require ENABLE and FORCE ROW LEVEL SECURITY")
                 connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'" )).scalar_one()
         yield
@@ -339,11 +350,15 @@ def create_app(settings: Settings | None = None, engine=None):
                 "capabilities": CAPABILITIES}
 
     @app.get("/api/v1/integrations")
-    def integrations(principal=Depends(require_auth)):
+    def integrations(principal=Depends(require_auth), db=Depends(get_db)):
         principal.require("integrations:read")
+        from .models import InstagramAccount
+        conectadas = db.scalar(select(func.count()).select_from(InstagramAccount).where(
+            InstagramAccount.tenant_id == principal.tenant_id, InstagramAccount.status == "connected")) or 0
         descriptions = {"n8n": "Gateway HMAC e API com escopos disponíveis; configure seu workflow n8n",
                         "whatsapp": "Requer conta Meta e adaptador de envio homologado",
-                        "instagram": "Requer OAuth Meta e homologação",
+                        "instagram": (f"{conectadas} conta(s) conectada(s); o webhook resolve a organização pela conta"
+                                      if conectadas else "Conecte uma conta em Integrações; o token fica cifrado no servidor"),
                         "email": "Requer provedor de envio",
                         "ai": "Execução bloqueada até configurar runtime e orçamento",
                         "calendar": "Requer OAuth Google",
@@ -353,7 +368,7 @@ def create_app(settings: Settings | None = None, engine=None):
         # The scope catalogue is served from the same set the key endpoint validates against, so they cannot drift.
         scopes = sorted(api_scopes())
         return {"items": [{"id": key, "name": names.get(key, key),
-                            "status": "available" if key == "n8n" and settings.webhook_secret else "not_configured",
+                            "status": integration_status(key, settings, conectadas),
                             "description": description} for key, description in descriptions.items()],
                 "total": len(descriptions), "scopes": scopes}
 
@@ -664,6 +679,8 @@ def create_app(settings: Settings | None = None, engine=None):
     app.include_router(sales_router)
     from .work_queue import router as work_queue_router
     app.include_router(work_queue_router)
+    from .instagram_accounts import router as instagram_router
+    app.include_router(instagram_router)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

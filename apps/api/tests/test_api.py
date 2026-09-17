@@ -15,7 +15,7 @@ from fattech.main import create_app
 from fattech.migrate import UNRECORDED_LOSS, migrate
 from fattech.schemas import DEFAULT_PIPELINE, RESOURCES, Pipeline
 from fattech.services import default_pipeline
-from fattech.models import Audit, Outbox, Record, Tenant, User, now
+from fattech.models import Audit, InstagramAccount, Outbox, Record, Tenant, User, now
 from fattech.seed import bootstrap
 
 PASSWORD = "Development-Test-Only-2026!"
@@ -49,8 +49,13 @@ def post(client, kind, data):
 
 
 def test_instagram_webhook_validates_signature_and_is_idempotent(system):
-    client, _, factory, *_ = system
-    payload = {"object": "instagram", "entry": [{"id": "delivery-1", "messaging": [{"message": {"text": "oi"}}]}]}
+    client, _, factory, first_tenant, *_ = system
+    conta = "17841400000000099"
+    # Desde a fase 1 do Mano Chat a entrega so e aceita para uma conta conectada: o dono vem do banco.
+    with factory() as db:
+        db.add(InstagramAccount(tenant_id=first_tenant, instagram_user_id=conta, label="Perfil"))
+        db.commit()
+    payload = {"object": "instagram", "entry": [{"id": conta, "messaging": [{"message": {"text": "oi"}}]}]}
     raw = json.dumps(payload, separators=(",", ":")).encode()
     signature = "sha256=" + hmac.new(b"meta-test-secret", raw, hashlib.sha256).hexdigest()
     headers = {"X-Hub-Signature-256": signature, "Content-Type": "application/json"}
@@ -60,6 +65,14 @@ def test_instagram_webhook_validates_signature_and_is_idempotent(system):
     assert replay.status_code == 202 and replay.json()["duplicate"] is True
     assert client.post("/api/public/webhooks/instagram", content=raw,
                        headers={**headers, "X-Hub-Signature-256": "sha256=" + "0" * 64}).status_code == 401
+    with factory() as db:
+        assert db.query(Outbox).filter(Outbox.event_type == "instagram.webhook.received").count() == 1
+    estranha = json.dumps({"object": "instagram", "entry": [{"id": "17841400000000777"}]},
+                          separators=(",", ":")).encode()
+    assinatura = "sha256=" + hmac.new(b"meta-test-secret", estranha, hashlib.sha256).hexdigest()
+    recusada = client.post("/api/public/webhooks/instagram", content=estranha,
+                           headers={**headers, "X-Hub-Signature-256": assinatura})
+    assert recusada.status_code == 404
     with factory() as db:
         assert db.query(Outbox).filter(Outbox.event_type == "instagram.webhook.received").count() == 1
 

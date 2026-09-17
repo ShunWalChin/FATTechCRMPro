@@ -25,6 +25,13 @@ def tem_campo(kind, *nomes):
     return all(n in campos.get(kind, ()) for n in nomes)
 
 
+def tabela(nome):
+    """A tabela existe no metadata declarado, e nao num nome citado num comentario."""
+    from fattech.db import Base
+    from fattech import models  # noqa: F401 - registra o metadata
+    return nome in Base.metadata.tables
+
+
 def no_codigo(arquivo, *termos):
     texto = fonte.get(arquivo, "")
     return all(t in texto for t in termos)
@@ -34,8 +41,8 @@ def no_codigo(arquivo, *termos):
 CAPACIDADES = [
     ("Organizacoes isoladas", "workspaces", True, "tabela tenants + RLS forcada"),
     ("Papeis por membro", "workspace_members", True, "users.role: root/super_admin/admin/member/viewer"),
-    ("Conta Instagram por organizacao", "instagram_accounts", False, "AUSENTE — credenciais Meta sao globais em config.py"),
-    ("Tokens cifrados em repouso", "private.instagram_credentials", False, "AUSENTE — sem cryptography nas dependencias"),
+    ("Conta Instagram por organizacao", "instagram_accounts", tabela("instagram_accounts"), "tabela instagram_accounts, instagram_user_id unico, webhook resolve o dono"),
+    ("Tokens cifrados em repouso", "private.instagram_credentials", tabela("instagram_credentials") and no_codigo("credentials.py", "AESGCM"), "tabela instagram_credentials sob RLS, AES-256-GCM, chave fora do banco"),
     ("Contatos", "contacts", tem_campo("contacts", "name", "email", "phone", "consent"), "kind contacts"),
     ("Identidade Instagram no contato", "contacts", "instagram" in str(campos.get("contacts", "")), "AUSENTE — contato nao guarda instagram_user_id"),
     ("Etiquetas", "tags / contact_tags", tem_campo("contacts", "tags"), "contacts.tags (lista), sem catalogo proprio nem cor"),

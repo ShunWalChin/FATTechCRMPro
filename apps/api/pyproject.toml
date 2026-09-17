@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fattech-api"
-version = "0.5.0"
+version = "0.5.1"
 description = "FAT Tech CRM transactional API and durable workers"
 requires-python = ">=3.12,<3.15"
 dependencies = [
@@ -18,6 +18,7 @@ dependencies = [
   "email-validator==2.3.0",
   "httpx==0.28.1",
   "alembic==1.18.4",
+  "cryptography==46.0.5",
 ]
 
 [project.optional-dependencies]

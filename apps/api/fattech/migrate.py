@@ -10,7 +10,9 @@ from .schemas import DEFAULT_PIPELINE, DEFAULT_STAGE_HOURS
 from . import models  # noqa: F401 - register metadata
 
 UNRECORDED_LOSS = "Motivo não registrado antes da migração 0002."
-TENANT_TABLES = ("records", "audit_log", "event_outbox", "idempotency_keys")
+# instagram_accounts fica fora de proposito: o webhook resolve o tenant antes de haver contexto
+# de tenant, entao a consulta que descobre o dono nao pode estar sujeita a politica que usa o dono.
+TENANT_TABLES = ("records", "audit_log", "event_outbox", "idempotency_keys", "instagram_credentials")
 RUNTIME_TABLES = tuple(Base.metadata.tables)
 
 
@@ -58,6 +60,20 @@ def migrate(engine, app_password: str = ""):
         if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0003'")).scalar():
             normalize_stage_durations(connection, postgres)
             connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0003')"))
+        if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0004'")).scalar():
+            assert_instagram_tables(connection)
+            connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0004')"))
+
+
+def assert_instagram_tables(connection):
+    """0004: contas Instagram por organizacao e o cofre de tokens.
+
+    Puramente aditiva -- create_all acima ja criou as duas tabelas, e nenhuma linha existente muda.
+    A migracao marca a versao e confere o que create_all deveria ter feito, porque uma marca sem
+    verificacao registra intencao, nao resultado.
+    """
+    for tabela in ("instagram_accounts", "instagram_credentials"):
+        connection.execute(text(f"SELECT count(*) FROM {tabela}")).scalar_one()
 
 
 def normalize_stage_durations(connection, postgres):
@@ -115,7 +131,7 @@ def main():
     engine = make_engine(settings.database_url)
     try:
         migrate(engine, os.environ.get("FATTECH_DB_APP_PASSWORD", ""))
-        print("Schema 0003 ready; tenant RLS enforced and every funnel declares its stage durations.")
+        print("Schema 0004 ready; Instagram accounts per tenant and the credential vault exist.")
     finally:
         engine.dispose()
 

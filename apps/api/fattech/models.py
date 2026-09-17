@@ -116,3 +116,38 @@ class RateLimit(Base):
     bucket: Mapped[str] = mapped_column(String(100), primary_key=True)
     window: Mapped[int] = mapped_column(Integer)
     count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class InstagramAccount(Base):
+    """A conta Instagram de uma organizacao.
+
+    Tabela real, e nao um kind em records, por dois motivos que so o banco resolve: o
+    webhook precisa achar o tenant antes de existir contexto de tenant, e duas
+    organizacoes nao podem reivindicar a mesma conta -- unicidade que so uma restricao
+    garante. Fica fora de TENANT_TABLES pela mesma razao que users fica: a resolucao e
+    anterior ao contexto. O escopo por tenant e aplicado em cada consulta.
+    """
+    __tablename__ = "instagram_accounts"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    tenant_id: Mapped[str] = mapped_column(ForeignKey("tenants.id"), index=True)
+    instagram_user_id: Mapped[str] = mapped_column(String(64), unique=True)
+    username: Mapped[str] = mapped_column(String(120), default="")
+    label: Mapped[str] = mapped_column(String(200), default="")
+    status: Mapped[str] = mapped_column(String(20), default="connected")
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    connected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class InstagramCredential(Base):
+    """O token, cifrado. Nunca e um kind: todo kind ganha GET /api/v1/{kind} que serializa data inteiro."""
+    __tablename__ = "instagram_credentials"
+    account_id: Mapped[str] = mapped_column(ForeignKey("instagram_accounts.id", ondelete="CASCADE"), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(ForeignKey("tenants.id"), index=True)
+    sealed_token: Mapped[str] = mapped_column(Text)
+    fingerprint: Mapped[str] = mapped_column(String(32))
+    scopes: Mapped[list] = mapped_column(JSON, default=list)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rotated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

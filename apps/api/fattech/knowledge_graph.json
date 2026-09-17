@@ -54,7 +54,7 @@
    "source": "mano-chat-diagnostico.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
-   "degree": 1
+   "degree": 2
   },
   {
    "id": "fattech:business:lead-capture",
@@ -94,6 +94,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
+  },
+  {
+   "id": "fattech:mano:conta-desconhecida-recusada",
+   "label": "Evento de conta desconhecida e recusado sem guardar o corpo",
+   "family": "business_rule",
+   "summary": "O webhook resolve o dono pelo id em entry[].id e responde 404 ao que nao reconhece. A recusa e auditada com o id da conta e sem o conteudo. Entrega que mistura organizacoes tambem e recusada.",
+   "why": "Guardar mensagem de terceiro que ninguem no sistema possui e pior sob a LGPD do que descarta-la. Escolher uma organizacao numa entrega ambigua seria decidir no lugar do dono.",
+   "status": "implementado",
+   "where": "apps/api/fattech/instagram_webhook.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
   },
   {
    "id": "fattech:business:closing-authority",
@@ -250,6 +263,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
+  },
+  {
+   "id": "fattech:mano:conta-por-organizacao",
+   "label": "Uma conta Instagram pertence a uma unica organizacao",
+   "family": "business_rule",
+   "summary": "instagram_user_id e UNIQUE no banco inteiro. Conectar uma conta ja conectada responde 409, seja na mesma organizacao ou em outra.",
+   "why": "E esta restricao que deixa o webhook resolver o dono deterministicamente. Sem ela, duas organizacoes poderiam reivindicar a mesma conta e a entrega nao teria destino unico.",
+   "status": "implementado",
+   "where": "apps/api/fattech/models.py e instagram_accounts.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 4
   },
   {
    "id": "fattech:business:saved-views",
@@ -486,6 +512,19 @@
    "degree": 0
   },
   {
+   "id": "fattech:mano:impressao-digital",
+   "label": "Do token so se ve a impressao digital",
+   "family": "engineering_pattern",
+   "summary": "Dezesseis caracteres de SHA-256 aparecem na tela e na auditoria da rotacao, com a impressao anterior e a atual. O token nunca aparece em resposta, log, auditoria ou documentacao.",
+   "why": "Prova que uma rotacao trocou o valor sem revelar parte alguma dele. Uma operacao que nao se consegue conferir acaba sendo repetida no escuro.",
+   "status": "implementado",
+   "where": "apps/api/fattech/instagram_accounts.py e apps/web/lib/api.ts",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:exactly-one-destination",
    "label": "Exatamente um destino, garantido pelo banco",
    "family": "engineering_pattern",
@@ -512,6 +551,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:mano:rls-assimetrica",
+   "label": "O diretorio de contas fica fora da RLS de proposito",
+   "family": "engineering_pattern",
+   "summary": "instagram_credentials entra em TENANT_TABLES com RLS forcada; instagram_accounts nao entra. A tabela que responde de quem e uma conta nao pode estar sob a politica que usa o dono, ou a pergunta nunca teria resposta.",
+   "why": "E a mesma classe de users, que tambem tem tenant_id sem RLS. O que carrega segredo fica sob politica; o que resolve roteamento fica legivel e e filtrado pela aplicacao em toda consulta.",
+   "status": "implementado",
+   "where": "apps/api/fattech/migrate.py e tests/test_postgres.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:cross-cutting-hubs",
    "label": "Preocupacoes transversais com um dono unico",
    "family": "engineering_pattern",
@@ -523,6 +575,19 @@
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 0
+  },
+  {
+   "id": "fattech:mano:rollback-por-chave-ausente",
+   "label": "Rollback da fase 1 e uma variavel ausente",
+   "family": "engineering_pattern",
+   "summary": "Sem FATTECH_CREDENTIAL_KEY conectar responde 503 e nada e gravado. Sem conta conectada o webhook recusa e o CRM opera como na 0.5.0. As duas tabelas sao aditivas.",
+   "why": "Rollback que depende de republicar e lento na hora em que se precisa dele. Este e imediato e nao toca em nenhuma linha existente.",
+   "status": "implementado",
+   "where": "infra/compose.yml e apps/api/fattech/config.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
   },
   {
    "id": "fattech:mano:paradigma-hibrido",
@@ -538,6 +603,19 @@
    "degree": 2
   },
   {
+   "id": "fattech:mano:cofre-de-credenciais",
+   "label": "Token cifrado com a chave fora do banco",
+   "family": "engineering_pattern",
+   "summary": "AES-256-GCM com chave de 32 bytes em FATTECH_CREDENTIAL_KEY, no /etc/fattechcrmpro.env 0600. O dado autenticado e instagram:{tenant_id}:{account_id}, entao uma linha copiada para outra organizacao falha ao decifrar em vez de decifrar em silencio.",
+   "why": "Um dump do banco sozinho nao devolve token nenhum. Sem a chave o sistema recusa conectar em vez de guardar em claro.",
+   "status": "implementado",
+   "where": "apps/api/fattech/credentials.py e infra/provision_env.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 3
+  },
+  {
    "id": "fattech:mano:token-vaza-pela-api",
    "label": "Token guardado como kind aparece na API",
    "family": "engineering_pattern",
@@ -548,7 +626,7 @@
    "source": "mano-chat-diagnostico.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
-   "degree": 1
+   "degree": 2
   },
   {
    "id": "fattech:mano:duplicacao",
@@ -559,6 +637,32 @@
    "status": "diagnosticado",
    "where": "apps/api/fattech/compliance.py e worker.py",
    "source": "mano-chat-diagnostico.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:mano:varredura-de-bytes",
+   "label": "Procurar o segredo em todos os bytes do banco",
+   "family": "licao",
+   "summary": "Depois de conectar e rotacionar, o teste le o arquivo do banco inteiro e exige que nenhum dos dois tokens apareca em claro.",
+   "why": "Uma asercao sobre o corpo da resposta prova que aquela rota nao vazou. A varredura prova que nenhuma escreveu o segredo em lugar nenhum, inclusive colunas que alguem venha a somar depois.",
+   "status": "implementado",
+   "where": "apps/api/tests/test_instagram_accounts.py",
+   "source": "mano-chat-fase-1.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:mano:webhook-sem-contexto",
+   "label": "Webhook sem set_tenant era um defeito latente",
+   "family": "licao",
+   "summary": "A sessao do webhook nasce sem dono porque a autenticacao e a assinatura HMAC, nao um login. Sem set_tenant, sob RLS forcada, idempotencia, outbox e auditoria seriam recusadas pela politica.",
+   "why": "O defeito so apareceria no primeiro evento real da Meta, porque em SQLite nao ha RLS e em producao o Instagram nunca esteve ligado. Toda entrada que nao vem de um login precisa definir o contexto explicitamente.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/instagram_webhook.py",
+   "source": "mano-chat-fase-1.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
@@ -727,6 +831,19 @@
    "why": "",
    "status": "publicado",
    "where": "docs/releases/2026-09-14-versao-0.5.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-16-versao-0.5.1",
+   "label": "Versão 0.5.1 — cada organização com a sua conta do Instagram",
+   "family": "release",
+   "summary": "A Fase 1 da incorporação do Mano Chat: a associação entre uma conta Instagram e uma organização, que",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-16-versao-0.5.1.md",
    "source": "releases",
    "familyLabel": "Publicação",
    "tone": "#ff2d78",
@@ -956,6 +1073,54 @@
    "note": "O esquema real do Mano Chat e a referencia de forma, nao a ordem escrita."
   },
   {
+   "source": "fattech:mano:token-vaza-pela-api",
+   "target": "fattech:mano:cofre-de-credenciais",
+   "relation": "resolve",
+   "note": "O risco diagnosticado na fase 0 virou tabela propria com token cifrado."
+  },
+  {
+   "source": "fattech:mano:lacuna-real",
+   "target": "fattech:mano:conta-por-organizacao",
+   "relation": "resolve",
+   "note": "A lacuna que a fase 0 apontou era esta associacao."
+  },
+  {
+   "source": "fattech:mano:conta-por-organizacao",
+   "target": "fattech:mano:conta-desconhecida-recusada",
+   "relation": "permite",
+   "note": "So se pode recusar o desconhecido depois de existir um registro do conhecido."
+  },
+  {
+   "source": "fattech:mano:rls-assimetrica",
+   "target": "fattech:mano:conta-por-organizacao",
+   "relation": "sustenta",
+   "note": "O diretorio precisa ser legivel sem contexto para que a resolucao funcione."
+  },
+  {
+   "source": "fattech:mano:cofre-de-credenciais",
+   "target": "fattech:mano:impressao-digital",
+   "relation": "expoe",
+   "note": "O que o cofre deixa ver do token e apenas a impressao digital."
+  },
+  {
+   "source": "fattech:mano:varredura-de-bytes",
+   "target": "fattech:mano:cofre-de-credenciais",
+   "relation": "verifica",
+   "note": "A garantia do cofre so vale medida; a varredura e a medida."
+  },
+  {
+   "source": "fattech:mano:webhook-sem-contexto",
+   "target": "fattech:mano:conta-desconhecida-recusada",
+   "relation": "informa",
+   "note": "Resolver o dono foi o que revelou que a sessao nunca tivera dono definido."
+  },
+  {
+   "source": "fattech:mano:rollback-por-chave-ausente",
+   "target": "fattech:mano:conta-por-organizacao",
+   "relation": "protege",
+   "note": "A fase inteira entra atras de uma configuracao que pode simplesmente nao existir."
+  },
+  {
    "source": "fattech:walchat:compliance-order",
    "target": "fattech:walchat:opt-out-footer",
    "relation": "precede",
@@ -1118,6 +1283,12 @@
    "note": "publicação seguinte"
   },
   {
+   "source": "fattech:release:2026-09-14-versao-0.5",
+   "target": "fattech:release:2026-09-16-versao-0.5.1",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
    "source": "fattech:infra:host",
    "target": "fattech:infra:fattechcrmpro",
    "relation": "hospeda",
@@ -1179,15 +1350,15 @@
   }
  ],
  "counts": {
-  "nodes": 64,
-  "edges": 50,
+  "nodes": 73,
+  "edges": 59,
   "por_familia": {
-   "business_rule": 17,
-   "engineering_pattern": 7,
-   "licao": 1,
+   "business_rule": 19,
+   "engineering_pattern": 11,
+   "licao": 3,
    "licao_de_debito": 1,
    "domain": 15,
-   "release": 12,
+   "release": 13,
    "service": 11,
    "guarantee": 0
   }

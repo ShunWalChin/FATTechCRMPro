@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     meta_verify_token: str = ""
     meta_access_token: str = ""
     meta_publish_token: str = ""
+    # Chave do cofre de credenciais externas. Ausente, conectar uma conta Instagram recusa.
+    credential_key: str = ""
     public_tenant_slug: str = "fattech"
     session_hours: int = 12
     # Credential-stuffing limits. Production keeps the defaults; a loopback test harness may raise them.
@@ -45,6 +47,15 @@ class Settings(BaseSettings):
         # Empty optional integration settings intentionally disable the adapter.
         if value and not value.strip():
             raise ValueError("Configuration must not contain only whitespace")
+        return value
+
+    @field_validator("credential_key")
+    @classmethod
+    def validate_credential_key(cls, value: str) -> str:
+        # Falhar na subida e melhor do que descobrir a chave invalida na hora de decifrar um token.
+        if value:
+            from .credentials import material_valido
+            material_valido(value)
         return value
 
     @property

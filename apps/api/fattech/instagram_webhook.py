@@ -11,8 +11,31 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .db import get_db
-from .models import Audit, Idempotency, Outbox, Record, Tenant, now, uid
+from .db import get_db, set_tenant
+from .models import Audit, Idempotency, InstagramAccount, Outbox, Tenant, uid
+
+
+def resolver_tenant(db: Session, contas: list[str]) -> str | None:
+    """O dono vem do banco, nunca do corpo: o payload diz qual conta, o banco diz de quem ela e."""
+    identificadores = [conta for conta in contas if conta]
+    if not identificadores:
+        return None
+    donos = set(db.scalars(select(InstagramAccount.tenant_id).where(
+        InstagramAccount.instagram_user_id.in_(identificadores),
+        InstagramAccount.status == "connected")).all())
+    # Uma entrega que atravessa organizacoes nao tem dono unico; processa-la escolheria um por conta propria.
+    return donos.pop() if len(donos) == 1 else None
+
+
+def registrar_desconhecida(db: Session, contas: list[str], slug: str):
+    """A recusa fica registrada na organizacao de quem opera a instalacao, nao numa escolhida ao acaso."""
+    dono = db.scalar(select(Tenant).where(Tenant.slug == slug))
+    if dono is None:
+        return
+    set_tenant(db, dono.id)
+    db.add(Audit(tenant_id=dono.id, actor_id=None, action="instagram.webhook.rejected_unknown_account",
+                 resource_id=(contas[0] if contas else "")[:64], details={"contas": contas[:5]}))
+    db.commit()
 
 
 def register_instagram_webhook(app, settings):
@@ -38,10 +61,21 @@ def register_instagram_webhook(app, settings):
             raise HTTPException(422, "Payload JSON inválido") from exc
         if payload.get("object") != "instagram" or not isinstance(payload.get("entry"), list):
             raise HTTPException(422, "Envelope Instagram inválido")
-        # Webhook delivery is tenant-neutral until the Instagram account id is resolved.
-        tenant = db.scalar(select(Tenant).where(Tenant.slug == settings.public_tenant_slug))
+        # A entrega chega sem dono. O id da conta em entry[].id e o unico elo confiavel com uma
+        # organizacao, porque a assinatura HMAC ja provou que a Meta o enviou.
+        contas = [str(item.get("id") or "") for item in payload["entry"] if isinstance(item, dict)]
+        tenant_id = resolver_tenant(db, contas)
+        if tenant_id is None:
+            # Recusar sem guardar o corpo: conteudo de terceiro que ninguem no sistema possui nao deve
+            # ser gravado. A auditoria registra a tentativa e a conta, nunca a mensagem.
+            registrar_desconhecida(db, contas, settings.public_tenant_slug)
+            raise HTTPException(404, "Conta Instagram não conectada a nenhuma organização")
+        tenant = db.get(Tenant, tenant_id)
         if tenant is None:
-            raise HTTPException(503, "Tenant público não provisionado")
+            raise HTTPException(503, "Organização da conta Instagram não encontrada")
+        # Sem isto, sob RLS forcada em PostgreSQL, idempotencia, outbox e auditoria seriam recusadas
+        # pela politica: a sessao do webhook nasce sem dono porque a autenticacao e a assinatura, nao um login.
+        set_tenant(db, tenant.id)
         delivery_id = payload.get("id") or (payload.get("entry") or [{}])[0].get("id") or uid()
         key = f"instagram:{delivery_id}"
         body_hash = hashlib.sha256(raw).hexdigest()

@@ -20,7 +20,15 @@ const nextConfig: NextConfig = {
       ...transcribed,
     ];
   },
-  async rewrites() { return [{ source: '/api/v1/:path*', destination: `${process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000'}/api/v1/:path*` }]; },
+  // Em produção o nginx manda todo /api/ para a API. Sem a segunda regra aqui, o webhook público da
+  // Meta existiria em produção e não em desenvolvimento, que é a pior forma de uma rota existir.
+  async rewrites() {
+    const api = process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000';
+    return [
+      { source: '/api/v1/:path*', destination: `${api}/api/v1/:path*` },
+      { source: '/api/public/:path*', destination: `${api}/api/public/:path*` },
+    ];
+  },
   async headers() { return [{ source: '/:path*', headers: [{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'X-Frame-Options',value:'DENY'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}] }]; }
 };
 export default nextConfig;

@@ -34,6 +34,16 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
       ['manage_team','manage_integrations','view_audit','approve_sensitive','write_records'].every(key=>typeof permissions[key]==='boolean')&&
       Array.isArray(permissions.assignable_roles)&&permissions.assignable_roles.every(role=>typeof role==='string');
   }
+  // Uma conta Instagram nunca traz o token. Esta checagem roda antes das genericas de propósito:
+  // e a ultima barreira do lado do cliente se algum dia o servidor passar a devolver o segredo.
+  if(path.startsWith('/integrations/instagram/accounts')){
+    if(method==='DELETE')return data.deleted===true;
+    const conta=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isInteger(value.version)&&
+      nonemptyString(value.instagram_user_id)&&!('access_token' in value)&&
+      (value.token===null||(isObject(value.token)&&nonemptyString(value.token.fingerprint)&&!('value' in value.token)));
+    return path==='/integrations/instagram/accounts'&&method==='GET'?
+      Array.isArray(data.items)&&data.items.every(conta)&&nonnegativeInteger(data.total):conta(data);
+  }
   if(method==='DELETE')return path.startsWith('/auth/sessions/')||path.startsWith('/api-keys/')?data.revoked===true:data.deleted===true;
   if(method!=='GET') {
     if(path==='/auth/logout'||path==='/auth/password'||/^\/team\/[^/]+\/password$/.test(path))return data.ok===true;

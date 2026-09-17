@@ -118,6 +118,13 @@ tarefas com fila filtrável, propostas com preço congelado, metas, relatórios 
 fechamento, importação conferida, avisos derivados, trilha de auditoria completa, papéis e permissões,
 chaves de API com escopo, isolamento por organização no banco.
 
+**Conecta, mas ainda não conversa:** desde a 0.5.1 cada organização conecta a sua conta do Instagram
+em *Integrações*, com o token guardado cifrado, e o webhook da Meta passa a saber a quem pertence cada
+evento. Nada é enviado para a Meta ainda, e a mensagem recebida ainda não vira conversa — isso é a
+fase seguinte. Para ligar, o servidor precisa de `FATTECH_CREDENTIAL_KEY`; o procedimento está em
+`docs/discovery/mano-chat-fase-1.md`. Enquanto a chave não existir, conectar responde 503 e o CRM
+opera exatamente como antes.
+
 **Não faz, e não finge fazer:** WhatsApp e Instagram bidirecionais, e-mail integrado, agenda e
 agendamento, campos personalizados, mesclagem de duplicatas, segundo fator. Os endpoints de envio
 **recusam com erro explícito** em vez de simular entrega — se você mandar enviar, o sistema diz por que
