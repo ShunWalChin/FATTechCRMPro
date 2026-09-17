@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy import Integer, cast, func, or_, select, text, update
 from sqlalchemy.orm import Session
 
+from . import lead_scoring
 from .models import Audit, Outbox, Record, User, now, uid
 from .schemas import DEFAULT_STAGE_HOURS, RESOURCES
 
@@ -350,6 +351,77 @@ def build_notifications(db, tenant_id, limit=25, allowed=None):
     return {"items": items[:limit], "total": len(items), "counts": counts}
 
 
+def regras_de_lead(db, tenant_id):
+    """O conjunto ativo, ou None. Dois ativos seria ambiguo, entao o primeiro por criacao vence
+    e a ambiguidade e resolvida na configuracao, nunca no calculo."""
+    registro = next(iter(db.scalars(scoped(tenant_id, "lead_rules")
+                                    .where(Record.data["status"].as_string() == "active")
+                                    .order_by(Record.created_at).limit(1))), None)
+    return registro.data if registro else None
+
+
+def pontuar_contato(db, tenant_id, data, alterou_score, anterior=None):
+    """Com regra ativa o score passa a ser do servidor; sem regra ativa continua sendo da pessoa.
+
+    Sobrescrever em silencio um numero que alguem digitou seria a mentira que este sistema evita,
+    entao a alteracao manual e recusada com motivo enquanto houver regra ativa.
+    """
+    regras = regras_de_lead(db, tenant_id)
+    if regras is None:
+        data.pop("score_breakdown", None)
+        return data
+    if alterou_score:
+        raise HTTPException(409, {"message": "A pontuação é calculada pelas regras de qualificação ativas; "
+                                             "edite as regras em vez do lead.",
+                                  "rules_name": regras.get("name", "")})
+    resultado = lead_scoring.avaliar(regras, data)
+    data["score"] = resultado["score"]
+    data["score_breakdown"] = resultado
+    return data
+
+
+def leads_por_responsavel(db, tenant_id, elegiveis):
+    abertos = {usuario: 0 for usuario in elegiveis}
+    for registro in db.scalars(scoped(tenant_id, "contacts")):
+        dono = registro.data.get("owner_id")
+        if dono in abertos and registro.data.get("lead_stage") in ("novo", "em_contato"):
+            abertos[dono] += 1
+    return abertos
+
+
+def distribuir_lead(db, tenant_id, regras):
+    """Menor carga, e nao ponteiro rotativo: um ponteiro guardado dessincroniza quando alguem sai
+    da equipe ou um lead e reatribuido a mao, e a fila fica torta sem ninguem perceber.
+
+    O desempate por id mantem a escolha reproduzivel: a mesma equipe com a mesma carga escolhe
+    sempre a mesma pessoa, o que torna o comportamento testavel.
+    """
+    if not regras or regras.get("assignment", {}).get("strategy") != "menor_carga":
+        return None
+    papeis = set(regras["assignment"].get("roles") or [])
+    elegiveis = [usuario.id for usuario in db.scalars(
+        select(User).where(User.tenant_id == tenant_id, User.active.is_(True)))
+        if usuario.role in papeis]
+    if not elegiveis:
+        return None
+    carga = leads_por_responsavel(db, tenant_id, elegiveis)
+    return min(elegiveis, key=lambda usuario: (carga[usuario], usuario))
+
+
+def marcar_interacao(db, tenant_id, contact_id, *, por_pessoa):
+    """Ultima interacao e primeira resposta sao do servidor: quem responde nao digita que respondeu."""
+    registro = db.scalar(scoped(tenant_id, "contacts").where(Record.id == contact_id))
+    if registro is None:
+        return
+    instante = now().isoformat()
+    data = {**registro.data, "last_interaction_at": instante}
+    if por_pessoa and not data.get("first_response_at"):
+        data["first_response_at"] = instante
+    # Sem tocar em version: registrar que houve contato nao e uma edicao que alguem precise resolver.
+    db.execute(update(Record).where(Record.id == contact_id, Record.tenant_id == tenant_id)
+               .values(data=data))
+
+
 def create_record(db, tenant_id, actor_id, kind, payload):
     if kind == "pipelines":
         lock_pipeline_configuration(db, tenant_id)
@@ -359,6 +431,9 @@ def create_record(db, tenant_id, actor_id, kind, payload):
     if kind == "contacts":
         data = normalize_contact_identifiers(data)
         ensure_unique_contact(db, tenant_id, data)
+        data = pontuar_contato(db, tenant_id, data, alterou_score=bool(payload.get("score")))
+        if not data.get("owner_id"):
+            data["owner_id"] = distribuir_lead(db, tenant_id, regras_de_lead(db, tenant_id))
     validate_relations(db, tenant_id, data)
     if kind == "automations":
         validate_flow(data)
@@ -472,6 +547,8 @@ def capture_lead(db, tenant_id, payload, attribution, promote=True):
 
 def capture_activity(db, tenant_id, contact_id, body, attribution):
     """Keep each submission separately; the legacy notes field is only a bounded summary."""
+    # O lead falando conosco e interacao, nao resposta: por_pessoa fica falso de proposito.
+    marcar_interacao(db, tenant_id, contact_id, por_pessoa=False)
     activity = Record(tenant_id=tenant_id, kind="activities", data={"type": "note", "body": body,
         "contact_id": contact_id, "author_id": None, "author_name": "Site FAT Tech", "source": "website",
         "attribution": attribution})
@@ -503,6 +580,8 @@ def update_record(db, principal, kind, record_id, payload):
     if kind == "contacts":
         data = normalize_contact_identifiers(data)
         ensure_unique_contact(db, principal.tenant_id, data, record_id)
+        data = pontuar_contato(db, principal.tenant_id, data,
+                               alterou_score="score" in changes and changes["score"] != record.data.get("score"))
     validate_relations(db, principal.tenant_id, data)
     if kind == "automations":
         validate_flow(data)

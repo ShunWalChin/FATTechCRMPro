@@ -289,11 +289,14 @@ def create_app(settings: Settings | None = None, engine=None):
         if not tenant:
             raise HTTPException(503, "Captação não configurada")
         set_tenant(db, tenant.id)
+        utm = {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")}
         lead = capture_lead(db, tenant.id, {
             "name": payload.name, "email": str(payload.email), "phone": payload.phone,
             "company": payload.company, "source": "website", "consent": True,
             "notes": f"Interesse: {payload.interest}\n{payload.message}".strip(),
-        }, {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")},
+            # UTM vira campo do contato, nao so um dicionario guardado: e o que deixa agrupar por origem.
+            **utm,
+        }, utm,
             promote=settings.capture_creates_deal)
         db.commit()
         return {"id": lead.id, "status": "accepted"}
@@ -681,6 +684,8 @@ def create_app(settings: Settings | None = None, engine=None):
     app.include_router(work_queue_router)
     from .instagram_accounts import router as instagram_router
     app.include_router(instagram_router)
+    from .lead_queue import router as lead_router
+    app.include_router(lead_router)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

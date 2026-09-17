@@ -63,6 +63,49 @@ def migrate(engine, app_password: str = ""):
         if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0004'")).scalar():
             assert_instagram_tables(connection)
             connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0004')"))
+        if not connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0005'")).scalar():
+            backfill_lead_fields(connection, postgres)
+            connection.execute(text("INSERT INTO schema_migrations (version) VALUES ('0005')"))
+
+
+LEAD_STAGE_POR_STATUS = {"customer": "convertido", "active": "convertido", "qualified": "qualificado",
+                         "inactive": "descartado", "new": "novo", "lead": "novo"}
+
+
+def backfill_lead_fields(connection, postgres):
+    """0005: o ciclo de vida do lead, a UTM consultavel e a ultima interacao.
+
+    Aditiva e idempotente: nenhum contato muda de dono, de pontuacao ou de consentimento. A UTM sai
+    de dentro de attribution e vira campo proprio -- a copia fica, porque attribution registra o
+    primeiro toque e nao deve ser reescrita por um backfill.
+
+    last_interaction_at recebe updated_at. E uma aproximacao, e esta declarada como tal: o instante
+    exato da ultima conversa nunca foi gravado, e inventar um seria pior do que usar o que existe.
+    """
+    records = Record.__table__
+    for tenant_id in connection.scalars(select(Tenant.__table__.c.id)):
+        if postgres:
+            connection.execute(text("SELECT set_config('fattech.tenant_id', :tenant, true)"), {"tenant": tenant_id})
+        linhas = connection.execute(select(records.c.id, records.c.data, records.c.updated_at).where(
+            records.c.tenant_id == tenant_id, records.c.kind == "contacts")).all()
+        for contact_id, data, atualizado in linhas:
+            if "lead_stage" in data:
+                continue
+            attribution = data.get("attribution") or {}
+            novo = {**data,
+                    "lead_stage": LEAD_STAGE_POR_STATUS.get(data.get("status"), "novo"),
+                    "disqualified_reason": "",
+                    "next_action_at": None,
+                    "campaign_id": None,
+                    "qualification": {"fit": "desconhecido", "intent": "desconhecido",
+                                      "budget": "desconhecido", "timeline": "desconhecido",
+                                      "icp": None, "notes": ""}}
+            for chave in ("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"):
+                novo[chave] = str(attribution.get(chave) or "")[:200]
+            if atualizado is not None and not novo.get("last_interaction_at"):
+                novo["last_interaction_at"] = atualizado.isoformat()
+            # Sem tocar em version: um backfill de esquema nao e a edicao de uma pessoa.
+            connection.execute(records.update().where(records.c.id == contact_id).values(data=novo))
 
 
 def assert_instagram_tables(connection):
@@ -131,7 +174,7 @@ def main():
     engine = make_engine(settings.database_url)
     try:
         migrate(engine, os.environ.get("FATTECH_DB_APP_PASSWORD", ""))
-        print("Schema 0004 ready; Instagram accounts per tenant and the credential vault exist.")
+        print("Schema 0005 ready; lead lifecycle, queryable UTM and last interaction are in place.")
     finally:
         engine.dispose()
 

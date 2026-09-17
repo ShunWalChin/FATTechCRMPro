@@ -32,6 +32,17 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
+class Qualification(StrictModel):
+    """BANT declarado por uma pessoa. Cada eixo e opcional: nao saber e um estado legitimo,
+    e forcar um valor padrao inventaria uma qualificacao que ninguem fez."""
+    fit: Literal["alto", "medio", "baixo", "desconhecido"] = "desconhecido"
+    intent: Literal["alto", "medio", "baixo", "desconhecido"] = "desconhecido"
+    budget: Literal["confirmado", "estimado", "ausente", "desconhecido"] = "desconhecido"
+    timeline: Literal["imediato", "trimestre", "ano", "sem_prazo", "desconhecido"] = "desconhecido"
+    icp: bool | None = None
+    notes: Text = ""
+
+
 class Contact(StrictModel):
     name: Name
     email: EmailStr | None = None
@@ -45,6 +56,19 @@ class Contact(StrictModel):
     consent: bool = False
     notes: Text = ""
     owner_id: Identifier | None = None
+    # Ciclo de vida do lead, separado de status: status descreve o relacionamento, lead_stage descreve
+    # onde a qualificacao parou. Misturar os dois foi o que obrigou a distinguir os dois campos.
+    lead_stage: Literal["novo", "em_contato", "qualificado", "descartado", "convertido"] = "novo"
+    disqualified_reason: str = Field(default="", max_length=400)
+    next_action_at: DateText | None = None
+    qualification: Qualification = Field(default_factory=Qualification)
+    campaign_id: Identifier | None = None
+    # UTM deixa de viver so dentro de attribution: campo consultavel e o que permite agrupar por origem.
+    utm_source: str = Field(default="", max_length=200)
+    utm_medium: str = Field(default="", max_length=200)
+    utm_campaign: str = Field(default="", max_length=200)
+    utm_content: str = Field(default="", max_length=200)
+    utm_term: str = Field(default="", max_length=200)
 
 
 class Company(StrictModel):
@@ -266,10 +290,55 @@ class Product(StrictModel):
     status: Literal["active", "inactive"] = "active"
 
 
+OPERADORES = ("igual", "diferente", "contem", "em", "maior", "maior_igual", "menor", "menor_igual",
+              "preenchido", "vazio")
+
+
+class ScoreCriterion(StrictModel):
+    """Um criterio explicavel: o rotulo e o que aparece para a pessoa, nao a expressao."""
+    label: Name
+    field: Annotated[str, StringConstraints(strip_whitespace=True, max_length=60,
+                                            pattern=r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)?$")]
+    operator: Literal[OPERADORES]
+    value: str = Field(default="", max_length=400)
+    points: int = Field(strict=True, ge=-100, le=100)
+
+
+class LeadAssignment(StrictModel):
+    """menor_carga em vez de ponteiro rotativo: um ponteiro guardado dessincroniza quando alguem
+    sai da equipe ou um lead e reatribuido a mao, e ninguem percebe ate a fila ficar torta."""
+    strategy: Literal["nenhuma", "menor_carga"] = "nenhuma"
+    # owner e o papel do usuario inicial do bootstrap: deixa-lo de fora tornaria a distribuicao
+    # inoperante justamente na organizacao recem-criada, que e onde ela precisa funcionar primeiro.
+    roles: list[Literal["root", "super_admin", "owner", "admin", "member"]] = Field(
+        default_factory=lambda: ["owner", "admin", "member"], max_length=5)
+
+
+class LeadRules(StrictModel):
+    name: Name
+    description: Text = ""
+    status: Literal["active", "inactive"] = "inactive"
+    criteria: list[ScoreCriterion] = Field(default_factory=list, max_length=40)
+    warm_at: int = Field(default=35, strict=True, ge=0, le=100)
+    hot_at: int = Field(default=65, strict=True, ge=0, le=100)
+    sla_hours: int = Field(default=24, strict=True, ge=1, le=720)
+    assignment: LeadAssignment = Field(default_factory=LeadAssignment)
+
+    @model_validator(mode="after")
+    def validate_thresholds(self):
+        if self.warm_at >= self.hot_at:
+            raise ValueError("O limite de morno precisa ser menor que o de quente")
+        chaves = [criterion.label.strip().lower() for criterion in self.criteria]
+        if len(chaves) != len(set(chaves)):
+            raise ValueError("Cada critério precisa de um rótulo distinto")
+        return self
+
+
 RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "deals": Deal, "tasks": Task,
              "conversations": Conversation, "messages": Message, "campaigns": Campaign,
              "automations": Automation, "knowledge": Knowledge, "approvals": Approval,
-             "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product}
+             "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product,
+             "lead_rules": LeadRules}
 
 
 class ContactImport(StrictModel):

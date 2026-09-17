@@ -1,4 +1,8 @@
 .local/
+# Ferramentas de terceiros instaladas por agente (npx skills add). Sao 365 pastas de
+# skills da NVIDIA: pertencem a maquina de quem desenvolve, nao ao produto.
+.agents/
+.claude/skills/
 .venv/
 node_modules/
 .next/

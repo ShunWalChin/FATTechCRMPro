@@ -60,6 +60,13 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
   // O grafo do conhecimento responde com familias, nos e arestas, nunca com um registro.
   if(path==='/knowledge/graph')return Array.isArray(data.nodes)&&Array.isArray(data.edges)&&
     Array.isArray(data.families)&&isObject(data.counts)&&data.nodes.every(hasId);
+  // A fila de leads carrega resumo e regra ativa; a explicação do score não é um registro.
+  if(/^\/crm\/leads\/[^/]+\/score$/.test(path))
+    return hasId(data)&&typeof data.explained==='boolean'&&nonnegativeInteger(data.score)&&
+      (data.breakdown===null||(isObject(data.breakdown)&&Array.isArray(data.breakdown.criteria)));
+  if(path==='/crm/leads')
+    return Array.isArray(data.items)&&data.items.every(hasId)&&nonnegativeInteger(data.total)&&
+      isObject(data.summary)&&(data.rules===null||isObject(data.rules));
   if(path==='/sales/report')return ['deal_count','open_count','won_count','lost_count','pipeline_cents','weighted_pipeline_cents','won_cents'].every(key=>Number.isInteger(data[key]))&&isObject(data.lost_reasons)&&Array.isArray(data.goals)&&data.goals.every(hasId)&&nonemptyString(data.date_basis);
   if(path==='/health')return data.status==='ok'&&nonemptyString(data.version);
   if(/^\/records\/[^/]+\/[^/]+\/overview$/.test(path))return hasId(data.record)&&['activities','deals','tasks','conversations','history'].every(key=>isObject(data[key])&&Array.isArray(data[key].items)&&Number.isInteger(data[key].total));

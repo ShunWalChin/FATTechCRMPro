@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0",
+  "subject": "Ordem principal de engenharia — Onda 1: fundacao comercial",
+  "reviewed_at": "2026-09-17",
+  "provenance": "Medicao de 334 capacidades da ordem contra o sistema real (scripts/ordem-principal-matriz.py) seguida da implementacao do nucleo de leads. Testes contra PostgreSQL real.",
+  "merge_note": "Nos semanticos usam este artefato como source_file para que a extracao AST nao os substitua.",
+  "nodes": [
+    {
+      "id": "fattech:ordem:denominador",
+      "label": "A ordem foi medida, nao estimada",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "scripts/ordem-principal-matriz.py",
+      "status": "implementado",
+      "rule": "334 capacidades conferidas contra o schema declarado, as rotas registradas, as tabelas do metadata e as telas existentes: 105 presentes, 70 parciais, 159 ausentes. Ponderado, 42% de prontidao.",
+      "por_que_importa": "Uma ordem com centenas de itens convida a estimar. O denominador e o que impede declarar progresso sem base, e e o unico numero que nao melhora sozinho quando alguem escreve codigo.",
+      "onde_no_fattech": "scripts/ordem-principal-matriz.py"
+    },
+    {
+      "id": "fattech:lead:estagio-separado-de-status",
+      "label": "lead_stage e status descrevem coisas diferentes",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/schemas.py Contact",
+      "status": "implementado",
+      "rule": "status descreve o relacionamento comercial (new, qualified, active, customer, inactive, lead). lead_stage descreve onde a qualificacao parou (novo, em_contato, qualificado, descartado, convertido).",
+      "por_que_importa": "O campo status ja carregava tanto lead quanto customer, entao um contato qualificado e um cliente ativo competiam pelo mesmo espaco. Separar foi o que permitiu a fila de leads existir sem inventar um filtro ambiguo.",
+      "onde_no_fattech": "apps/api/fattech/schemas.py e migrate.py 0005"
+    },
+    {
+      "id": "fattech:lead:score-do-servidor",
+      "label": "Com regra ativa a pontuacao passa a ser do servidor",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/services.py pontuar_contato",
+      "status": "implementado",
+      "rule": "Sem conjunto de regras ativo o score continua sendo digitado por uma pessoa. Com regra ativa o servidor calcula, e a edicao manual e recusada com 409 e o nome da regra que decide.",
+      "por_que_importa": "Sobrescrever em silencio um numero que alguem digitou seria exatamente a mentira que este sistema evita. Recusar com motivo e a alternativa honesta, e diz onde ir mudar.",
+      "onde_no_fattech": "apps/api/fattech/services.py"
+    },
+    {
+      "id": "fattech:lead:explicacao-e-o-produto",
+      "label": "A explicacao e o produto, nao o numero",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/lead_scoring.py avaliar",
+      "status": "implementado",
+      "rule": "avaliar() devolve todos os criterios, os que somaram e os que nao somaram, com o valor que cada um leu do contato. A soma dos que bateram e conferida por teste contra o total.",
+      "por_que_importa": "A ordem exige qualificacao explicavel e auditavel. Um total sozinho nao e conferivel: quem discorda precisa poder apontar a linha em que discorda, em vez de discutir com um numero.",
+      "onde_no_fattech": "apps/api/fattech/lead_scoring.py e GET /crm/leads/{id}/score"
+    },
+    {
+      "id": "fattech:lead:explicado-vs-zero",
+      "label": "Pontuou zero e ninguem pontuou sao estados diferentes",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/lead_queue.py",
+      "status": "implementado",
+      "rule": "Sem regra ativa a temperatura vem nula e explained vem falso, em vez de frio e zero. A tela precisa dizer coisas diferentes nos dois casos.",
+      "por_que_importa": "Devolver frio sem regra afirmaria uma classificacao que ninguem fez, e a pessoa acreditaria num julgamento inventado pelo servidor.",
+      "onde_no_fattech": "apps/api/fattech/lead_queue.py"
+    },
+    {
+      "id": "fattech:lead:menor-carga",
+      "label": "Distribuicao por menor carga, nao por ponteiro rotativo",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/services.py distribuir_lead",
+      "status": "implementado",
+      "rule": "O lead sem responsavel vai para quem tem menos leads abertos entre os papeis configurados, com desempate por id. Nao ha estado guardado.",
+      "por_que_importa": "Um ponteiro rotativo dessincroniza quando alguem sai da equipe ou um lead e reatribuido a mao, e a fila fica torta sem ninguem perceber. Menor carga se corrige sozinha e o desempate por id torna a escolha testavel.",
+      "onde_no_fattech": "apps/api/fattech/services.py"
+    },
+    {
+      "id": "fattech:lead:papel-owner-elegivel",
+      "label": "O papel owner precisava estar na distribuicao",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/schemas.py LeadAssignment",
+      "status": "corrigido",
+      "rule": "A lista de papeis elegiveis nascera com root, super_admin, admin e member. O usuario inicial do bootstrap tem papel owner, que ficara de fora.",
+      "por_que_importa": "A distribuicao ficaria inoperante justamente na organizacao recem-criada, onde e a unica pessoa que existe. O teste de distribuicao foi o que revelou, porque media o resultado em vez de conferir que a funcao roda.",
+      "onde_no_fattech": "apps/api/fattech/schemas.py"
+    },
+    {
+      "id": "fattech:lead:sla-primeira-resposta",
+      "label": "Quem responde nao digita que respondeu",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/services.py marcar_interacao",
+      "status": "implementado",
+      "rule": "first_response_at e gravado pelo servidor quando uma pessoa registra atividade no contato. Um envio do site marca last_interaction_at e nao marca resposta. Responder dentro do prazo encerra o SLA para sempre; responder depois nao apaga que estourou.",
+      "por_que_importa": "SLA preenchido a mao mede disciplina de preenchimento, nao atendimento. E o lead falando conosco e interacao, nao resposta nossa: confundir os dois zeraria o indicador que interessa.",
+      "onde_no_fattech": "apps/api/fattech/services.py e record_views.py"
+    },
+    {
+      "id": "fattech:lead:fila-propria",
+      "label": "A fila de leads responde outra pergunta que a de tarefas",
+      "type": "business_rule",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/lead_queue.py",
+      "status": "implementado",
+      "rule": "A fila de tarefas responde o que eu preciso fazer. A fila de leads responde qual lead esta sem responsavel, sem proxima acao ou com o prazo de primeira resposta estourado. O resumo conta o conjunto filtrado inteiro, nao a pagina.",
+      "por_que_importa": "Um lead sem tarefa nenhuma e invisivel para a fila de tarefas, e e exatamente o que mais se perde. O resumo por pagina mentiria sobre o total, que e o numero usado para decidir se o dia esta sob controle.",
+      "onde_no_fattech": "apps/api/fattech/lead_queue.py"
+    },
+    {
+      "id": "fattech:lead:utm-consultavel",
+      "label": "UTM sai de attribution e vira campo",
+      "type": "engineering_pattern",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/migrate.py backfill_lead_fields",
+      "status": "implementado",
+      "rule": "utm_source, utm_medium, utm_campaign, utm_content e utm_term viram campos consultaveis do contato. A copia dentro de attribution fica, porque attribution registra o primeiro toque e nao deve ser reescrita por um backfill.",
+      "por_que_importa": "UTM guardada dentro de um dicionario nao agrupa. Sem campo consultavel nao ha conversao por canal nem atribuicao, que sao as duas capacidades de marketing que a ordem cobra.",
+      "onde_no_fattech": "apps/api/fattech/migrate.py e main.py"
+    },
+    {
+      "id": "fattech:lead:aproximacao-declarada",
+      "label": "O backfill declara a aproximacao que faz",
+      "type": "licao",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "source_location": "apps/api/fattech/migrate.py",
+      "status": "implementado",
+      "rule": "last_interaction_at dos contatos antigos recebe updated_at. O instante exato da ultima conversa nunca foi gravado, e a migracao diz isso em vez de apresentar a aproximacao como dado.",
+      "por_que_importa": "E a mesma regra do relatorio que exclui negocios sem data confiavel de fechamento: inventar um instante seria pior do que usar o que existe e declarar o que e.",
+      "onde_no_fattech": "apps/api/fattech/migrate.py"
+    }
+  ],
+  "edges": [
+    {
+      "id": "fattech:rel:onda1:denominador:orienta:estagio",
+      "source": "fattech:ordem:denominador",
+      "target": "fattech:lead:estagio-separado-de-status",
+      "relation": "orienta",
+      "label": "orienta",
+      "action": "A medicao mostrou que lead era um status de contato, e nao um dominio.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:explicacao:sustenta:score",
+      "source": "fattech:lead:explicacao-e-o-produto",
+      "target": "fattech:lead:score-do-servidor",
+      "relation": "sustenta",
+      "label": "sustenta",
+      "action": "So se pode tirar o score da pessoa quando a regra que o substitui e conferivel.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:explicado:refina:explicacao",
+      "source": "fattech:lead:explicado-vs-zero",
+      "target": "fattech:lead:explicacao-e-o-produto",
+      "relation": "refina",
+      "label": "refina",
+      "action": "A ausencia de explicacao tambem precisa ser dita, nao suprimida com um padrao.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:owner:corrige:menor-carga",
+      "source": "fattech:lead:papel-owner-elegivel",
+      "target": "fattech:lead:menor-carga",
+      "relation": "corrige",
+      "label": "corrige",
+      "action": "A lista de papeis elegiveis excluia o unico usuario de uma organizacao nova.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:sla:alimenta:fila",
+      "source": "fattech:lead:sla-primeira-resposta",
+      "target": "fattech:lead:fila-propria",
+      "relation": "alimenta",
+      "label": "alimenta",
+      "action": "O prazo estourado e um dos tres motivos de um lead aparecer na fila.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    },
+    {
+      "id": "fattech:rel:onda1:utm:permite:atribuicao",
+      "source": "fattech:lead:utm-consultavel",
+      "target": "fattech:ordem:denominador",
+      "relation": "avanca",
+      "label": "avanca",
+      "action": "Move UTM de parcial para presente na medicao de marketing.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "INFERRED"
+    },
+    {
+      "id": "fattech:rel:onda1:aproximacao:ecoa:relatorio",
+      "source": "fattech:lead:aproximacao-declarada",
+      "target": "fattech:lead:utm-consultavel",
+      "relation": "acompanha",
+      "label": "acompanha",
+      "action": "O mesmo backfill que promove a UTM e o que aproxima a ultima interacao.",
+      "source_file": "docs/knowledge/ordem-principal-onda-1.json",
+      "confidence": "DOCUMENTED"
+    }
+  ]
+}

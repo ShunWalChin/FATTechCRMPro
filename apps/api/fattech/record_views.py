@@ -10,7 +10,7 @@ from .idempotency import creation_receipt
 from .models import Audit, Record
 from .schemas import StrictModel
 from .security import require_auth
-from .services import audit_event, get_record, scoped, serialize
+from .services import audit_event, get_record, marcar_interacao, scoped, serialize
 
 ParentKind = Literal["contacts", "companies", "deals"]
 PARENT_FIELD = {"contacts": "contact_id", "companies": "company_id", "deals": "deal_id"}
@@ -58,6 +58,9 @@ def add_activity(kind: ParentKind, record_id: str, payload: ActivityCreate, resp
                     "author_id": principal.actor_id, "author_name": principal.user.name})
     db.add(record)
     db.flush()
+    if kind == "contacts":
+        # Quem responde nao digita que respondeu: o SLA e medido pelo que de fato aconteceu.
+        marcar_interacao(db, principal.tenant_id, record_id, por_pessoa=True)
     audit_event(db, principal.tenant_id, principal.actor_id, "activities.created", record.id,
                 {"parent_kind": kind, "parent_id": record_id, "type": payload.type})
     result = serialize(record)
