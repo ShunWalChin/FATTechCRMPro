@@ -243,7 +243,12 @@ main > section:nth-of-type(20) { order: 24; }
   background: rgba(255, 255, 255, 0.02);
 }
 
-.menu-toggle span {
+/* O :not(.sr-only) e o conserto de um estouro real. O botao carrega tres spans que sao as barras
+   do hamburguer e um quarto que e o rotulo para leitor de tela. `.menu-toggle span` tem
+   especificidade maior que `.sr-only`, entao o rotulo tambem recebia width:100% -- e como
+   `.sr-only` o deixa em position:absolute, os 100% resolviam contra a pagina inteira: 375px de
+   largura com white-space:nowrap empurrando o documento para 703px em tela de celular. */
+.menu-toggle span:not(.sr-only) {
   display: block;
   width: 100%;
   height: 2px;

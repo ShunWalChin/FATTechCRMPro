@@ -38,7 +38,10 @@ PADRAO = "https://fattechcrmpro.64.181.178.125.nip.io"
 # O que o Next serve de public/ e o que o site publica. icon.svg e do workspace, nao do site.
 IGNORAR = {"icon.svg"}
 # A raiz e o unico endereco que o original nao publica como arquivo; um rewrite a resolve.
-EXTRAS = {"/": "index.html", "/blog": "blog/index.html", "/lp/impulse-crm": "lp/impulse-crm/index.html"}
+# A raiz e o unico endereco que o original nao publica como arquivo. /blog e /lp/impulse-crm
+# sem extensao nunca foram enderecos dele: o original publica blog/index.html e a pagina de
+# redirecionamento lp/impulse-crm.html, que leva ao indice do diretorio.
+EXTRAS = {"/": "index.html"}
 
 
 def digest(dados: bytes) -> str:
@@ -81,6 +84,22 @@ def publicado(caminho: pathlib.Path) -> bytes:
         return caminho.read_bytes()
 
 
+TEXTO = {".html", ".css", ".js", ".txt", ".xml", ".json", ".svg", ".md"}
+
+
+def normalizar(caminho: pathlib.Path, dados: bytes) -> bytes:
+    """Quebra de linha nao e conteudo, e Git a normaliza nos dois sentidos.
+
+    O blob guarda LF, o checkout no Windows entrega CRLF, e o servidor local serve o checkout.
+    Sem isto a auditoria acusava toda pagina como divergente por um byte por linha -- contra
+    producao, que nasce de `git archive`, e contra o servidor local, por motivos opostos.
+    Binario segue comparado byte a byte, onde um byte a mais e mesmo um byte a mais.
+    """
+    if caminho.suffix.lower() in TEXTO:
+        return dados.replace(bytes((13, 10)), bytes((10,)))
+    return dados
+
+
 def rota_de(caminho: pathlib.Path) -> str:
     return "/" + caminho.relative_to(PUBLICO).as_posix()
 
@@ -100,7 +119,7 @@ def conferir_servidos(base: str) -> list[str]:
             ausentes += 1
             continue
         esperado = publicado(caminho)
-        if digest(servido) != digest(esperado):
+        if digest(normalizar(caminho, servido)) != digest(normalizar(caminho, esperado)):
             problemas.append(f"{rota} difere do que a release publica "
                              f"({len(servido):,}b servidos, {len(esperado):,}b publicados)")
             divergentes += 1
@@ -109,8 +128,9 @@ def conferir_servidos(base: str) -> list[str]:
     print(f"\n2. Enderecos que dependem de reescrita ({len(EXTRAS)})")
     for rota, alvo in EXTRAS.items():
         codigo, servido = baixar(base, rota)
-        disco = publicado(PUBLICO / alvo)
-        if codigo != 200 or digest(servido) != digest(disco):
+        alvo_caminho = PUBLICO / alvo
+        disco = publicado(alvo_caminho)
+        if codigo != 200 or digest(normalizar(alvo_caminho, servido)) != digest(normalizar(alvo_caminho, disco)):
             problemas.append(f"{rota} deveria servir {alvo} byte a byte (respondeu {codigo})")
     print(f"   conferidos byte a byte contra o arquivo de destino")
     return problemas

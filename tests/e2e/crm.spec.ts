@@ -30,7 +30,6 @@ test('the public site is served as the original bytes, at the original addresses
     ['/', 'index.html'],
     ['/index.html', 'index.html'],
     ['/blog/index.html', 'blog/index.html'],
-    ['/blog', 'blog/index.html'],
     ['/blog/artigos/crm-ia-vendas.html', 'blog/artigos/crm-ia-vendas.html'],
     ['/lp/crm-inteligente.html', 'lp/crm-inteligente.html'],
     ['/lp/impulse-crm.html', 'lp/impulse-crm.html'],

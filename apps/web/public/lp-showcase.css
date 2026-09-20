@@ -10,7 +10,9 @@
   --gold: #f5c518;
   --text: #e2e8f0;
   --text-muted: #92a1b7;
-  --text-dim: #556070;
+  /* Mesmo motivo e mesmo valor do style.css: dois tokens com o mesmo nome divergiam,
+     e este era ainda mais escuro (2.90:1). Unificar evita a proxima divergencia. */
+  --text-dim: #748094;
   --border: rgba(0, 240, 255, 0.14);
   --border-strong: rgba(0, 240, 255, 0.3);
   --radius: 14px;

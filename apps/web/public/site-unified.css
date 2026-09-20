@@ -378,3 +378,36 @@ nav[role="navigation"],
 .service-card .featured-badge {
   box-shadow: 0 0 24px rgba(0, 240, 255, 0.22);
 }
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  Correção de rolagem horizontal no celular               ║
+   ╚══════════════════════════════════════════════════════════╝
+   As 23 páginas do blog carregam este arquivo, e não o style.css — onde moram as regras do
+   drawer mobile. O <style> embutido delas só encolhe fonte e espaçamento em telas estreitas,
+   então os quatro links continuavam em linha e empurravam o documento de 375px para 451px:
+   a página inteira rolava para o lado, em toda página de artigo, em qualquer celular.
+
+   A barra rola dentro de si mesma em vez de empurrar o documento. É a correção que mantém o
+   cabeçalho numa linha só e não muda nada acima de 768px. */
+@media (max-width: 768px) {
+  .nav-container {
+    /* Sem isto o item flex se recusa a encolher abaixo do conteúdo e o overflow não tem efeito. */
+    min-width: 0;
+  }
+
+  .nav-links {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+    flex-wrap: nowrap;
+  }
+
+  .nav-links::-webkit-scrollbar { display: none; }
+
+  .nav-links .nav-link {
+    /* O link não pode ser espremido a ponto de quebrar a palavra no meio. */
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+}

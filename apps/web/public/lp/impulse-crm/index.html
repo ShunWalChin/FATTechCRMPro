@@ -9,6 +9,12 @@
   ╚══════════════════════════════════════════════════════════╝
 -->
 <head>
+  <!-- O cabecalho do arquivo diz: "Hospedada em fattech.com.br/lp/impulse-crm/" -- com barra. O
+       Next normaliza a barra para fora e serve este indice em /lp/impulse-crm, e ai `styles.css`
+       resolve contra /lp/, que nao existe: a pagina carregava sem folha de estilo nenhuma e rolava
+       459px de lado num celular de 375px. Declarar a base torna cada caminho relativo daqui
+       independente do formato da URL, que e o que o Apache original garantia pelo DirectoryIndex. -->
+  <base href="/lp/impulse-crm/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 

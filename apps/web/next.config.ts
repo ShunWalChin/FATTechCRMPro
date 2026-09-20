@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         // A raiz é o único endereço que o original não publica como arquivo.
         { source: '/', destination: '/index.html' },
-        { source: '/blog', destination: '/blog/index.html' },
-        { source: '/lp/impulse-crm', destination: '/lp/impulse-crm/index.html' },
       ],
       afterFiles: [
         { source: '/api/v1/:path*', destination: `${api}/api/v1/:path*` },
@@ -26,6 +24,9 @@ const nextConfig: NextConfig = {
       fallback: [],
     };
   },
+  // Sem redirects: o Next serve o índice do diretório no caminho sem barra e passa por cima de
+  // qualquer redirecionamento declarado aqui. Tentar isso primeiro custou uma rodada inteira. A
+  // base declarada dentro da própria página é o que resolve, e resolve para as três formas da URL.
   async headers() { return [{ source: '/:path*', headers: [{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'X-Frame-Options',value:'DENY'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}] }]; }
 };
 export default nextConfig;

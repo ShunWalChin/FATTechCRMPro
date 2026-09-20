@@ -51,7 +51,10 @@
   /* ── Cores de texto ── */
   --text:       #e2e8f0;   /* texto principal */
   --text-muted: #8892a4;   /* texto secundário */
-  --text-dim:   #4a5568;   /* texto terciário / placeholders */
+  /* Era #4a5568, que dava 2.45:1 a 2.68:1 nos sete fundos do site -- reprovado em todos.
+     #748094 mantem o mesmo tom ardosia e passa 4.5:1 ate no fundo mais claro (#0e1324),
+     com 4.62:1 de folga. O texto continua secundario; so deixa de ser ilegivel. */
+  --text-dim:   #748094;   /* texto terciário / placeholders */
 
   /* ── Bordas ── */
   --border:     rgba(0,240,255,0.12);  /* borda padrão */
