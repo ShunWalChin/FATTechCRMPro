@@ -953,43 +953,13 @@
            id="scarcitySlots" e o mês toda virada de mês.
            Controle via pipeline real de implantações.
       ════════════════════════════════════════════════ -->
-      <div id="scarcityBar"
-           data-reveal
-           role="status"
-           aria-live="polite"
-           aria-label="Disponibilidade de vagas este mês"
-           style="background:rgba(255,45,120,0.06);
-                  border:1px solid rgba(255,45,120,0.28);
-                  border-radius:10px;padding:16px 22px;margin-bottom:32px;
-                  display:flex;align-items:center;
-                  justify-content:space-between;flex-wrap:wrap;gap:14px;">
-
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span aria-hidden="true"
-                style="width:9px;height:9px;border-radius:50%;
-                       background:var(--pink);display:inline-block;
-                       flex-shrink:0;animation:scarcityPulse 1.5s ease-in-out infinite;">
-          </span>
-          <span style="font-family:var(--font-mono);font-size:0.68rem;
-                       color:var(--pink);letter-spacing:.07em;">
-            // DISPONIBILIDADE — ABRIL 2026
-          </span>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-          <span style="font-family:var(--font-display);font-size:1rem;color:var(--text);">
-            <strong id="scarcitySlots"
-                    style="color:var(--cyan);font-size:1.35rem;font-weight:700;">2</strong>
-            <span style="color:var(--text-muted);font-size:0.82rem;"> vagas abertas este mês</span>
-          </span>
-          <a class="scarcity-cta"
-             href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Vi%20que%20restam%20poucas%20vagas%20para%20o%20S.Y.N.A.P.S.E.%20em%20abril.%20Quero%20garantir%20a%20minha."
-             target="_blank"
-             rel="noopener noreferrer">
-            GARANTIR MINHA VAGA →
-          </a>
-        </div>
-      </div>
+      <div class="disponibilidade" data-reveal role="status" style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.24); border-radius:10px;padding:16px 22px;margin-bottom:32px;">
+            <!-- A barra anterior anunciava "DISPONIBILIDADE — ABRIL 2026, 2 vagas". Lida em setembro,
+                 uma escassez de cinco meses atras nao apressa ninguem: ela avisa que a pagina esta
+                 abandonada. Aqui fica o que e verdade sem data para envelhecer. -->
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--cyan);letter-spacing:.06em;">// IMPLANTAÇÃO ASSISTIDA</span>
+            <p style="margin:8px 0 0;font-size:0.9rem;color:var(--text-muted);line-height:1.7;">Cada implantação é feita com a sua operação junto — funil, regras e contratos são desenhados com você, não entregues prontos. Por isso as vagas são limitadas por mês. Pergunte a disponibilidade atual no WhatsApp.</p>
+          </div>
 
       <style>
       @keyframes scarcityPulse {
@@ -1020,7 +990,7 @@
           <div class="invest-corner" aria-hidden="true">
             // STATUS: ATIVO<br>
             // SERVIDOR: ONLINE<br>
-            // API_META: OK
+            // META: CONTA CONECTÁVEL
           </div>
           <div class="invest-inner">
 
@@ -1053,17 +1023,34 @@
               💡 Pode reduzir boa parte do peso operacional de atendimento e pré-vendas, com payback plausível entre 90 e 120 dias quando a operação absorve o sistema de verdade
             </div>
 
+            <!-- A lista anterior vendia RAG, WhatsApp API Oficial e Agenda por IA como entregues.
+                 Nenhum dos tres existe no sistema hoje. O que fica aqui e o que a implantacao entrega
+                 de fato; o que esta sendo construido ganhou bloco proprio, com essa palavra. -->
             <div class="invest-features">
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>CRM IA completo: Kanban, Agentes Neurais RAG, WhatsApp API Oficial, Dashboards</span></div>
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Treinamento RAG personalizado com catálogo, regras e voz da sua empresa</span></div>
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Laboratório Sandbox — testes antes do Go Live, zero exposição da marca</span></div>
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Onboarding VIP assistido — 30 dias de acompanhamento exclusivo com a equipe</span></div>
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Suporte técnico e estratégico VIP via WhatsApp direto com o fundador</span></div>
-              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Dashboards em tempo real — SLA, Velocity, conversão e previsibilidade</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Funil desenhado com você: etapas, probabilidade, prazo esperado e campos obrigatórios</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Radar de risco — diz qual negócio está esfriando antes de o cliente sumir</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Fila de leads com SLA de primeira resposta, medido pelo servidor e não preenchido à mão</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Pontuação de leads que devolve critério a critério como chegou ao número</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Propostas com preço do catálogo congelado no instante da criação</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Contratos com o texto de cada revisão preservado e aprovação em níveis</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Trilha de auditoria que nem a própria aplicação tem permissão de alterar</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Isolamento entre empresas garantido pelo banco de dados, não pelo código</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Conta Instagram conectada por organização, com token cifrado no servidor</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Chaves de API com escopo, webhooks e integração n8n</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Importação e deduplicação da sua base atual</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>Laboratório de simulação — testa a automação sem enviar nada para ninguém</span></div>
+              <div class="invest-feat"><span class="invest-feat-check">✓</span><span>60 dias de acompanhamento com a equipe, e suporte direto com o fundador</span></div>
+            </div>
+
+            <div class="invest-features" style="margin-top:18px;border-top:1px solid var(--border);padding-top:18px;">
+              <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);letter-spacing:.06em;margin-bottom:10px;">// EM CONSTRUÇÃO — ENTRA SEM CUSTO ADICIONAL QUANDO FICAR PRONTO</div>
+              <div class="invest-feat"><span class="invest-feat-check" style="color:var(--text-muted)">◷</span><span style="color:var(--text-muted)">WhatsApp pela API oficial da Meta, por provedor homologado</span></div>
+              <div class="invest-feat"><span class="invest-feat-check" style="color:var(--text-muted)">◷</span><span style="color:var(--text-muted)">Agente de IA com execução controlada: sugestão, copiloto e autônomo com orçamento e interrupção</span></div>
+              <div class="invest-feat"><span class="invest-feat-check" style="color:var(--text-muted)">◷</span><span style="color:var(--text-muted)">Agenda e agendamento integrados</span></div>
             </div>
 
             <div class="invest-bonus">
-              🎁 BRINDE EXCLUSIVO: Agenda Automática via IA integrada — ativada já no setup, sem custo adicional.
+              🎁 O que entrar na lista acima durante a sua assinatura é ativado sem custo adicional — você paga o sistema, não cada funcionalidade nova.
             </div>
 
             <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20ativar%20o%20Protocolo%20S.Y.N.A.P.S.E.%20%E2%80%94%20M%C3%A1quina%20de%20Vendas%20CRM%20IA%20(N%C3%ADvel%2003).%20Podemos%20conversar%3F"
@@ -1080,7 +1067,7 @@
 
       <div class="planos-note" style="margin-top:32px" data-reveal>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Precisa de um plano personalizado? Temos opções desde R$297/mês até BPO completo. <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Preciso%20de%20um%20plano%20personalizado%20para%20minha%20empresa." target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">Fale conosco →</a></span>
+        <span>Precisa de um plano personalizado? Temos opções desde R$ 357/mês até BPO completo. <a href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Preciso%20de%20um%20plano%20personalizado%20para%20minha%20empresa." target="_blank" rel="noopener noreferrer" style="color:var(--cyan)">Fale conosco →</a></span>
       </div>
     </div>
   </section>
