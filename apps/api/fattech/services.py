@@ -8,7 +8,10 @@ from sqlalchemy import Integer, cast, func, or_, select, text, update
 from sqlalchemy.orm import Session
 
 from . import lead_scoring
-from .models import Audit, Outbox, Record, User, now, uid
+# O selo da trilha e instalado por importacao: um listener de sessao alcanca tambem os quatro
+# lugares que constroem Audit(...) na mao, que um decorador em audit_event deixaria de fora.
+from . import audit_chain  # noqa: F401
+from .models import Audit, Record, User, now
 from .schemas import DEFAULT_STAGE_HOURS, RESOURCES
 
 RELATIONS = {"contact_id": "contacts", "company_id": "companies", "deal_id": "deals",
@@ -116,10 +119,11 @@ def serialize(record: Record):
 
 
 def audit_event(db, tenant_id, actor_id, action, resource_id, details=None):
+    from .events import emit_event
     metadata = details or {}
     db.add(Audit(tenant_id=tenant_id, actor_id=actor_id, action=action, resource_id=resource_id, details=metadata))
-    db.add(Outbox(tenant_id=tenant_id, event_type=action,
-                  payload={"resource_id": resource_id, **metadata}, trace_id=uid()))
+    emit_event(db, tenant_id, action, {**metadata, "resource_id": resource_id},
+               actor={"type": "user" if actor_id else "system", "id": actor_id or "crm"})
 
 
 def validate(kind, data):
@@ -484,6 +488,12 @@ def create_record(db, tenant_id, actor_id, kind, payload, role=""):
     db.flush()
     if kind == "pipelines" and data["is_default"]:
         promote_default_pipeline(db, tenant_id, record.id)
+    if kind == "content_posts" and data.get("status") == "publicado" and data.get("idea_id"):
+        # Peca que ja nasce publicada gasta a pauta na criacao; sem isto a ideia voltaria ao banco
+        # como disponivel e reapareceria no calendario do mes seguinte.
+        from types import SimpleNamespace
+        from .content_ops import marcar_pauta
+        marcar_pauta(db, SimpleNamespace(tenant_id=tenant_id, actor_id=actor_id), {"status": None}, data)
     details = {"version": 1}
     if kind == "deals":
         details.update(outcome=data["outcome"], closed_at=data["closed_at"])
@@ -610,8 +620,15 @@ def update_record(db, principal, kind, record_id, payload):
         raise HTTPException(409, "O registro foi alterado por outra pessoa. Atualize e tente novamente.")
     if kind == "approvals":
         raise HTTPException(409, "Intenções são imutáveis; use a decisão ou crie nova solicitação")
+    estado_anterior = dict(record.data)
     editable = {key: value for key, value in record.data.items() if key in RESOURCES[kind].model_fields}
     protected = {key: value for key, value in record.data.items() if key not in RESOURCES[kind].model_fields}
+    if kind == "conversations":
+        # Webhooks own this timestamp. Editing title/status must preserve a real inbound
+        # timestamp, while the public schema still refuses forging a messaging window.
+        if "last_inbound_at" in changes:
+            raise HTTPException(422, "A última mensagem recebida é registrada pelo servidor.")
+        protected["last_inbound_at"] = editable.pop("last_inbound_at", None)
     data = {**validate(kind, {**editable, **changes}), **protected}
     if kind == "contacts":
         data = normalize_contact_identifiers(data)
@@ -650,6 +667,12 @@ def update_record(db, principal, kind, record_id, payload):
         raise HTTPException(409, "O registro foi alterado por outra pessoa. Atualize e tente novamente.")
     if kind == "pipelines" and data["is_default"]:
         promote_default_pipeline(db, principal.tenant_id, record_id)
+    if kind == "content_posts":
+        # A pauta e gasta pela peca que publica, nunca por alguem marcando uma caixa. `estado_anterior`
+        # e lido antes do UPDATE: a sincronizacao da sessao ja reescreveu record.data a esta altura, e
+        # comparar record.data com data devolvia "nada mudou" em toda transicao.
+        from .content_ops import marcar_pauta
+        marcar_pauta(db, principal, estado_anterior, data)
     audit_event(db, principal.tenant_id, principal.actor_id, f"{kind}.updated", record_id, details)
     db.flush()
     db.refresh(record)

@@ -1,0 +1,422 @@
+{
+ "origem": "Fase 1 do protocolo de integração OpenClaw — varredura medida em 2026-09-21",
+ "observacao": "Nós desta fase descrevem o que foi MEDIDO no repositório e o que foi PROPOSTO para as fases seguintes. O campo status separa os dois: 'medido' é fato, 'proposto' ainda não existe em código nenhum.",
+ "nodes": [
+  {
+   "id": "fattech:openclaw:dois-hosts",
+   "label": "O briefing descreve dois servidores como se fossem um",
+   "type": "licao",
+   "status": "medido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "n8n, Evolution API, Nginx Proxy Manager e Portainer rodam em 163.176.163.204 (host Palantyr). O host do CRM, 64.181.178.125, tem 71 contêineres de nove projetos e nenhum dos quatro. Quem ocupa 80/443 lá é um nginx de sistema, configurado em infra/nginx.oracle.conf.",
+   "por_que_importa": "A restrição de porta do briefing ('o NPM domina 80 e 443') é verdadeira num host e falsa no outro. O efeito prático é o mesmo — o OpenClaw não pode pegar 80/443 — mas o procedimento de roteamento é outro, e a Fase 4 muda inteira conforme o host escolhido.",
+   "onde_no_fattech": "docs/ARCHITECTURE_MAP.md, docs/knowledge/server-inventory.json"
+  },
+  {
+   "id": "fattech:openclaw:superficie-pronta",
+   "label": "A ponte de integração já existe; não é preciso construí-la",
+   "type": "engineering_pattern",
+   "status": "medido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Entrada por POST /api/v1/webhooks/n8n com HMAC-SHA256 sobre timestamp + '.' + bytes crus, janela de replay de ±300s, Idempotency-Key e hops<=5. Saída por outbox transacional com lease, retentativa limitada e dead-letter na oitava tentativa. Chaves de API com 50 escopos.",
+   "por_que_importa": "O nome da rota diz n8n por história, não por exigência: quem tem a chave e sabe assinar entra. O OpenClaw fala direto, e acrescentar o n8n como salto obrigatório entre os dois adiciona um ponto de falha sem adicionar garantia nenhuma.",
+   "onde_no_fattech": "apps/api/fattech/main.py, apps/api/fattech/outbound.py"
+  },
+  {
+   "id": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "label": "A saída é pelo menos uma vez, e quem consome precisa deduplicar",
+   "type": "engineering_pattern",
+   "status": "medido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O worker entrega com retentativa; o mesmo evento pode chegar duas vezes. O ID do evento vai como Idempotency-Key justamente para o consumidor deduplicar antes de qualquer efeito externo.",
+   "por_que_importa": "Um agente que dispara uma mensagem por evento recebido, sem deduplicar, manda a mesma mensagem duas vezes para o mesmo cliente. É a falha mais provável da integração e a mais constrangedora.",
+   "onde_no_fattech": "apps/api/fattech/outbound.py, apps/api/API.md"
+  },
+  {
+   "id": "fattech:openclaw:agente-como-principal",
+   "label": "O agente é um Principal próprio, não um humano emprestado",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O OpenClaw recebe identidade própria com papel root marcada como agente, chave com escopo declarado, teto de gasto e de ações. Três modos: sugestão, execução interna e execução externa. Os dois primeiros não exigem nenhuma trava desligada.",
+   "por_que_importa": "A capacidade pedida — o agente opera o CRM sozinho — se obtém inteira sem dissolver os quatro controles que tornam o produto vendível. Um agente root sem modos atravessaria a trava de envio externo, a cadeia de aprovação, o compliance e a recusa de chave em operação administrativa.",
+   "onde_no_fattech": "apps/api/fattech/permissions.py (RANK já tem root=50), apps/api/fattech/schemas.py (Agent.autonomy)"
+  },
+  {
+   "id": "fattech:openclaw:agente-nao-aprova-a-si-mesmo",
+   "label": "O irreversível continua passando por aprovação, inclusive para o agente",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Exclusão, fusão de contatos, assinatura de contrato e envio externo entram na cadeia de aprovação com a regra que já existe: quem solicita não decide. O agente não ganha licença de furar a janela de 24h por ser agente.",
+   "por_que_importa": "Um agente que aprova a própria solicitação transforma a cadeia de aprovação em enfeite, e o enfeite é pior que a ausência: ele dá a impressão de controle a quem audita.",
+   "onde_no_fattech": "apps/api/fattech/approval_chain.py, apps/api/fattech/compliance.py"
+  },
+  {
+   "id": "fattech:openclaw:topologia-por-vps",
+   "label": "Um VPS por cliente é uma decisão de produto, não de deploy",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Cada cliente roda banco, OpenClaw, core do CRM e o próprio site num VPS. A RLS por organização permanece como redundância barata. O core é o registro autoritativo, o OpenClaw é o motor de execução, e nenhum dos dois escreve no banco do outro: a API é o único caminho.",
+   "por_que_importa": "Essa fronteira é o que permite atualizar o OpenClaw sem migrar o CRM. E a decisão do provedor de LLM muda o preço do plano: modelo local por VPS exige GPU, provedor central vira custo variável por cliente e precisa de teto por agente.",
+   "onde_no_fattech": "docs/ARCHITECTURE_MAP.md"
+  },
+  {
+   "id": "fattech:openclaw:sandbox-incompativel",
+   "label": "O sandbox do OpenClaw não cabe no perfil de segurança do compose do CRM",
+   "type": "licao",
+   "status": "medido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Os contêineres do CRM sobem com read_only, cap_drop ALL e no-new-privileges. O OpenClaw executa ferramentas num sandbox Docker que normalmente exige socket do Docker ou privilégios elevados.",
+   "por_que_importa": "Copiar o perfil do OpenClaw para dentro do compose do CRM relaxaria a segurança dos cinco contêineres em produção para acomodar um sexto. O OpenClaw fica em compose próprio, anexado à rede como serviço externo.",
+   "onde_no_fattech": "infra/compose.yml"
+  },
+  {
+   "id": "fattech:openclaw:consumidor-nao-substituto",
+   "label": "O OpenClaw é consumidor do Core-Engine, não um segundo motor",
+   "type": "engineering_pattern",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O agente entra como consumidor registrado do Core-Engine, com worker_role próprio, entrega e recibo próprios. A base das automações continua sendo o outbox transacional.",
+   "por_que_importa": "O pedido original colocava o OpenClaw no lugar do motor existente, repetindo o débito registrado em fattech:walchat:two-engines-debt com outro nome. Como consumidor, se o agente ou o provedor de LLM cair, os eventos enfileiram e ele recupera o atraso — o modo degradado que o DR-02 do manual Palantyr exige.",
+   "onde_no_fattech": "apps/api/fattech/core_engine.py, docs/OPENCLAW_BLUEPRINT.md"
+  },
+  {
+   "id": "fattech:openclaw:plano-e-previa",
+   "label": "O plano do agente é prévia; o CRM reavalia no instante da execução",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O CRM é a camada de restrição e o OpenClaw a camada de intenção. Compliance é chamado de novo com os dados do momento, nunca com o estado que o agente leu ao planejar.",
+   "por_que_importa": "Aplicação direta de fattech:walchat:eligibility-is-preview. Estado derivado envelhece entre o plano e a execução, e um agente autorizado pela própria leitura enviaria mensagem a quem pediu para parar três minutos antes.",
+   "onde_no_fattech": "apps/api/fattech/compliance.py, docs/OPENCLAW_BLUEPRINT.md"
+  },
+  {
+   "id": "fattech:openclaw:deduplicacao-no-banco",
+   "label": "A deduplicação do gatilho é do banco, não da disciplina do agente",
+   "type": "engineering_pattern",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "agent_runs carrega UNIQUE (tenant_id, trigger_event_id). Evento repetido tenta inserir a mesma corrida e falha.",
+   "por_que_importa": "A entrega do outbox é pelo menos uma vez. Confiar no agente para deduplicar deixaria a garantia numa camada que um prompt pode contrariar; no banco, não há caminho em que o cliente receba a mesma mensagem duas vezes por replay. Mesmo espírito de fattech:walchat:exactly-one-destination.",
+   "onde_no_fattech": "docs/OPENCLAW_BLUEPRINT.md, migração 0009"
+  },
+  {
+   "id": "fattech:openclaw:justificativa-e-o-produto",
+   "label": "A justificativa do agente é o produto, não a ação",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "agent_runs.rationale guarda a justificativa declarada junto do trigger_event_id, e audit_log.details recebe run_id em toda ação de agente. agent_steps é append-only e grava também a tentativa recusada, com motivo.",
+   "por_que_importa": "A trilha encadeada responde o que aconteceu e quem fez; nunca foi projetada para gravar por quê. Com metade das ações vindo de um modelo, 'o modelo decidiu' regrediria justamente o diferencial de auditabilidade do produto. Extensão de fattech:lead:explicacao-e-o-produto. Declaração honesta: justificativa é o que o modelo disse que pensou, não prova do que pensou.",
+   "onde_no_fattech": "docs/OPENCLAW_BLUEPRINT.md"
+  },
+  {
+   "id": "fattech:openclaw:teto-ausente-recusa",
+   "label": "Teto não declarado recusa executar, em vez de valer como ilimitado",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "budget_month_cents e max_actions_per_hour iguais a zero significam 'ninguém declarou' e o agente recusa executar. O gasto do mês é derivado da soma de agent_runs, nunca gravado num contador.",
+   "por_que_importa": "Mesma distinção de fattech:lead:explicado-vs-zero: zero e ausente são estados diferentes. Aqui a diferença é entre um teto esquecido e um incidente com data marcada. O gasto derivado evita o segundo lugar onde o mesmo número mora, que fattech:contrato:lista-fixa-em-dois-lugares já mostrou como termina.",
+   "onde_no_fattech": "apps/api/fattech/schemas.py (Agent), docs/OPENCLAW_BLUEPRINT.md"
+  },
+  {
+   "id": "fattech:openclaw:topologia-e-preco",
+   "label": "Topologia é faixa de preço, nunca bifurcação de código",
+   "type": "business_rule",
+   "status": "proposto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Central multi-organização é o padrão; VPS dedicado é premium. Mesmo código, mesmas migrações, mesmo artefato de release; a topologia é variável de ambiente. O site do cliente nunca fica na máquina do banco do CRM.",
+   "por_que_importa": "No dia em que a instalação dedicada divergir da central em código, existem dois produtos e a margem de um. E o custo de frota — trinta migrações, rotações, certificados e verificações de backup — escala com a contagem de clientes e não com a receita, então precisa estar no preço antes do primeiro cliente dedicado.",
+   "onde_no_fattech": "docs/OPENCLAW_BLUEPRINT.md, infra/install-release.sh"
+  },
+  {
+   "id": "fattech:openclaw:contencao-nao-depende-de-patente",
+   "label": "Contenção de automatismo não pode depender de superar a patente do automatismo",
+   "type": "licao_de_debito",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O agente é `root` (patente 50) e `can_manage` exige patente estritamente maior, então o owner (40) que criou o agente não conseguia revogar a chave dele por DELETE /api/v1/api-keys/{id}. O desligamento passou a ter rota própria, que revoga toda chave ativa e desativa o usuário, válida apenas para is_agent.",
+   "por_que_importa": "Eu tinha escrito no cabeçalho do módulo que 'revogar a chave desliga o agente'. Era falso, e só apareceu porque o teste tentou revogar de verdade em vez de conferir a documentação. Um botão de desligar que o operador não alcança não é botão de desligar. A exceção é estreita de propósito: não afrouxa a regra de patente entre pessoas, porque um agente não é uma pessoa com patente.",
+   "onde_no_fattech": "apps/api/fattech/agent_identity.py (desligar), DELETE /api/v1/agent/identity/{agent_id}"
+  },
+  {
+   "id": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "label": "Nenhum agente nasce ativo enquanto não houver executor",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "`Agent.status` continua sendo `Literal['paused']`. O estado ativo abre no E2, junto com o portão de execução que o torna verdadeiro.",
+   "por_que_importa": "Ao projetar o E1 eu abri o campo para 'active', argumentando que sugestão não age. A suíte pegou: test_flow_simulation_and_external_side_effects_fail_closed já guardava essa garantia. Um estado que declara operação sem runtime que a cumpra é o que o §10 da ordem proíbe, e a garantia anterior estava certa.",
+   "onde_no_fattech": "apps/api/fattech/schemas.py (Agent.status)"
+  },
+  {
+   "id": "fattech:openclaw:uma-porta-so",
+   "label": "O agente entra por uma porta só, e a restrição mora no ponto único",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Uma chave de um usuário `is_agent` só é aceita em rotas sob /api/v1/agent/. A verificação está em require_auth, por onde toda requisição passa.",
+   "por_que_importa": "As rotas comuns aplicam escopo e versão, e não aplicam modo, teto, aprovação nem registro de passo. Aceitar a chave do agente nelas contornaria o portão inteiro. A restrição precisa morar no ponto único porque uma lista de rotas a proteger é uma lista a esquecer.",
+   "onde_no_fattech": "apps/api/fattech/security.py (require_auth)"
+  },
+  {
+   "id": "fattech:openclaw:recusa-nao-e-erro",
+   "label": "Recusa do portão é resultado, não erro de protocolo",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "POST /api/v1/agent/act devolve 200 com decision=refused e o motivo, em vez de 4xx. O passo fica gravado em agent_steps de qualquer forma.",
+   "por_que_importa": "Devolver 4xx faria o agente tratar decisão de negócio como falha de rede e reenviar, e a recusa que deveria contê-lo viraria laço de tentativas. E um portão cujas recusas não deixam rastro é indistinguível de um portão que não existe.",
+   "onde_no_fattech": "apps/api/fattech/agent_gate.py (agir)"
+  },
+  {
+   "id": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "label": "Em modo sugestão a escrita vira proposta, e quem aplica é o autor",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Escrita em modo sugestão grava um passo com decision='suggested' e o efeito não acontece. Uma pessoa aplica por POST /agent/steps/{id}/apply, e a escrita entra com o Principal dela. Chave de API é recusada nessa rota.",
+   "por_que_importa": "Deixar o agente aplicar o próprio rascunho devolveria a ele escrita sem modo de execução, por caminho lateral — a mesma forma de fattech:aprovacao:segregacao-de-funcoes: quem propõe não decide. E a trilha precisa registrar quem decidiu, não quem sugeriu.",
+   "onde_no_fattech": "apps/api/fattech/agent_gate.py (aplicar_sugestao)"
+  },
+  {
+   "id": "fattech:openclaw:teto-nao-conta-recusa",
+   "label": "O teto de ações conta o que foi permitido, nunca o que foi recusado",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "acoes_na_ultima_hora conta apenas passos com decision em (allowed, suggested).",
+   "por_que_importa": "Contar recusas no teto puniria o agente por ser barrado: ele bateria no teto justamente quando o portão estivesse funcionando, e a recusa viraria um segundo castigo — além de esconder o motivo real da próxima recusa.",
+   "onde_no_fattech": "apps/api/fattech/agent_gate.py"
+  },
+  {
+   "id": "fattech:openclaw:escopo-de-operar-e-de-reconfigurar",
+   "label": "Operar a si mesmo e reconfigurar a si mesmo são escopos diferentes",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O ciclo de corrida do agente exige `agent:operate`, distinto de `agents:write`, que escreve o registro de configuração de um agente.",
+   "por_que_importa": "Usar agents:write para o ciclo daria ao agente, pelo mesmo escopo, a capacidade de reescrever a própria configuração — teto, ferramentas e modo. Um agente que pode ajustar o próprio limite não tem limite.",
+   "onde_no_fattech": "apps/api/fattech/main.py (api_scopes), apps/api/fattech/agent_identity.py"
+  },
+  {
+   "id": "fattech:web:contrato-de-escrita-fica-no-bloco-de-escrita",
+   "label": "Contrato de resposta de POST precisa morar no bloco de escrita",
+   "type": "licao_de_debito",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "validResponse resolve todo método diferente de GET dentro de um bloco que termina em `hasId(data)`. Um contrato declarado depois dele, na região de leitura, nunca é alcançado por um POST.",
+   "por_que_importa": "Declarei quatro contratos novos do agente na região errada e o typecheck passou, os testes de API passaram, e só o teste de navegador pegou: a tela mostrava 'Resposta inválida do servidor' ao aplicar um rascunho. Contrato inalcançável tem a mesma aparência de contrato ausente, e a única coisa que distingue os dois é um teste que exercita a tela.",
+   "onde_no_fattech": "apps/web/lib/api.ts (validResponse)"
+  },
+  {
+   "id": "fattech:agente:obrigacao-antes-do-historico",
+   "label": "Na tela do agente, o que exige decisão vem antes do histórico",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "A seção 'Esperando você' fica acima de 'Execuções', e o rótulo do passo nomeia a obrigação ('Esperando você') em vez do objeto ('rascunho'). A confirmação nomeia a ação, a consequência, e os botões dizem o que fazem.",
+   "por_que_importa": "Histórico é consulta; rascunho é obrigação. Numa lista varrida em três segundos, quem precisa agir tem de descobrir isso sem ler. E um rascunho que só existe dentro do detalhe de uma execução é um rascunho que ninguém encontra.",
+   "onde_no_fattech": "apps/web/components/agent-operations.tsx, GET /api/v1/agent/suggestions"
+  },
+  {
+   "id": "fattech:openclaw:agente-puxa-o-crm-nao-empurra",
+   "label": "O agente puxa trabalho; o CRM não empurra",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "O consumidor `openclaw` do Core-Engine materializa a corrida em `pending` dentro da transação, e para. O OpenClaw reclama por POST /api/v1/agent/runs/claim, com transição atômica pending -> planning.",
+   "por_que_importa": "O blueprint previa empurrar por HTTP. Empurrar exigiria um segundo mecanismo de entrega — lease, retentativa, espera progressiva, carta morta — ao lado do outbox que já faz tudo isso, porque `core_engine.process()` proíbe chamada de rede dentro de transação. Puxar dá o modo degradado de graça (agente fora do ar, corridas enfileiram), dispensa credencial de saída e não abre porta de entrada no OpenClaw — o que importa na topologia por VPS.",
+   "onde_no_fattech": "apps/api/fattech/agent_dispatch.py, apps/api/fattech/core_engine.py"
+  },
+  {
+   "id": "fattech:openclaw:unicidade-por-agente-e-evento",
+   "label": "Dois agentes podem observar o mesmo evento, e cada um tem sua corrida",
+   "type": "licao_de_debito",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "A 0009 gravou UNIQUE (tenant_id, trigger_event_id); a 0010 trocou por (tenant_id, agent_id, trigger_event_id).",
+   "por_que_importa": "Com a unicidade antiga, um agente que qualifica o lead e outro que agenda a próxima ação colidiam no mesmo evento, e o segundo perdia a corrida em silêncio. A dedupe continua sendo do banco — ela só passou a valer pelo par que sempre quis dizer. O defeito era invisível até o E4 porque até então nunca houve mais de um agente reagindo ao mesmo evento.",
+   "onde_no_fattech": "apps/api/fattech/migrate.py (0010), apps/api/fattech/models.py"
+  },
+  {
+   "id": "fattech:openclaw:laco-cortado-na-origem",
+   "label": "A ação do próprio agente não o acorda de novo",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Evento com prefixo `agent.` nunca materializa corrida. O prefixo é reservado.",
+   "por_que_importa": "O agente escreve, a escrita emite evento, o evento acordaria o agente. O limite de cinco saltos do outbox cortaria o laço, mas só depois de cinco voltas com custo de modelo em cada uma. Cortar na origem é mais barato que cortar no quinto giro.",
+   "onde_no_fattech": "apps/api/fattech/agent_dispatch.py (despertar)"
+  },
+  {
+   "id": "fattech:openclaw:ativo-exige-gatilho",
+   "label": "Ativo sem gatilho é um agente que nunca acorda",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "`status='active'` exige ao menos um gatilho e ao menos uma ferramenta declarados, recusados na escrita. E `active` só abriu no E4, quando passou a haver despacho que o cumpra.",
+   "por_que_importa": "O estado diria uma coisa e a operação faria outra: quem configurou ficaria esperando por uma corrida que nunca vem. É a mesma disciplina que manteve `status` fechado em `paused` do E1 ao E2 — o estado só abre junto do runtime que o torna verdadeiro.",
+   "onde_no_fattech": "apps/api/fattech/schemas.py (Agent)"
+  }
+ ],
+ "edges": [
+  {
+   "source": "fattech:openclaw:dois-hosts",
+   "target": "fattech:openclaw:topologia-por-vps",
+   "relation": "condiciona",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:superficie-pronta",
+   "target": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "relation": "implica",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:agente-nao-aprova-a-si-mesmo",
+   "relation": "depende_de",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:auditoria:cadeia-de-integridade",
+   "relation": "torna_auditavel",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:sandbox-incompativel",
+   "target": "fattech:openclaw:superficie-pronta",
+   "relation": "reforca",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:consumidor-nao-substituto",
+   "target": "fattech:walchat:two-engines-debt",
+   "relation": "evita",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:plano-e-previa",
+   "target": "fattech:walchat:eligibility-is-preview",
+   "relation": "aplica",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:deduplicacao-no-banco",
+   "target": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "relation": "resolve",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:justificativa-e-o-produto",
+   "target": "fattech:auditoria:cadeia-de-integridade",
+   "relation": "complementa",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:teto-ausente-recusa",
+   "relation": "exige",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:topologia-e-preco",
+   "target": "fattech:openclaw:topologia-por-vps",
+   "relation": "refina",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:contencao-nao-depende-de-patente",
+   "relation": "corrigida_por",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "target": "fattech:openclaw:plano-e-previa",
+   "relation": "antecede",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:uma-porta-so",
+   "target": "fattech:openclaw:plano-e-previa",
+   "relation": "garante",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:recusa-nao-e-erro",
+   "target": "fattech:lead:explicacao-e-o-produto",
+   "relation": "aplica",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "target": "fattech:aprovacao:segregacao-de-funcoes",
+   "relation": "aplica",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:escopo-de-operar-e-de-reconfigurar",
+   "target": "fattech:openclaw:teto-ausente-recusa",
+   "relation": "protege",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:agente:obrigacao-antes-do-historico",
+   "target": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "relation": "torna_usavel",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:agente-puxa-o-crm-nao-empurra",
+   "target": "fattech:openclaw:consumidor-nao-substituto",
+   "relation": "realiza",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:unicidade-por-agente-e-evento",
+   "target": "fattech:openclaw:deduplicacao-no-banco",
+   "relation": "corrige",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:laco-cortado-na-origem",
+   "target": "fattech:openclaw:superficie-pronta",
+   "relation": "protege",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:ativo-exige-gatilho",
+   "target": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "relation": "sucede",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  }
+ ]
+}

@@ -52,6 +52,8 @@ services:
       FATTECH_BLOCKED_TERMS: ${FATTECH_BLOCKED_TERMS-}
       FATTECH_WORKER_MAX_ATTEMPTS: ${FATTECH_WORKER_MAX_ATTEMPTS-8}
       FATTECH_WORKER_POLL_SECONDS: ${FATTECH_WORKER_POLL_SECONDS-5}
+      FATTECH_CORE_DEBOUNCE_SECONDS: ${FATTECH_CORE_DEBOUNCE_SECONDS-5}
+      FATTECH_CORE_MAX_BUFFER_SECONDS: ${FATTECH_CORE_MAX_BUFFER_SECONDS-60}
       FATTECH_N8N_OUTBOUND_URL: ${FATTECH_N8N_OUTBOUND_URL:-}
       FATTECH_N8N_OUTBOUND_TOKEN: ${FATTECH_N8N_OUTBOUND_TOKEN:-}
       FATTECH_CREDENTIAL_KEY: ${FATTECH_CREDENTIAL_KEY:-}
@@ -91,6 +93,22 @@ services:
       interval: 20s
       timeout: 8s
       retries: 8
+
+  core-worker:
+    <<: *app
+    image: fattechcrmpro-api:${RELEASE_TAG:-local}
+    command: [python, -m, fattech.core_worker]
+    environment: *api-env
+    depends_on:
+      api: {condition: service_healthy}
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: [CMD, python, -m, fattech.worker_health]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   worker:
     <<: *app

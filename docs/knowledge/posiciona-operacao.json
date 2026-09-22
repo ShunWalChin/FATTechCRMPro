@@ -1,0 +1,103 @@
+{
+ "origem": "FAT_Tech_Posiciona_Entregaveis.zip (página da vertente, kit de 330 pautas, planilha de produção)",
+ "observacao": "Os dados brutos extraídos dos anexos ficam em docs/knowledge/data/ porque não são nós de grafo: o exportador lê apenas arquivos com a chave 'nodes', e misturar as duas coisas no mesmo diretório fazia um arquivo de 330 linhas parecer uma fonte de conhecimento vazia.",
+ "nodes": [
+  {
+   "id": "fattech:posiciona:vertente",
+   "label": "FAT Tech Posiciona: conteúdo e posicionamento como vertente",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "A vertente vende conteúdo em cinco linhas de catálogo (MEI, PME, grande porte, compliance e vitrine), com preço em faixa e implantação cobrada à parte.",
+   "por_que_importa": "O catálogo do CRM nasceu para produto de preço único; serviço se vende em faixa negociada, e guardar só o piso fazia toda proposta nascer no mínimo da tabela.",
+   "onde_no_fattech": "apps/api/fattech/schemas.py (Product.price_max_cents, Product.setup_cents)"
+  },
+  {
+   "id": "fattech:posiciona:seis-pilares",
+   "label": "Seis pilares fechados, um por peça",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "Toda peça e toda pauta declaram exatamente um dos seis pilares publicados: storytelling, bastidores, prova social, performance, autoridade e vitrine.",
+   "por_que_importa": "Campo livre devolveria a distribuição mensal ao Excel. Enumeração fechada é o que permite a tela mostrar um pilar com zero peças, que é o achado que interessa.",
+   "onde_no_fattech": "apps/api/fattech/schemas.py (PILARES)"
+  },
+  {
+   "id": "fattech:posiciona:pilar-sem-pauta",
+   "label": "O kit de pautas não cobre o pilar 'performance'",
+   "type": "licao",
+   "status": "medido",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "As 330 pautas do kit cobrem cinco dos seis pilares: 110 em autoridade e 55 em cada um dos outros quatro. Nenhuma em performance, que é justamente o pilar vendido à Linha 3 (conteúdo plugado ao CRM).",
+   "por_que_importa": "A divergência só apareceu porque o importador comparou os pilares do kit com os da página em vez de assumir que os dois materiais falavam a mesma língua. É um vazio do material, não do sistema, e está publicado como tal.",
+   "onde_no_fattech": "docs/knowledge/data/posiciona-pautas.json"
+  },
+  {
+   "id": "fattech:posiciona:pauta-gasta-na-publicacao",
+   "label": "A pauta é consumida pela peça publicada, não pela escolhida",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "Marcar uma pauta como usada é efeito da transição da peça para 'publicado'; cancelar a peça devolve a pauta ao banco.",
+   "por_que_importa": "A planilha marcava 'Usado? S' na escolha, então uma peça abandonada levava a ideia junto. Um campo que alguém marca à mão não é um controle.",
+   "onde_no_fattech": "apps/api/fattech/content_ops.py (marcar_pauta)"
+  },
+  {
+   "id": "fattech:posiciona:deficit-contra-contrato",
+   "label": "Déficit é publicado contra frequência contratada",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "A apuração mensal compara peças publicadas com a frequência do contrato da conta. Frequência zero desliga a comparação e a conta aparece sem déficit, em vez de sumir do relatório.",
+   "por_que_importa": "'Sem frequência contratada' e 'contratou zero' são estados diferentes; tratá-los igual acusaria toda conta de vitrine de inadimplência e esconderia a conta que ninguém apura.",
+   "onde_no_fattech": "apps/api/fattech/content_ops.py (indicadores)"
+  },
+  {
+   "id": "fattech:auditoria:cadeia-de-integridade",
+   "label": "Trilha de auditoria encadeada por hash, verificável por qualquer um",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "Cada linha de audit_log carrega o hash da anterior da mesma organização. A verificação percorre a cadeia e reporta o denominador junto com o veredito.",
+   "por_que_importa": "Revogar UPDATE e DELETE impede a aplicação de alterar a trilha, e não impede restore parcial, superusuário do banco nem linha apagada por fora. A cadeia não torna isso impossível: torna detectável, que é o que uma auditoria externa pede.",
+   "onde_no_fattech": "apps/api/fattech/audit_chain.py"
+  },
+  {
+   "id": "fattech:auditoria:selo-precisa-sobreviver-ao-banco",
+   "label": "O selo é calculado sobre a forma que sobrevive à ida e volta do banco",
+   "type": "licao_de_debito",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "O carimbo de tempo entra no hash normalizado como UTC sem fuso e com microssegundos, porque o SQLite perde o fuso e o Postgres o devolve reescrito.",
+   "por_que_importa": "A primeira versão selava o isoformat cru e toda linha falhava a reconferência um instante depois de gravada. Um controle que acusa adulteração num banco intacto é pior que nenhum: ele grita sempre, e quem confere aprende a ignorá-lo.",
+   "onde_no_fattech": "apps/api/fattech/audit_chain.py (instante)"
+  },
+  {
+   "id": "fattech:auditoria:numeracao-serializada",
+   "label": "A numeração da trilha é serializada por organização",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/posiciona-operacao.json",
+   "rule": "Antes de selar, a transação toma trava consultiva da organização; o índice único em (tenant_id, seq) transforma a bifurcação restante em erro de gravação.",
+   "por_que_importa": "O gatilho do manual Palantyr lê o último elo sem travar nada: duas requisições simultâneas do mesmo cliente leem a mesma cauda e a cadeia bifurca em silêncio, fazendo a verificação acusar problema num banco intacto.",
+   "onde_no_fattech": "apps/api/fattech/audit_chain.py (encadear), apps/api/fattech/migrate.py (0007)"
+  }
+ ],
+ "edges": [
+  {"source": "fattech:posiciona:vertente", "target": "fattech:posiciona:seis-pilares",
+   "relation": "organiza", "confidence": "DECLARED",
+   "source_file": "docs/knowledge/posiciona-operacao.json"},
+  {"source": "fattech:posiciona:seis-pilares", "target": "fattech:posiciona:pilar-sem-pauta",
+   "relation": "revela", "confidence": "MEASURED",
+   "source_file": "docs/knowledge/posiciona-operacao.json"},
+  {"source": "fattech:posiciona:pauta-gasta-na-publicacao", "target": "fattech:posiciona:deficit-contra-contrato",
+   "relation": "alimenta", "confidence": "DECLARED",
+   "source_file": "docs/knowledge/posiciona-operacao.json"},
+  {"source": "fattech:auditoria:cadeia-de-integridade", "target": "fattech:auditoria:numeracao-serializada",
+   "relation": "depende_de", "confidence": "DECLARED",
+   "source_file": "docs/knowledge/posiciona-operacao.json"},
+  {"source": "fattech:auditoria:cadeia-de-integridade", "target": "fattech:auditoria:selo-precisa-sobreviver-ao-banco",
+   "relation": "corrigida_por", "confidence": "MEASURED",
+   "source_file": "docs/knowledge/posiciona-operacao.json"}
+ ]
+}

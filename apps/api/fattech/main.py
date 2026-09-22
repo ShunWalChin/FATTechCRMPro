@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
-from .models import ApiKey, Audit, Idempotency, KnowledgeChunk, LoginSession, Outbox, Record, Tenant, User, now, uid
+from .models import AgentRun, AgentStep, ApiKey, Audit, Idempotency, KnowledgeChunk, LoginSession, Outbox, Record, Tenant, User, now, uid
 from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
                       Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
@@ -29,6 +29,9 @@ from .imports import contact_import
 from .json_input import validate_json_body
 from .record_views import register_record_views
 from .instagram_webhook import register_instagram_webhook
+from .content_ops import register_content_ops
+from .agent_api import register_agent_api
+from .audit_chain import verificar as verificar_trilha
 from .sales_operations import router as sales_router
 from . import compliance
 from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications, build_radar,
@@ -59,6 +62,14 @@ ACTION_LABELS = {
     "api_key.created": "Criou uma chave de API", "api_key.revoked": "Revogou uma chave de API",
     "webhook.accepted": "Recebeu um evento externo", "event.retried": "Reprocessou um evento",
     "approval.decided": "Decidiu uma solicitação", "contacts.recaptured": "Recebeu um contato pelo site",
+    "synapse.assisted": "Consultou a base de conhecimento do SYNAPSE",
+    "synapse.capture_pending": "Registrou captação aguardando configuração do SYNAPSE",
+    "synapse.installed": "Preparou a operação comercial SYNAPSE",
+    "synapse.configured": "Alterou a configuração do SYNAPSE",
+    "synapse.enrolled": "Vinculou um lead à operação SYNAPSE",
+    "core.delivery.retried": "Recolocou uma entrega interna na fila de processamento",
+    "messages.received": "Registrou uma mensagem recebida",
+    "contacts.opted_out": "Registrou pedido de interrupção de mensagens",
 }
 
 
@@ -88,7 +99,11 @@ def api_scopes():
         "integrations:write", "team:read",
         # contracts vive fora de RESOURCES porque tem transicoes que o PATCH generico burlaria;
         # o escopo precisa existir aqui ou nenhuma chave de API jamais poderia recebe-lo.
-        "contracts:read", "contracts:write"}
+        "contracts:read", "contracts:write",
+        # O agente opera o proprio ciclo de corrida com este escopo. Ele e deliberadamente distinto
+        # de `agents:write`, que escreve o registro de configuracao de um agente: operar a si mesmo
+        # e reconfigurar a si mesmo sao coisas diferentes, e so a primeira e do agente.
+        "agent:operate"}
 
 
 COMPLIANCE_REASONS = {
@@ -138,7 +153,7 @@ def create_app(settings: Settings | None = None, engine=None):
                     "AND c.relrowsecurity AND c.relforcerowsecurity"), {"tabelas": list(TENANT_TABLES)}).scalar_one()
                 if secured != len(TENANT_TABLES):
                     raise RuntimeError("Tenant tables require ENABLE and FORCE ROW LEVEL SECURITY")
-                connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0002'" )).scalar_one()
+                connection.execute(text("SELECT 1 FROM schema_migrations WHERE version = '0008'" )).scalar_one()
         yield
 
     app = FastAPI(title="FAT Tech CRM API", version=APP_VERSION, lifespan=lifespan,
@@ -293,6 +308,11 @@ def create_app(settings: Settings | None = None, engine=None):
             raise HTTPException(503, "Captação não configurada")
         set_tenant(db, tenant.id)
         utm = {key: value for key, value in payload.model_dump().items() if key.startswith("utm_")}
+        from .synapse import enroll_contact
+        configuration = db.scalar(select(Record).where(Record.tenant_id == tenant.id,
+            Record.kind == "synapse_config", Record.deleted.is_(False)))
+        synapse_capture = bool(configuration and configuration.data.get("enabled")
+                               and configuration.data.get("capture_enabled"))
         lead = capture_lead(db, tenant.id, {
             "name": payload.name, "email": str(payload.email), "phone": payload.phone,
             "company": payload.company, "source": "website", "consent": True,
@@ -300,7 +320,17 @@ def create_app(settings: Settings | None = None, engine=None):
             # UTM vira campo do contato, nao so um dicionario guardado: e o que deixa agrupar por origem.
             **utm,
         }, utm,
-            promote=settings.capture_creates_deal)
+            promote=settings.capture_creates_deal and not synapse_capture)
+        if synapse_capture:
+            try:
+                with db.begin_nested():
+                    enroll_contact(db, tenant.id, None, lead)
+            except HTTPException as exc:
+                if exc.status_code not in (404, 409, 422):
+                    raise
+                # A subsequently edited funnel must never discard the public lead.
+                audit_event(db, tenant.id, None, "synapse.capture_pending", lead.id,
+                            {"reason": "configuration_requires_review", "status_code": exc.status_code})
         db.commit()
         return {"id": lead.id, "status": "accepted"}
 
@@ -460,6 +490,18 @@ def create_app(settings: Settings | None = None, engine=None):
         total = db.scalar(select(func.count()).select_from(Audit).where(Audit.tenant_id == principal.tenant_id))
         return {"items": describe_audit(db, principal.tenant_id, records), "total": total}
 
+    @app.get("/api/v1/audit/verify")
+    def audit_verify(principal=Depends(require_auth), db=Depends(get_db),
+                     recentes: int = Query(0, ge=0, le=5000)):
+        """Percorre a cadeia de integridade da trilha e devolve o veredito com o denominador.
+
+        `recentes` confere só a cauda — barato o bastante para rodar de hora em hora. Sem ele, a
+        cadeia inteira, que é o que uma auditoria externa pede. Um resultado sem o número de linhas
+        conferidas não diria nada: quem não lê nada também não acha problema nenhum.
+        """
+        principal.admin()
+        return verificar_trilha(db, principal.tenant_id, recentes or None)
+
     @app.post("/api/v1/api-keys", status_code=201)
     def create_key(payload: KeyCreate, principal=Depends(require_auth), db=Depends(get_db)):
         principal.admin()
@@ -541,7 +583,8 @@ def create_app(settings: Settings | None = None, engine=None):
         result = {"id": event_id, "status": "accepted", "duplicate": False}
         db.add(Idempotency(tenant_id=principal.tenant_id, key=idempotency_key, body_hash=body_hash, response=result))
         db.add(Outbox(id=event_id, tenant_id=principal.tenant_id, event_type=payload.event_type,
-                      payload=payload.payload, trace_id=payload.trace_id or uid(), hops=payload.hops))
+                      payload=payload.payload, trace_id=payload.trace_id or uid(), hops=payload.hops,
+                      origin="integration", actor={"type": "webhook", "id": principal.actor_id or "integration"}))
         db.add(Audit(tenant_id=principal.tenant_id, actor_id=principal.actor_id, action="webhook.accepted",
                      resource_id=event_id, details={"event_type": payload.event_type}))
         try:
@@ -745,11 +788,19 @@ def create_app(settings: Settings | None = None, engine=None):
     app.include_router(instagram_router)
     from .lead_queue import router as lead_router
     app.include_router(lead_router)
+    from .synapse import router as synapse_router
+    from .synapse_assistant import router as synapse_assistant_router
+    app.include_router(synapse_router)
+    app.include_router(synapse_assistant_router)
+    from .core_api import router as core_router
+    app.include_router(core_router)
     # Antes do laco de RESOURCES: /contacts/duplicates precisa vencer /contacts/{record_id}.
     from .merge import register_merge
     register_merge(app)
     from .contracts import register_contracts
     register_contracts(app)
+    register_content_ops(app)
+    register_agent_api(app)
     # Register every concrete route for an unambiguous OpenAPI operation catalog.
     for kind, schema in RESOURCES.items():
         register_resource(app, kind, schema)

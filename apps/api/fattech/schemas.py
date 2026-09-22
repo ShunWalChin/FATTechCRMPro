@@ -252,15 +252,65 @@ class Approval(StrictModel):
     intent: dict = Field(default_factory=dict)
 
 
+MODOS_DE_AGENTE = ("sugestao", "execucao_interna", "execucao_externa")
+
+
 class Agent(StrictModel):
+    """Configuracao do agente. Mora em `records` e nao em tabela por `fattech:mano:paradigma-hibrido`:
+    e configuracao de baixo volume editada por pessoas. O que o agente *faz* mora em agent_runs.
+
+    Dois campos tem semantica que precisa de leitura atenta, e ela e deliberada:
+
+    `tools` vazio significa **nenhuma ferramenta**, nunca todas. Lista de permissao que cai para
+    "tudo" quando esquecida e a forma mais comum de um controle virar enfeite.
+
+    `budget_month_cents` e `max_actions_per_hour` em zero significam "ninguem declarou", e o portao
+    recusa executar. Nao significam ilimitado. E a mesma distincao de
+    `fattech:lead:explicado-vs-zero` -- pontuou zero e ninguem pontuou sao estados diferentes -- e
+    aqui ela separa um teto esquecido de um incidente com data marcada.
+    """
     name: Name
     squad: str = Field(default="", max_length=100)
     role: str = Field(default="", max_length=100)
-    status: Literal["paused"] = "paused"
+    # `active` abre aqui, no E4, e nao antes: ele passa a significar "elegivel a ser acordado por
+    # evento", e agora ha o que o cumpra -- portao, modos e o consumidor `openclaw`. Ate o E2 o
+    # estado teria declarado operacao que nenhum runtime executava, e ficou fechado por isso.
+    # Continua nascendo pausado, e o validador abaixo recusa ativar sem gatilho e sem teto.
+    status: Literal["paused", "active"] = "paused"
     autonomy: Literal["A0", "A1"] = "A0"
+    mode: Literal["sugestao", "execucao_interna", "execucao_externa"] = "sugestao"
     description: Text = ""
+    # Lista de permissao de ferramentas, conferida contra o catalogo derivado em agent_tools.py.
+    tools: list[str] = Field(default_factory=list, max_length=200)
+    # event_type do outbox que acorda este agente. Vazio = nao e acordado por evento nenhum.
+    triggers: list[str] = Field(default_factory=list, max_length=60)
+    model: str = Field(default="", max_length=120)
     budget_cents: Cents = 0
+    budget_month_cents: Cents = 0
+    max_actions_per_hour: int = Field(default=0, strict=True, ge=0, le=10000)
+    # Ferramentas que sempre passam pela cadeia de aprovacao, alem das irreversiveis por natureza.
+    require_approval_for: list[str] = Field(default_factory=list, max_length=200)
+    # Derivado da soma de agent_runs.cost_cents na leitura. Gravar seria um segundo lugar onde o
+    # mesmo numero mora, e `fattech:contrato:lista-fixa-em-dois-lugares` diz como isso termina.
     spent_cents: Literal[0] = 0
+
+    @model_validator(mode="after")
+    def validate_agente(self):
+        if len(set(self.tools)) != len(self.tools):
+            raise ValueError("Uma ferramenta deve aparecer uma única vez na lista")
+        if not set(self.require_approval_for).issubset(set(self.tools)):
+            raise ValueError("Só é possível exigir aprovação de ferramenta que o agente tem")
+        if self.mode != "sugestao" and not (self.budget_month_cents and self.max_actions_per_hour):
+            # Recusa na escrita, nao no momento da acao: um agente configurado para executar nao
+            # chega a existir sem teto declarado. Zero aqui e "ninguem declarou", nunca "ilimitado".
+            raise ValueError("Modo de execução exige orçamento do mês e teto de ações por hora")
+        if self.status == "active" and not self.triggers:
+            # Ativo sem gatilho e um agente que nunca acorda: o estado diria uma coisa e a operacao
+            # faria outra, e quem configurou ficaria esperando por uma corrida que nao vem.
+            raise ValueError("Um agente ativo precisa declarar ao menos um gatilho")
+        if self.status == "active" and not self.tools:
+            raise ValueError("Um agente ativo precisa declarar ao menos uma ferramenta")
+        return self
 
 
 class Project(StrictModel):
@@ -295,6 +345,11 @@ class Product(StrictModel):
     description: Text = ""
     sku: str = Field(default="", max_length=60)
     price_cents: Cents = 0
+    # Servico raramente tem preco unico: o catalogo da FAT Tech publica faixa ("R$ 397-497/mes") e
+    # implantacao a parte. Zero em price_max_cents significa "sem faixa", nao "teto zero"; zero em
+    # setup_cents significa "nao informado", e quem monta a proposta ve os dois campos como estao.
+    price_max_cents: Cents = 0
+    setup_cents: Cents = 0
     # Custo e preco moram juntos porque margem sem custo e opiniao. Quem le produtos ve o custo:
     # esconde-lo exigiria redacao por papel em campo declarado, que ainda nao existe.
     cost_cents: Cents = 0
@@ -312,6 +367,72 @@ class Product(StrictModel):
         chaves = [item.product_id for item in self.bundle_items]
         if len(chaves) != len(set(chaves)):
             raise ValueError("Um produto do pacote deve aparecer uma única vez; ajuste a quantidade")
+        if self.price_max_cents and self.price_max_cents < self.price_cents:
+            raise ValueError("O teto da faixa não pode ser menor que o piso")
+        return self
+
+
+# Os seis pilares da vertente FAT Tech Posiciona. Sao fechados de proposito: um pilar por peca e o
+# que torna a distribuicao mensal mensuravel, e campo livre aqui devolveria a planilha ao Excel.
+PILARES = ("storytelling", "bastidores", "prova_social", "performance", "autoridade", "vitrine")
+Pilar = Literal["storytelling", "bastidores", "prova_social", "performance", "autoridade", "vitrine"]
+Formato = Literal["carrossel", "reels", "estatico", "stories", "live", "video", "artigo"]
+
+
+class ContentAccount(StrictModel):
+    """Uma conta sob gestao de conteudo. `contracted_posts_month` e o numero do contrato, nao a meta:
+    e contra ele que a apuracao compara o publicado, e por isso zero significa "sem frequencia
+    contratada" e desliga a comparacao em vez de acusar deficit de zero."""
+    name: Name
+    network: Literal["instagram", "facebook", "linkedin", "tiktok", "youtube", "site", "outro"] = "instagram"
+    catalog_line: Literal["mei", "pme", "grande_porte", "compliance", "vitrine"] = "pme"
+    plan: str = Field(default="", max_length=200)
+    company_id: Identifier | None = None
+    owner_id: Identifier | None = None
+    contracted_posts_month: int = Field(default=0, strict=True, ge=0, le=500)
+    status: Literal["active", "paused", "ended"] = "active"
+    notes: Text = ""
+
+
+class ContentIdea(StrictModel):
+    """Uma pauta do banco. `used` e marcado pela publicacao que a consome, nunca a mao na criacao:
+    uma pauta nasce disponivel, e so a peca publicada tem autoridade para gasta-la."""
+    title: Name
+    pillar: Pilar = "storytelling"
+    format: Formato = "carrossel"
+    audience: str = Field(default="", max_length=300)
+    hook: str = Field(default="", max_length=300)
+    account_id: Identifier | None = None
+    used: bool = False
+    source: str = Field(default="", max_length=200)
+    tags: list[Name] = Field(default_factory=list, max_length=30)
+
+
+class ContentPost(StrictModel):
+    """Uma peca no calendario. O ciclo e o da planilha de producao, com uma diferenca: `published`
+    exige `published_at`, porque uma peca marcada como publicada sem data nao entra em apuracao
+    nenhuma e vira numero que ninguem consegue conferir."""
+    title: Name
+    account_id: Identifier | None = None
+    idea_id: Identifier | None = None
+    pillar: Pilar = "storytelling"
+    format: Formato = "carrossel"
+    status: Literal["planejado", "producao", "aprovacao", "agendado", "publicado", "cancelado"] = "planejado"
+    scheduled_at: DateText | None = None
+    published_at: DateText | None = None
+    owner_id: Identifier | None = None
+    # "caption" e nao "copy": copy colide com BaseModel.copy e o campo ficaria sombreando um metodo.
+    caption: Text = ""
+    cta: str = Field(default="", max_length=200)
+    asset_url: str = Field(default="", max_length=1000)
+    notes: Text = ""
+
+    @model_validator(mode="after")
+    def validate_ciclo(self):
+        if self.status == "publicado" and not self.published_at:
+            raise ValueError("Uma peça publicada precisa da data de publicação")
+        if self.status == "agendado" and not self.scheduled_at:
+            raise ValueError("Uma peça agendada precisa da data de agendamento")
         return self
 
 
@@ -465,7 +586,8 @@ RESOURCES = {"contacts": Contact, "companies": Company, "pipelines": Pipeline, "
              "automations": Automation, "knowledge": Knowledge, "approvals": Approval,
              "agents": Agent, "projects": Project, "invoices": Invoice, "products": Product,
              "lead_rules": LeadRules, "custom_fields": CustomField,
-             "contract_templates": ContractTemplate}
+             "contract_templates": ContractTemplate,
+             "content_accounts": ContentAccount, "content_ideas": ContentIdea, "content_posts": ContentPost}
 
 
 class ContactImport(StrictModel):

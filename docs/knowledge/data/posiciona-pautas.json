@@ -1,0 +1,2333 @@
+{
+ "origem": "FAT_Tech_Posiciona_Entregaveis.zip — Kit_330_Ideias_Conteudo_FAT_Tech_Posiciona.xlsx",
+ "pilares_da_pagina": [
+  "storytelling",
+  "bastidores",
+  "prova_social",
+  "performance",
+  "autoridade",
+  "vitrine"
+ ],
+ "observacao": "O kit nomeia 'Autoridade Juridica' e 'Compliance & Alerta' como pilares separados; a pagina publicada os vende como um so, 'Autoridade & Compliance'. Os dois foram mapeados para 'autoridade'. O pilar 'performance' da pagina nao tem nenhuma pauta no kit -- e um vazio do material, nao do importador.",
+ "total": 330,
+ "por_pilar": {
+  "autoridade": 110,
+  "storytelling": 55,
+  "bastidores": 55,
+  "prova_social": 55,
+  "vitrine": 55
+ },
+ "nao_mapeadas": {},
+ "ideias": [
+  {
+   "id_origem": 1,
+   "title": "5 erros que anulam um contrato",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 2,
+   "title": "O que é reconhecimento de firma e quando você precisa dele",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 3,
+   "title": "Diferença entre autenticação e cópia simples",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 4,
+   "title": "O que fazer antes de assinar qualquer contrato",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 5,
+   "title": "Prazo de prescrição: o que todo cidadão deveria saber",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 6,
+   "title": "Como funciona um inventário simplificado",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 7,
+   "title": "O que é usucapião e quem pode pedir",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 8,
+   "title": "Direitos do consumidor que ninguém te conta",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 9,
+   "title": "Como funciona a partilha de bens em divórcio consensual",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 10,
+   "title": "O que fazer se seu nome foi negativado indevidamente",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 11,
+   "title": "Documentos que você precisa guardar por 5 anos ou mais",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 12,
+   "title": "O que é uma procuração pública x particular",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 13,
+   "title": "Como reconhecer uma cláusula abusiva em contrato",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 14,
+   "title": "O que muda com a nova lei [tema do momento]",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 15,
+   "title": "Passo a passo para regularizar um imóvel",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 16,
+   "title": "O que é escritura pública e quando ela é obrigatória",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 17,
+   "title": "Diferença entre MEI, ME e EPP na prática",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 18,
+   "title": "Como funciona a recuperação de crédito tributário",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 19,
+   "title": "O que fazer diante de uma notificação extrajudicial",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 20,
+   "title": "Direitos trabalhistas que poucos conhecem",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 21,
+   "title": "Como funciona um testamento e por que fazer um",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 22,
+   "title": "O que é holding familiar e para quem serve",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 23,
+   "title": "Erros comuns em contratos de aluguel",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 24,
+   "title": "Como funciona a doação em vida",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 25,
+   "title": "O que verificar antes de comprar um imóvel usado",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 26,
+   "title": "Diferença entre separação de fato e divórcio",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 27,
+   "title": "Como funciona a certidão de nada consta",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 28,
+   "title": "O que é protesto de título e como evitar",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 29,
+   "title": "Passo a passo para abrir uma empresa",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 30,
+   "title": "Direitos do trabalhador em caso de demissão sem justa causa",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 31,
+   "title": "Como funciona a guarda compartilhada",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 32,
+   "title": "O que é pensão alimentícia e como é calculada",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 33,
+   "title": "Diferença entre crime e contravenção penal",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 34,
+   "title": "Como funciona um processo de usucapião extrajudicial",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 35,
+   "title": "O que fazer em caso de erro em certidão de nascimento",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 36,
+   "title": "Direitos do idoso que poucos conhecem",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 37,
+   "title": "Como funciona a sucessão em empresa familiar",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 38,
+   "title": "O que é cláusula de não concorrência",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 39,
+   "title": "Passo a passo para reconhecer paternidade",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 40,
+   "title": "Como funciona o distrato de contrato",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 41,
+   "title": "O que é due diligence documental em compra de imóvel",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 42,
+   "title": "Diferença entre posse e propriedade",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 43,
+   "title": "Como funciona a retificação de registro civil",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 44,
+   "title": "O que fazer diante de assédio no ambiente de trabalho",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 45,
+   "title": "Direitos do cliente em relação de consumo digital",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 46,
+   "title": "Como funciona a averbação de imóvel",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 47,
+   "title": "O que é contrato de gaveta e por que evitar",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 48,
+   "title": "Passo a passo para dar entrada em benefício do INSS",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 49,
+   "title": "Como funciona a mediação extrajudicial de conflitos",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 50,
+   "title": "O que verificar em um contrato social",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 51,
+   "title": "Diferença entre laudêmio e foro em imóveis",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 52,
+   "title": "Como funciona a certificação digital para empresas",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 53,
+   "title": "O que é LGPD na prática para pequenos negócios",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 54,
+   "title": "Passo a passo para regularizar documentação de veículo",
+   "pillar": "autoridade",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 55,
+   "title": "Como funciona o processo de interdição",
+   "pillar": "autoridade",
+   "format": "live",
+   "source": "Kit 330 Ideias — Autoridade Jurídica"
+  },
+  {
+   "id_origem": 56,
+   "title": "Como tudo começou: a origem do negócio",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 57,
+   "title": "Por que escolhemos atuar em Januária e região",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 58,
+   "title": "O momento mais difícil da jornada e o que aprendemos",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 59,
+   "title": "Um dia comum na rotina do negócio",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 60,
+   "title": "Quem está por trás da marca (apresentação da equipe)",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 61,
+   "title": "O propósito por trás de cada atendimento",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 62,
+   "title": "Uma virada de chave que mudou o rumo do negócio",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 63,
+   "title": "O primeiro cliente e o que ele significou",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 64,
+   "title": "Valores que não abrimos mão",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 65,
+   "title": "Por que fazemos o que fazemos (o 'porquê' da marca)",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 66,
+   "title": "Uma lição que um cliente nos ensinou",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 67,
+   "title": "Como a equipe se conheceu",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 68,
+   "title": "O que nos diferencia de quem faz o mesmo que a gente",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 69,
+   "title": "Um erro que cometemos e como corrigimos",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 70,
+   "title": "A visão de futuro do negócio para os próximos anos",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 71,
+   "title": "Bastidores de uma decisão difícil que tomamos",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 72,
+   "title": "O impacto que queremos gerar na comunidade local",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 73,
+   "title": "Como escolhemos nosso nome/marca",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 74,
+   "title": "Uma conquista recente que nos orgulha",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 75,
+   "title": "O que mudou no negócio nos últimos anos",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 76,
+   "title": "Uma crença que guia nossas decisões",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 77,
+   "title": "Por trás da câmera: quem cuida da comunicação",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 78,
+   "title": "O cliente ideal que sonhamos atender",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 79,
+   "title": "Uma parceria que fez toda diferença",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 80,
+   "title": "O aprendizado de um ano de trabalho",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 81,
+   "title": "Como equilibramos tradição e inovação",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 82,
+   "title": "Um agradecimento aberto à comunidade",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 83,
+   "title": "O que nos motiva a continuar todos os dias",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 84,
+   "title": "Uma curiosidade pouco conhecida sobre o negócio",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 85,
+   "title": "Como cuidamos de quem trabalha com a gente",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 86,
+   "title": "Um marco histórico da trajetória",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 87,
+   "title": "Por que acreditamos no crescimento local",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 88,
+   "title": "Uma reflexão sobre liderança e responsabilidade",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 89,
+   "title": "O que aprendemos ouvindo nossos clientes",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 90,
+   "title": "Uma mudança de rota que valeu a pena",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 91,
+   "title": "Como conciliamos vida pessoal e profissional",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 92,
+   "title": "Uma tradição que mantemos até hoje",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 93,
+   "title": "O primeiro grande desafio superado",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 94,
+   "title": "Uma mensagem para quem está começando agora",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 95,
+   "title": "Como escolhemos as parcerias que fazemos",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 96,
+   "title": "Uma memória marcante com a equipe",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 97,
+   "title": "O que a experiência nos ensinou sobre paciência",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 98,
+   "title": "Uma decisão de recusar um projeto por não fazer sentido",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 99,
+   "title": "Como cuidamos da reputação com transparência",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 100,
+   "title": "Uma visão sobre o futuro da profissão",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 101,
+   "title": "O que representa servir a comunidade de Januária",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 102,
+   "title": "Uma reflexão sobre recomeços",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 103,
+   "title": "Como lidamos com críticas construtivas",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 104,
+   "title": "Uma homenagem a quem ajudou a construir o negócio",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 105,
+   "title": "O significado por trás do slogan da marca",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 106,
+   "title": "Uma lição de resiliência da trajetória",
+   "pillar": "storytelling",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 107,
+   "title": "Como cultivamos confiança com os clientes",
+   "pillar": "storytelling",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 108,
+   "title": "Uma visão sincera sobre os desafios do mercado local",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 109,
+   "title": "O que nos faz continuar mesmo nos dias difíceis",
+   "pillar": "storytelling",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 110,
+   "title": "Um convite para conhecer o trabalho de perto",
+   "pillar": "storytelling",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Storytelling de Marca"
+  },
+  {
+   "id_origem": 111,
+   "title": "Como funciona o atendimento do início ao fim",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 112,
+   "title": "Bastidor da produção de um conteúdo",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 113,
+   "title": "Um dia de trabalho da equipe",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 114,
+   "title": "Como organizamos a agenda de atendimentos",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 115,
+   "title": "O passo a passo de um serviço específico explicado",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 116,
+   "title": "Ferramentas que usamos no dia a dia",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 117,
+   "title": "Como garantimos qualidade em cada entrega",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 118,
+   "title": "Bastidor de uma reunião de planejamento",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 119,
+   "title": "Como recebemos e tratamos um novo cliente",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 120,
+   "title": "O cuidado por trás de cada detalhe do serviço",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 121,
+   "title": "Como organizamos os documentos e processos internos",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 122,
+   "title": "Um checklist que usamos internamente",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 123,
+   "title": "Como validamos a qualidade antes de entregar",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 124,
+   "title": "Bastidor da escolha de fornecedores/parceiros",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 125,
+   "title": "Como treinamos a equipe para atender bem",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 126,
+   "title": "O que acontece nos bastidores antes de um evento",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 127,
+   "title": "Como cuidamos da experiência do cliente do primeiro contato à entrega",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 128,
+   "title": "Bastidor de uma correção de processo",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 129,
+   "title": "Como organizamos o pós-venda",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 130,
+   "title": "O rito semanal da equipe (reunião, planejamento)",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 131,
+   "title": "Como garantimos sigilo e confidencialidade",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 132,
+   "title": "Bastidor da escolha de materiais/insumos",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 133,
+   "title": "Como cuidamos do ambiente físico do negócio",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 134,
+   "title": "O processo de aprovação interna antes de publicar",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 135,
+   "title": "Como lidamos com prazos apertados",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 136,
+   "title": "Bastidor de uma entrega especial",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 137,
+   "title": "Como organizamos o estoque/agenda/fila",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 138,
+   "title": "O cuidado com a limpeza e organização do espaço",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 139,
+   "title": "Como funciona nosso processo de orçamento",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 140,
+   "title": "Bastidor de uma correção de erro identificado a tempo",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 141,
+   "title": "Como recebemos feedback interno da equipe",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 142,
+   "title": "O ritual de início de expediente",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 143,
+   "title": "Como cuidamos da segurança de dados dos clientes",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 144,
+   "title": "Bastidor de uma decisão coletiva da equipe",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 145,
+   "title": "Como organizamos o calendário de entregas do mês",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 146,
+   "title": "O que fazemos quando um imprevisto acontece",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 147,
+   "title": "Como preparamos um ambiente para atendimento",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 148,
+   "title": "Bastidor de uma capacitação da equipe",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 149,
+   "title": "Como conferimos cada detalhe antes da entrega final",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 150,
+   "title": "O processo de escuta ativa com o cliente",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 151,
+   "title": "Como organizamos as prioridades da semana",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 152,
+   "title": "Bastidor de uma parceria em construção",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 153,
+   "title": "Como cuidamos da comunicação interna da equipe",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 154,
+   "title": "O que fica invisível para o cliente, mas importa",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 155,
+   "title": "Como garantimos consistência em cada atendimento",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 156,
+   "title": "Bastidor da escolha de uma nova ferramenta de trabalho",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 157,
+   "title": "Como organizamos o material de apoio ao cliente",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 158,
+   "title": "O cuidado com prazos legais e documentais",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 159,
+   "title": "Como validamos informações antes de publicar conteúdo",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 160,
+   "title": "Bastidor de um dia mais corrido que o normal",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 161,
+   "title": "Como cuidamos da experiência de quem visita presencialmente",
+   "pillar": "bastidores",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 162,
+   "title": "O processo por trás de uma resposta rápida",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 163,
+   "title": "Como organizamos a agenda de compromissos externos",
+   "pillar": "bastidores",
+   "format": "stories",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 164,
+   "title": "Bastidor da preparação para uma auditoria/vistoria",
+   "pillar": "bastidores",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 165,
+   "title": "Como garantimos que nada fique 'para depois'",
+   "pillar": "bastidores",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Bastidores & Processo"
+  },
+  {
+   "id_origem": 166,
+   "title": "Depoimento em vídeo de cliente satisfeito",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 167,
+   "title": "Print de elogio recebido + contexto",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 168,
+   "title": "Antes e depois do posicionamento digital do cliente",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 169,
+   "title": "Resultado numérico alcançado em X meses",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 170,
+   "title": "Depoimento em áudio/texto de cliente antigo",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 171,
+   "title": "Case completo: do problema à solução",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 172,
+   "title": "Cliente conta por que recomenda o serviço",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 173,
+   "title": "Avaliação de 5 estrelas destacada",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 174,
+   "title": "Comparativo de resultado: antes de contratar x depois",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 175,
+   "title": "Depoimento sobre atendimento e confiança",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 176,
+   "title": "Cliente respondendo 'por que você escolheu a gente'",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 177,
+   "title": "Repost de menção espontânea de cliente",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 178,
+   "title": "Vídeo de reação do cliente ao ver o resultado final",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 179,
+   "title": "Depoimento sobre um problema resolvido rapidamente",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 180,
+   "title": "Case de recuperação de crédito/situação regularizada",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 181,
+   "title": "Cliente indicando o serviço para outra pessoa",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 182,
+   "title": "Depoimento sobre a diferença entre 'antes' e 'com a gente'",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 183,
+   "title": "Resultado de campanha/ação divulgado com transparência",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 184,
+   "title": "Cliente contando como se sentiu acolhido no atendimento",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 185,
+   "title": "Depoimento em roda de conversa/bastidor",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 186,
+   "title": "Print de mensagem de WhatsApp de agradecimento",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 187,
+   "title": "Cliente mostrando o produto/serviço entregue",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 188,
+   "title": "Depoimento sobre agilidade na resolução de um caso",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 189,
+   "title": "Case de parceria de longo prazo com um cliente",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 190,
+   "title": "Cliente contando como superou uma objeção inicial",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 191,
+   "title": "Depoimento em formato de carta/mensagem escrita",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 192,
+   "title": "Resultado de indicação: cliente que veio por recomendação",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 193,
+   "title": "Depoimento sobre clareza na comunicação do processo",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 194,
+   "title": "Cliente contando o que mudou na rotina dele",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 195,
+   "title": "Vídeo curto de bastidor da entrega + reação",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 196,
+   "title": "Depoimento sobre confiança em um momento delicado (jurídico/pessoal)",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 197,
+   "title": "Case: como resolvemos uma situação complexa",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 198,
+   "title": "Cliente comparando com experiência anterior em outro fornecedor",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 199,
+   "title": "Depoimento em live/Q&A ao vivo",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 200,
+   "title": "Resultado de auditoria de compliance aplicada com sucesso",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 201,
+   "title": "Cliente contando sobre tranquilidade após o serviço",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 202,
+   "title": "Depoimento em série (parte 1, 2, 3 do case)",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 203,
+   "title": "Case de cliente que voltou a contratar",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 204,
+   "title": "Depoimento sobre o cuidado humano no atendimento",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 205,
+   "title": "Resultado de campanha de posicionamento em X semanas",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 206,
+   "title": "Cliente contando sobre a resposta rápida da equipe",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 207,
+   "title": "Depoimento sobre transparência nos valores cobrados",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 208,
+   "title": "Case de solução para um problema urgente",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 209,
+   "title": "Cliente relatando aumento de confiança da própria marca dele",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 210,
+   "title": "Depoimento sobre organização e cumprimento de prazos",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 211,
+   "title": "Resultado visual: reels/posts com melhor engajamento do cliente",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 212,
+   "title": "Cliente contando como o conteúdo ajudou a atrair mais gente",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 213,
+   "title": "Depoimento sobre suporte em momento de dúvida",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 214,
+   "title": "Case: like a like de um problema jurídico resolvido",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 215,
+   "title": "Cliente relatando aumento de faturamento após posicionamento",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 216,
+   "title": "Depoimento em enquete de satisfação respondida",
+   "pillar": "prova_social",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 217,
+   "title": "Resultado de NPS/pesquisa de satisfação",
+   "pillar": "prova_social",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 218,
+   "title": "Cliente contando sobre a experiência de ser bem tratado",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 219,
+   "title": "Compilado de vários depoimentos curtos em um só vídeo",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 220,
+   "title": "[Complementar] Pauta livre de Prova Social #1 — a definir com Iasmim",
+   "pillar": "prova_social",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Prova Social"
+  },
+  {
+   "id_origem": 221,
+   "title": "O que a OAB proíbe em publicidade de advogado",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 222,
+   "title": "Checklist: sua comunicação digital está em risco?",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 223,
+   "title": "Propaganda eleitoral antecipada: o que pode e o que não pode",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 224,
+   "title": "O que caracteriza captação irregular de clientela",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 225,
+   "title": "Como evitar promessa de resultado em conteúdo jurídico",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 226,
+   "title": "O que diz a legislação eleitoral sobre redes sociais",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 227,
+   "title": "Riscos de usar antes/depois em publicidade de saúde/estética",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 228,
+   "title": "O que é sigilo profissional e como preservá-lo online",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 229,
+   "title": "Erros comuns que geram processo ético em conselhos de classe",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 230,
+   "title": "Como comunicar preço sem infringir normas da categoria",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 231,
+   "title": "O que fazer diante de uma denúncia por publicidade irregular",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 232,
+   "title": "Limites da propaganda institucional x eleitoral",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 233,
+   "title": "Como proteger a imagem do profissional em crise",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 234,
+   "title": "O que é conduta vedada a agentes públicos em período eleitoral",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 235,
+   "title": "Riscos jurídicos de compartilhar caso de cliente sem autorização",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 236,
+   "title": "Como estruturar um termo de autorização de uso de imagem",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 237,
+   "title": "O que revisar antes de publicar um depoimento de cliente",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 238,
+   "title": "Limites da publicidade comparativa entre concorrentes",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 239,
+   "title": "Como comunicar resultados sem configurar garantia de êxito",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 240,
+   "title": "O que é assédio moral/sexual e como a empresa deve responder publicamente",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 241,
+   "title": "Riscos de publicar conteúdo sobre processo em andamento",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 242,
+   "title": "Como preparar um protocolo de resposta a crise de imagem",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 243,
+   "title": "O que fazer diante de fake news envolvendo a marca",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 244,
+   "title": "Limites de uso de logomarca de terceiros em conteúdo",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 245,
+   "title": "Como validar uma peça publicitária antes de veicular",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 246,
+   "title": "O que é publicidade enganosa segundo o CDC",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 247,
+   "title": "Riscos de conteúdo político em conta institucional",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 248,
+   "title": "Como calendarizar comunicação em ano eleitoral",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 249,
+   "title": "O que revisar em contratos de patrocínio de conteúdo",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 250,
+   "title": "Como preparar a empresa para uma fiscalização de imagem",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 251,
+   "title": "Limites da liberdade de expressão em conta profissional",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 252,
+   "title": "O que fazer diante de comentário ofensivo público",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 253,
+   "title": "Como blindar juridicamente uma campanha promocional",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 254,
+   "title": "O que é 'puffing' e onde termina o exagero permitido",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 255,
+   "title": "Riscos de vazamento de dados em formulário de captação (LGPD)",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 256,
+   "title": "Como estruturar política de privacidade simples e válida",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 257,
+   "title": "O que revisar antes de contratar influenciador para divulgação",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 258,
+   "title": "Limites de brindes e promoções em segmentos regulamentados",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 259,
+   "title": "Como documentar consentimento de uso de depoimento",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 260,
+   "title": "O que fazer diante de plágio de conteúdo",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 261,
+   "title": "Riscos de publicidade em período de silêncio eleitoral",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 262,
+   "title": "Como preparar assessorados para entrevistas públicas",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 263,
+   "title": "O que revisar em contratos de prestação de serviço de marketing",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 264,
+   "title": "Limites do humor em comunicação institucional",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 265,
+   "title": "Como calendarizar renovação de registros e licenças de comunicação",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 266,
+   "title": "O que fazer diante de reclamação no Reclame Aqui/Google",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 267,
+   "title": "Riscos de comparação de preços entre profissionais liberais",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 268,
+   "title": "Como blindar depoimentos de pacientes/clientes sensíveis",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 269,
+   "title": "O que revisar em parcerias com outras marcas antes de publicar",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 270,
+   "title": "Limites de conteúdo sobre menores de idade em redes",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 271,
+   "title": "Como preparar um manual interno de conduta digital",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 272,
+   "title": "O que fazer diante de vazamento de informação estratégica",
+   "pillar": "autoridade",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 273,
+   "title": "Riscos de campanhas 'antes e depois' sem base documental",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 274,
+   "title": "Como validar peças de campanha eleitoral com antecedência",
+   "pillar": "autoridade",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 275,
+   "title": "Checklist final antes de publicar qualquer conteúdo sensível",
+   "pillar": "autoridade",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Compliance & Alerta"
+  },
+  {
+   "id_origem": 276,
+   "title": "Empresa em Foco: bastidores de um comércio cadastrado",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 277,
+   "title": "Novidades cadastradas na vitrine esta semana",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 278,
+   "title": "Enquete: qual comércio de Januária você quer ver em destaque?",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 279,
+   "title": "Roteiro de compras: onde encontrar X em Januária",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 280,
+   "title": "Depoimento de empresário cadastrado na vitrine",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 281,
+   "title": "Bastidor de um dia de visita a comércios locais",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 282,
+   "title": "Ranking (não oficial) de avaliações positivas da semana",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 283,
+   "title": "Curiosidade histórica sobre o comércio local",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 284,
+   "title": "Empresa em Foco: história de quem empreende há décadas na cidade",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 285,
+   "title": "Como cadastrar seu negócio na vitrine digital",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 286,
+   "title": "Destaque para negócio novo recém-inaugurado na cidade",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 287,
+   "title": "Enquete: o que você gostaria de encontrar em Januária e ainda não tem?",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 288,
+   "title": "Bastidor de produção de conteúdo do próprio perfil oficial",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 289,
+   "title": "Reels de tour por um comércio parceiro",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 290,
+   "title": "Empresa em Foco: negócio administrado por mulher empreendedora",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 291,
+   "title": "Data comemorativa: comércios que participam com promoção",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 292,
+   "title": "Curiosidade sobre a Feira/Mercado Municipal e comerciantes locais",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 293,
+   "title": "Depoimento de morador sobre experiência de compra local",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 294,
+   "title": "Empresa em Foco: negócio familiar de várias gerações",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 295,
+   "title": "Roteiro gastronômico: onde comer bem em Januária",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 296,
+   "title": "Enquete: qual serviço você mais precisa e não sabe onde encontrar?",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 297,
+   "title": "Bastidor de reunião com empresários parceiros da vitrine",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 298,
+   "title": "Empresa em Foco: comércio que também vende online",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 299,
+   "title": "Curiosidade sobre crescimento do comércio na região",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 300,
+   "title": "Depoimento de empresário sobre o impacto da vitrine nas vendas",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 301,
+   "title": "Roteiro de serviços: onde resolver [necessidade comum] na cidade",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 302,
+   "title": "Empresa em Foco: negócio que emprega jovens da cidade",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 303,
+   "title": "Enquete: você já usou a vitrine digital para pesquisar preço?",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 304,
+   "title": "Bastidor da equipe visitando um novo cadastrado",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 305,
+   "title": "Curiosidade sobre datas comemorativas do comércio local (Dia das Mães etc.)",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 306,
+   "title": "Empresa em Foco: prestador de serviço bem avaliado no Google",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 307,
+   "title": "Roteiro de beleza e estética: onde se cuidar em Januária",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 308,
+   "title": "Depoimento de cliente que encontrou o negócio pela vitrine",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 309,
+   "title": "Empresa em Foco: comércio que valoriza produto regional",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 310,
+   "title": "Enquete: qual bairro de Januária você acha que precisa de mais visibilidade comercial?",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 311,
+   "title": "Bastidor de gravação de reels com comerciante parceiro",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 312,
+   "title": "Curiosidade sobre a economia local e geração de empregos",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 313,
+   "title": "Empresa em Foco: negócio que participa de ações sociais",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 314,
+   "title": "Roteiro pet: onde cuidar do seu animal em Januária",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 315,
+   "title": "Depoimento de empresário sobre burocracia resolvida via cartório/despachante local",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 316,
+   "title": "Empresa em Foco: comércio com décadas de tradição na praça central",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 317,
+   "title": "Enquete: o que faria você comprar mais no comércio local em vez de fora?",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 318,
+   "title": "Bastidor de entrevista rápida com comerciante",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 319,
+   "title": "Curiosidade sobre datas de fundação de comércios antigos da cidade",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 320,
+   "title": "Empresa em Foco: negócio que investiu em atendimento digital",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 321,
+   "title": "Roteiro construção/reforma: fornecedores confiáveis em Januária",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 322,
+   "title": "Depoimento de empresário sobre aumento de visibilidade após parceria com a vitrine",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 323,
+   "title": "Empresa em Foco: comércio recomendado por moradores antigos",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 324,
+   "title": "Enquete: você recomendaria esse comércio para um amigo?",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 325,
+   "title": "Bastidor de produção do conteúdo semanal da vitrine",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 326,
+   "title": "Curiosidade sobre o crescimento do @januariamgoficial",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 327,
+   "title": "Chamada para empresários se cadastrarem na vitrine digital",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 328,
+   "title": "[Complementar] Pauta livre de Vitrine Januária #1 — a definir com Iasmim",
+   "pillar": "vitrine",
+   "format": "carrossel",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 329,
+   "title": "[Complementar] Pauta livre de Vitrine Januária #2 — a definir com Iasmim",
+   "pillar": "vitrine",
+   "format": "reels",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  },
+  {
+   "id_origem": 330,
+   "title": "[Complementar] Pauta livre de Vitrine Januária #3 — a definir com Iasmim",
+   "pillar": "vitrine",
+   "format": "estatico",
+   "source": "Kit 330 Ideias — Vitrine Januária"
+  }
+ ]
+}

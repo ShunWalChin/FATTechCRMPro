@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "id": "fattech:synapse:commercial-installation",
+      "label": "SYNAPSE: operação comercial por organização",
+      "type": "business_rule",
+      "status": "implementado_localmente",
+      "source_file": "docs/knowledge/synapse-commercial.json",
+      "rule": "Preparar o SYNAPSE cria funil e catálogo próprios sem substituir o padrão. Repetir a instalação devolve a configuração original.",
+      "por_que_importa": "Estruturar a venda é diferente de provisionar o ambiente e a assinatura do comprador.",
+      "onde_no_fattech": "apps/api/fattech/synapse.py"
+    },
+    {
+      "id": "fattech:synapse:enrollment",
+      "label": "Um vínculo comercial, uma oportunidade e uma próxima ação",
+      "type": "business_rule",
+      "status": "implementado_localmente",
+      "source_file": "docs/knowledge/synapse-commercial.json",
+      "rule": "A matrícula de um contato na instalação é transacional e idempotente; respeita os requisitos da etapa e o prazo configurado.",
+      "onde_no_fattech": "apps/api/fattech/synapse.py"
+    },
+    {
+      "id": "fattech:synapse:instagram-inbound",
+      "label": "Mensagem Instagram autenticada vira conversa operacional",
+      "type": "engineering_pattern",
+      "status": "implementado_localmente",
+      "source_file": "docs/knowledge/synapse-commercial.json",
+      "rule": "Conta, assinatura e mid identificam o dono e a mensagem. Ecos são ignorados, datas preservam a janela, entrada não concede consentimento de marketing.",
+      "onde_no_fattech": "apps/api/fattech/instagram_ingest.py"
+    },
+    {
+      "id": "fattech:synapse:extractive-assistance",
+      "label": "Consulta documental citável e revisão humana",
+      "type": "engineering_pattern",
+      "status": "implementado_localmente",
+      "source_file": "docs/knowledge/synapse-commercial.json",
+      "rule": "A consulta lexical usa documentos ativos do tenant; ausência de evidência produz tarefa de revisão. Não executa LLM nem envia mensagem.",
+      "onde_no_fattech": "apps/api/fattech/synapse_assistant.py"
+    },
+    {
+      "id": "fattech:synapse:commercial-readiness",
+      "label": "Venda modular exige contrato, assinatura e ativação",
+      "type": "business_rule",
+      "status": "planejado",
+      "source_file": "docs/knowledge/synapse-commercial.json",
+      "rule": "Recorrência e bundle no catálogo não comprovam cobrança, entitlement, provisão do comprador ou operação autônoma. Publicação depende da jornada homologada.",
+      "onde_caberia": "docs/COMMERCIAL_READINESS.md"
+    }
+  ],
+  "edges": [
+    {"source": "fattech:synapse:commercial-installation", "target": "fattech:synapse:enrollment", "relation": "configura", "confidence": "EXTRACTED", "source_file": "docs/knowledge/synapse-commercial.json"},
+    {"source": "fattech:synapse:instagram-inbound", "target": "fattech:synapse:extractive-assistance", "relation": "fornece_contexto", "confidence": "EXTRACTED", "source_file": "docs/knowledge/synapse-commercial.json"},
+    {"source": "fattech:synapse:commercial-installation", "target": "fattech:synapse:commercial-readiness", "relation": "ainda_exige", "confidence": "EXTRACTED", "source_file": "docs/knowledge/synapse-commercial.json"}
+  ]
+}

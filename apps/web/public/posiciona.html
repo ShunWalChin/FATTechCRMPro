@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FAT Tech Posiciona — Estratégia de Marca com Blindagem Jurídica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:    #06060e;
+    --bg-card:    #0f0f1e;
+    --bg-glass:   rgba(15,15,30,0.7);
+    --border:     rgba(0,240,255,0.12);
+    --border-hot: rgba(0,240,255,0.40);
+    --cyan:       #00f0ff;
+    --cyan-dim:   #00b8cc;
+    --pink:       #ff2d78;
+    --pink-dim:   #cc1a58;
+    --purple:     #a855f7;
+    --purple-dim: #7c3aed;
+    --gold:       #f5c518;
+    --green:      #00ff88;
+    --text:       #e2e8f0;
+    --text-muted: #8892a4;
+    --text-dim:   #4a5568;
+    --font-display: 'Orbitron', monospace;
+    --font-body:    'Rajdhani', sans-serif;
+    --font-mono:    'Share Tech Mono', monospace;
+    --radius:     6px;
+    --radius-lg:  12px;
+    --glow-cyan:  0 0 20px rgba(0,240,255,0.4);
+    --glow-pink:  0 0 20px rgba(255,45,120,0.4);
+    --glow-soft:  0 0 40px rgba(0,240,255,0.12);
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg-base);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ---------- background texture: fine grid + two static glows ---------- */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+  .glow-a { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(255,45,120,0.14), transparent 65%); z-index: 0; pointer-events: none; }
+  .glow-b { position: fixed; bottom: -15%; right: -10%; width: 55vw; height: 55vw; background: radial-gradient(circle, rgba(0,240,255,0.10), transparent 65%); z-index: 0; pointer-events: none; }
+
+  main { position: relative; z-index: 1; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 96px 0; }
+  @media (max-width: 720px) { section { padding: 64px 0; } }
+
+  a { color: inherit; }
+
+  /* ---------- nav ---------- */
+  header.top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: rgba(6,6,14,0.85); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; padding-bottom: 16px; }
+  .brandmark { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
+  .brandmark span { color: var(--cyan); }
+  .nav-cta {
+    font-family: var(--font-body); font-weight: 600; font-size: 15px;
+    color: var(--bg-base); background: var(--cyan);
+    padding: 10px 22px; border-radius: var(--radius); text-decoration: none;
+    transition: box-shadow var(--transition), transform var(--transition);
+  }
+  .nav-cta:hover { box-shadow: var(--glow-cyan); transform: translateY(-1px); }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: 88px; padding-bottom: 88px; }
+  .hero-kicker {
+    font-family: var(--font-mono); font-size: 14px; color: var(--pink);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 28px;
+  }
+  .hero-kicker::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: var(--glow-pink); }
+  h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: clamp(38px, 6vw, 64px); line-height: 1.08; letter-spacing: -0.01em;
+    margin: 0 0 28px; max-width: 15ch;
+  }
+  h1 .hl { color: var(--cyan); }
+  .hero-sub { font-size: 22px; color: var(--text-muted); max-width: 52ch; margin: 0 0 40px; font-weight: 400; }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 56px; }
+  .btn-primary, .btn-ghost {
+    font-family: var(--font-body); font-weight: 700; font-size: 17px;
+    padding: 15px 30px; border-radius: var(--radius); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+  }
+  .btn-primary { background: var(--cyan); color: var(--bg-base); }
+  .btn-primary:hover { box-shadow: var(--glow-cyan); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--border-hot); }
+
+  .hero-proof {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .hero-proof div { background: var(--bg-card); padding: 22px 20px; }
+  .hero-proof strong { display: block; font-family: var(--font-display); font-size: 22px; color: var(--cyan); margin-bottom: 6px; }
+  .hero-proof span { font-size: 15px; color: var(--text-muted); }
+  @media (max-width: 640px) { .hero-proof { grid-template-columns: 1fr; } }
+
+  /* ---------- section headings ---------- */
+  .sec-head { max-width: 60ch; margin-bottom: 56px; }
+  .sec-head h2 { font-family: var(--font-display); font-size: clamp(26px, 3.4vw, 36px); font-weight: 700; margin: 0 0 16px; line-height: 1.2; }
+  .sec-head p { font-size: 19px; color: var(--text-muted); margin: 0; }
+  .sec-head h2 .hl { color: var(--pink); }
+
+  /* ---------- category divider ---------- */
+  .divider { border: 0; border-top: 1px solid var(--border); margin: 0; }
+
+  /* ---------- thesis / diferencial ---------- */
+  .thesis { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .thesis-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: start; }
+  @media (max-width: 860px) { .thesis-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .thesis-grid p { font-size: 19px; color: var(--text-muted); margin: 0 0 20px; }
+  .thesis-grid strong { color: var(--text); font-weight: 600; }
+  .creds { list-style: none; margin: 0; padding: 0; }
+  .creds li {
+    display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border);
+    font-size: 16px; color: var(--text);
+  }
+  .creds li:last-child { border-bottom: none; }
+  .creds .num { font-family: var(--font-mono); color: var(--purple); font-size: 14px; padding-top: 2px; min-width: 26px; }
+
+  /* ---------- pillars ---------- */
+  .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 860px) { .pillars-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .pillars-grid { grid-template-columns: 1fr; } }
+  .pillar-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 26px 24px; transition: border-color var(--transition);
+  }
+  .pillar-card:hover { border-color: var(--border-hot); }
+  .pillar-card .tag { font-family: var(--font-mono); font-size: 12px; color: var(--cyan-dim); display: block; margin-bottom: 12px; }
+  .pillar-card h3 { font-family: var(--font-display); font-size: 16px; margin: 0 0 10px; line-height: 1.35; }
+  .pillar-card p { font-size: 15px; color: var(--text-muted); margin: 0; }
+
+  /* ---------- catalog ---------- */
+  .line-block { margin-bottom: 64px; }
+  .line-block:last-child { margin-bottom: 0; }
+  .line-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+  .line-head h3 { font-family: var(--font-display); font-size: 20px; margin: 0; color: var(--text); }
+  .line-head .line-note { font-size: 15px; color: var(--pink); font-family: var(--font-mono); }
+  .line-desc { color: var(--text-muted); font-size: 16px; margin: 0 0 24px; max-width: 62ch; }
+
+  table.catalog { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  table.catalog th {
+    text-align: left; font-family: var(--font-body); font-weight: 600; font-size: 14px;
+    color: var(--text-muted); padding: 12px 16px; border-bottom: 1px solid var(--border-hot);
+  }
+  table.catalog td {
+    padding: 18px 16px; border-bottom: 1px solid var(--border); font-size: 16px; vertical-align: top;
+  }
+  table.catalog tr:last-child td { border-bottom: none; }
+  table.catalog td.prod { font-weight: 600; color: var(--text); width: 22%; }
+  table.catalog td.desc { color: var(--text-muted); width: 38%; }
+  table.catalog td.aud { color: var(--text-muted); width: 20%; }
+  table.catalog td.price { font-family: var(--font-mono); color: var(--cyan); white-space: nowrap; width: 20%; }
+  table.catalog td.price small { display: block; color: var(--text-dim); font-family: var(--font-body); font-size: 13px; margin-top: 3px; }
+  @media (max-width: 760px) {
+    table.catalog, table.catalog thead, table.catalog tbody, table.catalog th, table.catalog td, table.catalog tr { display: block; }
+    table.catalog thead { display: none; }
+    table.catalog tr { border-bottom: 1px solid var(--border); padding: 18px 0; }
+    table.catalog td { border: none; padding: 4px 0; width: 100% !important; }
+    table.catalog td.prod { font-size: 18px; margin-bottom: 6px; }
+    table.catalog td.price { margin-top: 8px; }
+  }
+
+  /* ---------- funnel ---------- */
+  .funnel { display: flex; flex-direction: column; gap: 0; max-width: 720px; margin: 0 auto; }
+  .funnel-step {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 24px 28px; position: relative;
+  }
+  .funnel-step + .funnel-step { margin-top: 28px; }
+  .funnel-step + .funnel-step::before {
+    content: ''; position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    width: 1px; height: 28px; background: linear-gradient(var(--border-hot), var(--border));
+  }
+  .funnel-step .stage { font-family: var(--font-mono); font-size: 13px; color: var(--purple); display: block; margin-bottom: 8px; }
+  .funnel-step h4 { font-family: var(--font-display); font-size: 17px; margin: 0 0 10px; }
+  .funnel-step p { color: var(--text-muted); font-size: 15px; margin: 0; }
+
+  /* ---------- launch timeline ---------- */
+  .launch-list { list-style: none; margin: 0; padding: 0; counter-reset: launch; }
+  .launch-list li {
+    counter-increment: launch;
+    display: grid; grid-template-columns: 48px 1fr; gap: 20px;
+    padding: 22px 0; border-bottom: 1px solid var(--border);
+  }
+  .launch-list li:last-child { border-bottom: none; }
+  .launch-list li::before {
+    content: counter(launch);
+    font-family: var(--font-display); font-size: 15px; color: var(--bg-base);
+    background: var(--cyan); width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: 700;
+  }
+  .launch-list h4 { margin: 0 0 6px; font-size: 17px; font-weight: 600; color: var(--text); }
+  .launch-list p { margin: 0; color: var(--text-muted); font-size: 15px; }
+  .launch-list .who { font-family: var(--font-mono); font-size: 12px; color: var(--pink); margin-top: 8px; display: block; }
+
+  /* ---------- closing CTA ---------- */
+  .cta-final {
+    background: linear-gradient(160deg, rgba(255,45,120,0.08), rgba(0,240,255,0.05));
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .cta-final h2 { font-family: var(--font-display); font-size: clamp(26px, 4vw, 40px); margin: 0 0 20px; }
+  .cta-final p { color: var(--text-muted); font-size: 19px; max-width: 52ch; margin: 0 auto 36px; }
+
+  footer.site { padding: 40px 0; text-align: center; }
+  footer.site p { color: var(--text-dim); font-size: 14px; font-family: var(--font-mono); margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="glow-a"></div>
+<div class="glow-b"></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brandmark" href="/index.html" style="text-decoration:none">FAT TECH <span>POSICIONA</span></a>
+    <a class="nav-cta" href="#contato">Falar com a Iasmim</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-kicker">NOVA VERTENTE — FAT TECH GROWTH HUB</div>
+      <h1>Do MEI ao grande empresário, <span class="hl">uma estratégia sob medida.</span></h1>
+      <p class="hero-sub">Estratégia de marca, storytelling e posicionamento digital — com ou sem automação e IA — para negócios de qualquer porte. Conduzida por quem já foi assessora parlamentar, gestora de mídias, estrategista de posicionamento e copywriter, com quase duas décadas de bagagem jurídico-institucional como diferencial de blindagem.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#catalogo">Ver catálogo de produtos</a>
+        <a class="btn-ghost" href="#diferencial">Entender o diferencial</a>
+      </div>
+      <div class="hero-proof">
+        <div><strong>3 portes</strong><span>microempreendedor, pequeno/médio negócio e grande empresário — trilhas próprias para cada um</span></div>
+        <div><strong>2 modos</strong><span>conteúdo puro ou conteúdo integrado a automação, IA e CRM</span></div>
+        <div><strong>2 ativos</strong><span>vitrine digital januariamg.com.br + @januariamgoficial já sob gestão</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- DIFERENCIAL / TESE -->
+  <section id="diferencial" class="thesis">
+    <div class="wrap thesis-grid">
+      <div>
+        <div class="sec-head" style="margin-bottom:24px;">
+          <h2>Uma estrategista completa. <span class="hl">Não uma especialista de nicho.</span></h2>
+        </div>
+        <p>O social media comum atende um tipo de cliente com um roteiro só. A Iasmim já foi <strong>assessora parlamentar, gestora de mídias sociais, estrategista de negócios, copywriter e gerente de processos</strong> — o que significa que ela lê o negócio antes de escrever o post: entende operação, entende gente e entende risco.</p>
+        <p>Isso permite atender do <strong>microempreendedor individual</strong> que precisa de presença simples e direta, até o <strong>empresário de médio e grande porte</strong> que já opera CRM e automação e precisa de conteúdo que converse com o funil de vendas — dentro de uma agência que já entrega tráfego pago, IA e Marketing DevOps.</p>
+        <p>O jurídico-institucional entra como <strong>camada extra de blindagem</strong> para quem precisa — não como limite do que ela atende.</p>
+      </div>
+      <div>
+        <ul class="creds">
+          <li><span class="num">01</span> Assessoria parlamentar</li>
+          <li><span class="num">02</span> Gestão de mídias sociais</li>
+          <li><span class="num">03</span> Estratégia de negócios e posicionamento de marca</li>
+          <li><span class="num">04</span> Copywriting e gestão de processos</li>
+          <li><span class="num">05</span> Quase 20 anos de bagagem jurídica e extrajudicial em Minas Gerais</li>
+          <li><span class="num">06</span> Administração da vitrine digital e do Instagram oficial de Januária/MG</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGMENTAÇÃO POR PORTE -->
+  <section id="portes">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Uma trilha para cada porte de negócio</h2>
+        <p>O ponto de entrada muda conforme o cliente já opera ou não com automação, CRM e IA — mas o método de posicionamento é o mesmo.</p>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <span class="tag">PORTE 01</span>
+          <h3>MEI &amp; Autônomo</h3>
+          <p>Presença simples, direta e consistente — sem exigir estrutura de automação. Foco em aparecer bem e vender pelo WhatsApp.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PORTE 02</span>
+          <h3>Pequeno &amp; Médio Negócio</h3>
+          <p>Conteúdo com narrativa e prova social, com opção de integrar automação de atendimento e captação de leads.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PORTE 03</span>
+          <h3>Empresário &amp; Grande Porte</h3>
+          <p>Posicionamento institucional plugado ao CRM e aos funis já operados pela FAT Tech — conteúdo como insumo de dado, não só de imagem.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- PILARES DE CONTEÚDO -->
+  <section id="pilares">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Seis pilares. <span class="hl">Um único método.</span></h2>
+        <p>Toda peça de conteúdo produzida pela vertente nasce dentro de um destes seis pilares — a mesma estrutura usada no banco de pautas interno e no calendário de produção.</p>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <span class="tag">PILAR 01</span>
+          <h3>Storytelling de Marca</h3>
+          <p>Narrativa, bastidores humanos e propósito por trás de cada negócio, de qualquer porte.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PILAR 02</span>
+          <h3>Bastidores &amp; Processo</h3>
+          <p>Rotina, cultura e o método por trás de cada entrega — reforço de confiança contínuo.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PILAR 03</span>
+          <h3>Prova Social</h3>
+          <p>Depoimentos, cases e resultados — roteirizados com a mesma técnica de entrevista usada em processos.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PILAR 04</span>
+          <h3>Performance &amp; Funil</h3>
+          <p>Conteúdo pensado para alimentar automação, CRM e campanhas — para quem já opera ou quer operar tráfego e IA.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PILAR 05</span>
+          <h3>Autoridade &amp; Compliance</h3>
+          <p>Conteúdo institucional com blindagem jurídica — diferencial para nichos regulamentados (advogados, contadores, cartórios, políticos).</p>
+        </div>
+        <div class="pillar-card">
+          <span class="tag">PILAR 06</span>
+          <h3>Vitrine Januária</h3>
+          <p>Conteúdo do perfil oficial da cidade e da vitrine digital — motor de leads interno da vertente.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- CATÁLOGO -->
+  <section id="catalogo">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Catálogo de produtos</h2>
+        <p>Organizado por porte de negócio — do MEI ao grande empresário — com precificação calibrada para o mercado regional de Januária e norte de Minas.</p>
+      </div>
+
+      <div class="line-block">
+        <div class="line-head"><h3>Linha 1 — MEI &amp; Autônomo</h3><span class="line-note">conteúdo puro</span></div>
+        <p class="line-desc">Presença simples e direta, sem exigir estrutura de automação — ponto de entrada mais acessível do catálogo.</p>
+        <table class="catalog">
+          <thead><tr><th>Produto</th><th>O que entrega</th><th>Público-alvo</th><th>Investimento</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="prod">Presença Essencial</td>
+              <td class="desc">8 posts/mês (feed + stories), 1 reel/mês, resposta a comentários, calendário editorial</td>
+              <td class="aud">MEI, autônomos, pequeno comércio, clínicas, salões</td>
+              <td class="price">R$ 397–497/mês<small>setup R$ 300</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Storybrand Express</td>
+              <td class="desc">Sessão de descoberta + narrativa de marca (missão, história, tom de voz) + roteiro de 10 posts de lançamento</td>
+              <td class="aud">Quem está começando ou se reposicionando</td>
+              <td class="price">R$ 900–1.500<small>projeto único</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Copywriting Avulso</td>
+              <td class="desc">Bio, apresentação comercial, roteiro de vídeo institucional, e-book/lead magnet</td>
+              <td class="aud">Qualquer cliente da base</td>
+              <td class="price">R$ 150–400<small>por peça</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="line-block">
+        <div class="line-head"><h3>Linha 2 — Pequeno &amp; Médio Negócio</h3><span class="line-note">conteúdo + automação opcional</span></div>
+        <p class="line-desc">Presença robusta com narrativa e prova social, com a opção de plugar automação de atendimento e captação — sem exigir CRM completo.</p>
+        <table class="catalog">
+          <thead><tr><th>Produto</th><th>O que entrega</th><th>Público-alvo</th><th>Investimento</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="prod">Autoridade &amp; Crescimento</td>
+              <td class="desc">12 posts/mês, 4 reels/mês, copywriting orientado a conversão, calendário de prova social</td>
+              <td class="aud">Comércios estabelecidos, prestadores de serviço, franquias locais</td>
+              <td class="price">R$ 697–897/mês<small>setup R$ 500</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Depoimento &amp; Prova Social</td>
+              <td class="desc">Roteiro + gravação + edição de depoimentos de clientes, com técnica de entrevista</td>
+              <td class="aud">Negócios com carteira de clientes fiéis</td>
+              <td class="price">R$ 600–1.000<small>pacote de 3–5</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Conteúdo + Automação de Captação</td>
+              <td class="desc">Conteúdo mensal integrado a fluxo de atendimento automatizado (WhatsApp/n8n) para transformar engajamento em lead qualificado</td>
+              <td class="aud">Negócios prontos para escalar atendimento</td>
+              <td class="price">R$ 997–1.497/mês<small>setup R$ 800–1.200</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="line-block">
+        <div class="line-head"><h3>Linha 3 — Empresário &amp; Grande Porte</h3><span class="line-note">conteúdo + CRM + IA</span></div>
+        <p class="line-desc">Posicionamento institucional plugado ao CRM e aos funis já operados pela FAT Tech — o conteúdo vira insumo de dado, não só imagem.</p>
+        <table class="catalog">
+          <thead><tr><th>Produto</th><th>O que entrega</th><th>Público-alvo</th><th>Investimento</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="prod">Posicionamento Institucional</td>
+              <td class="desc">Gestão multi-rede, assessoria de crise/imagem, pauta de PR local, ghostwriting executivo, relatório mensal de percepção</td>
+              <td class="aud">Empresários de peso local, redes de negócio, grupos econômicos</td>
+              <td class="price">R$ 1.200–1.997/mês<small>setup R$ 800–1.200</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Conteúdo Integrado a CRM</td>
+              <td class="desc">Calendário de conteúdo desenhado a partir dos dados do funil (Kommo/Impulse CRM) — conteúdo que responde ao estágio de venda</td>
+              <td class="aud">Empresas com CRM ativo e equipe comercial estruturada</td>
+              <td class="price">R$ 1.500–2.500/mês<small>integração à parte</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Storymaker Executivo</td>
+              <td class="desc">Ghostwriting e posicionamento pessoal do fundador/diretor, com pauta de autoridade de mercado e imprensa local</td>
+              <td class="aud">CEOs, diretores, fundadores em processo de expansão</td>
+              <td class="price">R$ 1.800–2.800/mês</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="line-block">
+        <div class="line-head"><h3>Linha 4 — Blindagem &amp; Compliance de Imagem</h3><span class="line-note">diferencial transversal, todos os portes</span></div>
+        <p class="line-desc">O produto que nenhum concorrente local oferece — exige o histórico jurídico e cartorário que só a Iasmim tem. Aplica-se a qualquer porte que atue em nicho regulamentado.</p>
+        <table class="catalog">
+          <thead><tr><th>Produto</th><th>O que entrega</th><th>Público-alvo</th><th>Investimento</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="prod">Auditoria de Compliance Digital</td>
+              <td class="desc">Revisão do histórico de posts/site contra normas da categoria (OAB, CRC, CRECI, legislação eleitoral) + relatório de riscos</td>
+              <td class="aud">Advogados, contadores, pré-candidatos</td>
+              <td class="price">R$ 500–800<small>auditoria única</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Assessoria Pré-Eleitoral de Imagem</td>
+              <td class="desc">Comunicação institucional dentro dos limites da Lei Eleitoral, calendário de propaganda antecipada x institucional</td>
+              <td class="aud">Vereadores, pré-candidatos, assessores</td>
+              <td class="price">R$ 1.500–3.000<small>+ mensalidade no período eleitoral</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Gestão de Crise de Reputação</td>
+              <td class="desc">Plano de resposta, script de comunicação, monitoramento de menções</td>
+              <td class="aud">Qualquer nicho regulamentado, qualquer porte</td>
+              <td class="price">R$ 800/mês<small>retainer sob demanda</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="line-block">
+        <div class="line-head"><h3>Linha 5 — Upsell via Vitrine Januária MG</h3><span class="line-note">motor de leads interno</span></div>
+        <p class="line-desc">A gestão de januariamg.com.br e @januariamgoficial funciona como palco permanente para a própria vertente.</p>
+        <table class="catalog">
+          <thead><tr><th>Produto</th><th>O que entrega</th><th>Público-alvo</th><th>Investimento</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="prod">Selo de Destaque na Vitrine</td>
+              <td class="desc">Destaque da empresa cadastrada + menção no perfil oficial da cidade</td>
+              <td class="aud">Empresas listadas em januariamg.com.br</td>
+              <td class="price">R$ 97–197/mês<small>add-on</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Empresa em Foco</td>
+              <td class="desc">Matéria/reels de bastidores da empresa publicada no perfil oficial — audiência já formada</td>
+              <td class="aud">Empresas locais</td>
+              <td class="price">R$ 297–497<small>avulso por edição</small></td>
+            </tr>
+            <tr>
+              <td class="prod">Combo Vitrine + Social</td>
+              <td class="desc">Cadastro na vitrine + Presença Essencial + 1 Empresa em Foco trimestral</td>
+              <td class="aud">Pequenos e médios negócios locais</td>
+              <td class="price">15–20% off<small>vs. avulso</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- FUNIL -->
+  <section id="funil">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Como um lead vira contrato</h2>
+        <p>Três camadas, todas alimentadas pelo acervo que a FAT Tech já opera em Januária.</p>
+      </div>
+      <div class="funnel">
+        <div class="funnel-step">
+          <span class="stage">TOPO</span>
+          <h4>Vitrine januariamg.com.br + @januariamgoficial</h4>
+          <p>Leads orgânicos e quentes — empresas já listadas e visíveis, que já confiam na marca da cidade.</p>
+        </div>
+        <div class="funnel-step">
+          <span class="stage">MEIO</span>
+          <h4>Auditoria de Compliance Digital ou Storybrand Express</h4>
+          <p>Diagnóstico de baixo ticket que expõe gaps reais — entrada natural para quem tem medo de infração ou falta de narrativa.</p>
+        </div>
+        <div class="funnel-step">
+          <span class="stage">FUNDO</span>
+          <h4>Contrato recorrente na trilha do porte certo</h4>
+          <p>MEI &amp; Autônomo, Pequeno &amp; Médio ou Empresário &amp; Grande Porte — com upsell natural para CRM, Ads e IA já operados pela FAT Tech.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- LANÇAMENTO -->
+  <section id="lancamento">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Plano de lançamento</h2>
+        <p>Execução imediata — sem espera por estrutura perfeita.</p>
+      </div>
+      <ul class="launch-list">
+        <li>
+          <div>
+            <h4>Fechar nome comercial e paleta institucional</h4>
+            <p>Aprovar identidade da vertente com a Iasmim antes de qualquer publicação externa.</p>
+            <span class="who">Wal + Iasmim</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h4>Post de apresentação no @januariamgoficial</h4>
+            <p>Usar a própria vitrine da cidade como palco de lançamento da Head de Estratégia.</p>
+            <span class="who">Iasmim</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h4>Levantar empresas da vitrine sem contrato ativo</h4>
+            <p>Puxar da base já mapeada — menor atrito de venda, marca já é conhecida.</p>
+            <span class="who">Wal</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h4>Disparar Auditoria de Compliance para 5 leads mapeados</h4>
+            <p>Advogados e contadores — oferta de entrada simbólica para gerar prova de conceito.</p>
+            <span class="who">Iasmim</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h4>Publicar esta página de apresentação</h4>
+            <p>Herdando o design system FAT Tech, pronta para envio direto a leads qualificados.</p>
+            <span class="who">Claude / Wal</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h4>Ativar calendário semanal de produção</h4>
+            <p>Usar a planilha de produção e o banco de 330 pautas já organizados por pilar.</p>
+            <span class="who">Iasmim</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final" id="contato">
+    <div class="wrap">
+      <h2>Sua marca tem autoridade. Falta ela aparecer.</h2>
+      <p>Auditoria de Compliance Digital, Storybrand Express ou gestão completa de social media — o primeiro passo é entender onde sua comunicação está exposta.</p>
+      <a class="btn-primary" href="https://wa.me/5535998491017?text=Ol%C3%A1!%20Quero%20falar%20sobre%20a%20FAT%20Tech%20Posiciona%20e%20agendar%20um%20diagn%C3%B3stico%20de%20posicionamento." target="_blank" rel="noopener">Agendar diagnóstico com a Iasmim</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>FAT TECH POSICIONA — VERTENTE DE ESTRATÉGIA, CONTEÚDO E POSICIONAMENTO DIGITAL // <a href="/index.html" style="color:inherit">FAT TECH GROWTH HUB</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

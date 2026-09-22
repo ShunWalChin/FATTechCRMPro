@@ -154,3 +154,198 @@ a chave ao repetir o mesmo corpo após uma resposta incerta. Emissão e decisõe
 papel e atualização versionada do valor. O relatório conserva a base temporal
 `deal_created_at_utc`. Veja o registro da versão em
 `docs/releases/2026-09-12-versao-0.2.2.md` para limites e evidências.
+
+## SYNAPSE: operação comercial (implementação local)
+
+Rotas autenticadas em `/api/v1/synapse`: `GET /overview`, `POST /setup`, `POST /settings`,
+`POST /enroll`, `GET /runs` e `POST /assist`. Contratos detalhados, scopes, persistência,
+idempotência e limitações em [SYNAPSE_IMPLEMENTATION.md](../../docs/SYNAPSE_IMPLEMENTATION.md).
+
+`setup` prepara catálogo/funil no tenant atual; não cria assinatura ou tenant de comprador.
+`assist` retorna trechos documentais com `provider=lexical` e `sent=false`; não executa LLM.
+Webhook Instagram materializa mensagens autenticadas em conversas e mantém opt-out/janela
+controlados pelo servidor. O envio externo permanece dependente de implementação do provedor.
+
+## Trilha de auditoria verificável (migração 0007)
+
+Toda linha de `audit_log` carrega `seq`, `hash_prev` e `hash_self`: uma cadeia por organização,
+selada no `before_flush` da sessão para alcançar também os pontos que constroem `Audit(...)` sem
+passar por `audit_event`. A numeração é serializada por `pg_advisory_xact_lock` e um índice único
+em `(tenant_id, seq)` transforma uma bifurcação concorrente em erro de gravação.
+
+`GET /api/v1/audit/verify` (proprietário/administrador) percorre a cadeia e devolve
+`{integra, conferidas, total_na_organizacao, primeira_seq, ultima_seq, linhas_faltando, problemas,
+problemas_total}`. O parâmetro `recentes` (1..5000) confere apenas a cauda e continua informando o
+total da organização — a resposta sempre diz quantas linhas foram lidas, porque `integra` sozinho
+não distingue trilha íntegra de trilha vazia.
+
+A cadeia torna a alteração **detectável**, não impossível. A revogação de `UPDATE`/`DELETE` já
+impedia a aplicação de alterar a trilha; a cadeia cobre o que ela não cobre — restore parcial,
+superusuário do banco, linha removida por fora. A migração sela o que já está gravado, então ela
+não atesta nada sobre o período anterior a si mesma.
+
+## Operação de conteúdo — vertente Posiciona (0.5.x)
+
+Domínios CRUD: `content_accounts`, `content_ideas`, `content_posts`, com versão otimista, RLS,
+trilha e campos personalizados como qualquer outro. Regras próprias, validadas no servidor:
+
+- `content_posts` com `status=publicado` exige `published_at`; `agendado` exige `scheduled_at`.
+- A pauta (`content_ideas.used`) é marcada pela transição da peça para `publicado` e devolvida ao
+  banco quando a peça é cancelada. Não é um campo que alguém marca à mão.
+- `products` ganhou `price_max_cents` e `setup_cents`; zero em qualquer um significa "não
+  publicado", não "de graça". O teto não pode ser menor que o piso.
+
+`POST /api/v1/content/pautas/importar` (proprietário/administrador) carrega o banco de pautas da
+vertente com `{pillars?, limit?, commit}`. `commit:false` devolve a mesma contagem que a
+confirmação gravaria. Reimportar não duplica: o título já existente é contado em `ja_existiam`, e
+o que passa do limite aparece em `cortadas_pelo_limite` em vez de sumir.
+
+`GET /api/v1/content/indicadores?mes=AAAA-MM` devolve a apuração do mês: por conta, o publicado
+contra a frequência contratada. `contratado` e `deficit` nulos significam "sem frequência
+contratada" — a conta continua no relatório e não vira déficit inventado. Todo pilar aparece na
+distribuição, inclusive com zero, porque o pilar vazio é o achado.
+# Core-Engine
+
+O processamento interno possui filas independentes da entrega externa ao n8n. Consulte [contratos, permissões, migração 0008 e operação](../../docs/CORE_ENGINE_IMPLEMENTATION.md). Rotas administrativas em `/api/v1/core`; interface em `/crm/synapse/eventos`. Lotes de mensagens disponíveis para revisão não representam envio ou execução autônoma de IA.
+
+## Operação de agente — E1: identidade e catálogo (migração 0009)
+
+O agente é um `Principal` próprio, nunca uma pessoa emprestada: um `users` com papel `root` e
+`is_agent=true`, mais uma chave de API criada **em nome dele** (`api_keys.created_by`). Como
+`Principal.admin()` recusa qualquer chave de API, o agente é estruturalmente incapaz de gerir
+equipe, criar chaves, trocar senha ou ler a trilha de auditoria — não por regra nova, mas porque
+é chave.
+
+`GET /api/v1/agent/tools` (escopo `agents:read`) devolve o catálogo **derivado** de `RESOURCES` mais
+as operações nomeadas. Cada ferramenta declara `escopo`, `classe` (`interna` = não sai da máquina;
+`externa` = entrega a terceiro) e `reversivel`. Domínio novo no CRM vira ferramenta no mesmo deploy;
+um teste compara todo escopo do catálogo contra `api_scopes()` para que a divergência falhe em vez
+de passar em silêncio. `fora_do_alcance` lista, com motivo, os domínios que nenhum agente opera.
+
+`POST /api/v1/agent/identity` (proprietário/administrador) recebe `{agent_id, tools}`, cria ou
+reaproveita o usuário-agente e emite chave com os escopos derivados das ferramentas. O token aparece
+**uma única vez**. Emitir chave nova não revoga as anteriores — rotação e revogação são decisões
+diferentes, e revogar em silêncio derrubaria um agente no meio de uma corrida; a resposta informa
+`chaves_ativas`.
+
+`DELETE /api/v1/agent/identity/{agent_id}` desliga o agente: revoga toda chave ativa e desativa o
+usuário. Existe porque a via genérica **não alcança** — `can_manage` exige patente estritamente
+maior e o agente é `root`, então nem o owner que o criou conseguia revogar por
+`DELETE /api/v1/api-keys/{id}`. A exceção vale apenas para `is_agent` e não afrouxa a regra de
+patente entre pessoas. Provisionar de novo reativa o usuário; as chaves revogadas não voltam.
+
+`agent_runs` e `agent_steps` registram execução. `UNIQUE (tenant_id, trigger_event_id)` garante no
+banco que o mesmo evento nunca produz duas corridas — a entrega do outbox é *pelo menos uma vez* e
+a deduplicação não pode depender da disciplina do agente. `agent_steps` é append-only
+(`REVOKE UPDATE, DELETE`), porque a tentativa **recusada** é o registro que prova que o portão
+funcionou. `GET /api/v1/agent/runs` e `/runs/{id}` leem a trilha de execução com o total calculado
+sobre o filtro inteiro; o detalhe traz `rationale` e o `trigger_event_id`, fechando a pergunta
+"por quê" que a cadeia de hash não responde. A justificativa é o que o modelo declarou ter pensado,
+**não prova do que pensou**, e a resposta diz isso.
+
+`GET /api/v1/agent/{agent_id}/budget` devolve o gasto do mês **derivado** da soma de
+`agent_runs.cost_cents`; `agents.spent_cents` continua gravado como zero. Teto igual a zero volta
+como `null` com `teto_declarado: false` — "ninguém declarou" e "zero" são estados diferentes, e o
+portão do E3 recusa executar no primeiro caso em vez de tratá-lo como ilimitado.
+
+**O que o E1 não faz:** nada escreve em `agent_runs` ainda. `Agent.status` continua
+`Literal["paused"]` e `POST /api/v1/agents/{id}/run` continua devolvendo 503 sem gastar crédito.
+O portão de execução, que grava corrida e passo, é o E2.
+
+## Operação de agente — E2: o portão de execução
+
+**O agente entra por uma porta só.** Uma chave de um usuário `is_agent` é aceita apenas em rotas
+sob `/api/v1/agent/`; nas rotas comuns recebe 403. A verificação mora em `require_auth`, por onde
+toda requisição passa, porque as rotas comuns aplicam escopo e versão mas **não** aplicam modo,
+teto, aprovação nem registro de passo — aceitá-la ali contornaria o portão inteiro, e uma lista de
+rotas a proteger é uma lista a esquecer.
+
+O ciclo do agente exige o escopo **`agent:operate`**, deliberadamente distinto de `agents:write`:
+operar a si mesmo e reconfigurar a si mesmo são coisas diferentes, e um agente que pode ajustar o
+próprio teto não tem teto. A chave emitida recebe `agent:operate` e `agents:read` além dos escopos
+das ferramentas.
+
+`POST /api/v1/agent/runs` abre a corrida com `{agent_id, trigger_event_id, trigger_type, rationale}`.
+`rationale` é obrigatório. **O replay devolve a corrida existente**, não erro: a entrega do outbox é
+pelo menos uma vez, então o replay é esperado e o agente descobre isso em vez de falhar.
+
+`POST /api/v1/agent/act` recebe `{run_id, tool, arguments}` e atravessa o portão **nesta ordem**:
+
+1. escopo da chave cobre a ferramenta
+2. a ferramenta está na lista do agente (vazia = nenhuma, nunca todas)
+3. o modo permite a classe da ação
+4. teto de ações na última hora
+5. teto de gasto do mês
+6. envio externo: `external_sends_enabled`
+7. irreversível ou marcado → `approval_required`, e o agente nunca é decisor
+8. executa e **grava o passo**
+
+A ordem é contrato, não preferência — `fattech:walchat:compliance-order`. A rota devolve **200 com
+`decision`** mesmo quando recusa: recusa é resultado, não erro de protocolo, e devolvê-la como 4xx
+faria o agente tratar decisão de negócio como falha de rede e reenviar. `decision` vale
+`allowed`, `suggested`, `approval_required` ou `refused`; a recusa carrega `refusal_reason` e fica
+gravada em `agent_steps`, que é append-only. O teto de ações conta apenas passos permitidos — contar
+recusas puniria o agente por ser barrado.
+
+**Em modo `sugestao` a escrita vira proposta**, não escrita adiada: o passo é gravado como
+`suggested` e o efeito não acontece. `POST /api/v1/agent/steps/{id}/apply` deixa **uma pessoa**
+aplicar; chave de API é recusada ali, e a escrita entra com o `Principal` de quem aplicou. Quem
+propõe não decide.
+
+`POST /api/v1/agent/runs/{id}/finish` encerra com `{status, tokens_in, tokens_out, cost_cents}`. O
+custo é somado na leitura; `agents.spent_cents` continua gravado como zero.
+
+Toda ação de agente grava `run_id` e `step_seq` em `audit_log.details`, ligando a cadeia de hash
+("o que aconteceu") à corrida ("por que o agente tentou"). O catálogo em `/agent/tools` marca cada
+ferramenta como `executavel`: anunciar ferramenta que nenhum despachante executa seria o catálogo
+mentindo, e uma ferramenta não executável recusa com motivo explícito em vez de não fazer nada.
+
+**O que o E2 não faz:** não há tela — aplicar um rascunho é hoje uma chamada de API. A reavaliação
+de compliance com os dados do instante é o E5; até lá envio externo é recusado pela trava global
+antes de chegar lá, e recusar é melhor que fingir que avaliou.
+
+`GET /api/v1/agent/suggestions` lista os rascunhos que esperam uma pessoa, cada um com a
+justificativa da corrida que o originou — a pergunta de quem vai aplicar é sempre *por que o agente
+propôs isto?*, e um rascunho que só existe dentro do detalhe de uma execução é um rascunho que
+ninguém encontra. `pendentes` conta o conjunto inteiro, não a página.
+
+A tela é `/crm/agente`. Ela chama a execução de **"execução"**, não de "corrida" como a API: é a
+palavra que um operador usa, e o cabeçalho explica o conceito porque ele é novo. O passo é rotulado
+pela obrigação e não pelo objeto — `suggested` aparece como **"Esperando você"**, porque numa lista
+varrida em três segundos quem precisa agir tem de descobrir isso sem ler.
+
+## Operação de agente — E4: o agente acorda sozinho (migração 0010)
+
+`openclaw` entra como terceiro consumidor do Core-Engine, ao lado de `bi` e `messaging`. O
+escalonador só cria entrega para ele quando algum agente **ativo** declara um gatilho que casa com
+o `event_type` — conjunto vazio significa nenhuma entrega, e é essa a trava de rollback do estágio:
+sem configuração, o sistema se comporta exatamente como antes, sem variável de ambiente e sem
+deploy.
+
+**O agente puxa; o CRM não empurra.** O handler materializa a corrida em `pending` dentro da
+transação e para. `POST /api/v1/agent/runs/claim` recebe `{agent_id, limit}` e faz a transição
+atômica `pending → planning`, o que impede duas instâncias do OpenClaw de pegarem a mesma corrida.
+Empurrar por HTTP exigiria um segundo mecanismo de entrega ao lado do outbox — `core_engine` proíbe
+chamada de rede dentro de transação — e puxar dá o modo degradado de graça: agente fora do ar, as
+corridas enfileiram e ele recupera o atraso.
+
+Agente pausado recebe **409 com o motivo**, não lista vazia: "não há trabalho" e "você está
+pausado" são estados diferentes, e devolver vazio faria o agente esperar por uma fila que nunca vem.
+
+`GET /api/v1/agent/{id}/queue` devolve `pendentes`, `mais_antiga_em`, `espera_segundos` e
+`reclamadas_sem_retorno`. A contagem sozinha não diz se a operação está saudável: dez corridas de um
+minuto atrás é normal, uma de seis horas atrás é um agente que morreu. Não há reciclagem automática
+de corrida travada neste estágio, e o número é declarado em vez de escondido.
+
+**Migração 0010** troca `UNIQUE (tenant_id, trigger_event_id)` por
+`(tenant_id, agent_id, trigger_event_id)`. Dois agentes podem observar o mesmo evento — um qualifica
+o lead, outro agenda a próxima ação — e com a unicidade antiga o segundo colidia em silêncio com o
+primeiro. A dedupe continua sendo do banco; ela passou a valer pelo par que sempre quis dizer.
+
+Evento com prefixo **`agent.`** nunca materializa corrida: o agente escreve, a escrita emite evento,
+e o evento o acordaria de novo. O limite de cinco saltos do outbox cortaria o laço, mas só depois de
+cinco voltas com custo de modelo em cada uma.
+
+`Agent.status` abre para `active` **aqui**, e não antes: agora existe despacho que o cumpra. Ativo
+exige ao menos um gatilho e uma ferramenta, recusados na escrita — um agente ativo sem gatilho nunca
+acorda, e o estado diria uma coisa enquanto a operação faz outra.

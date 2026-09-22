@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"id":"fattech:core:transactional-consumers","label":"Core-Engine: execução transacional","type":"engineering_pattern","rule":"Cada consumidor tem entrega e recibo próprios. Efeito, recibo e conclusão são atômicos. Tokens vencidos não autorizam efeitos.","por_que_importa":"Recuperar falhas sem repetir efeitos nem depender da disponibilidade do n8n.","status":"implementado localmente; publicação não verificada","onde_no_fattech":"apps/api/fattech/core_engine.py"},
+    {"id":"fattech:core:message-batches","label":"Mensagens agrupadas com persistência","type":"business_rule","rule":"Agrupar mensagens por organização e conversa, persistindo associação e evento filho na mesma transação. Ready significa revisão, nunca autorização de envio.","por_que_importa":"Evitar perda e repetição de mensagens e preservar o opt-out.","status":"implementado localmente","onde_no_fattech":"apps/api/fattech/core_engine.py"},
+    {"id":"fattech:core:operations","label":"Operação de eventos e filas","type":"engineering_pattern","rule":"Administrador acompanha filas, falhas e heartbeats. Recuperação exige número de tentativas observado e preserva o histórico.","por_que_importa":"Tornar a recuperação verificável e impedir acesso entre organizações.","status":"implementado localmente","onde_no_fattech":"apps/api/fattech/core_api.py; apps/web/components/core-operations.tsx"}
+  ],
+  "edges": [
+    {"source":"fattech:core:transactional-consumers","target":"fattech:core:message-batches","relation":"garante_persistencia"},
+    {"source":"fattech:core:operations","target":"fattech:core:transactional-consumers","relation":"monitora_e_recupera"}
+  ]
+}

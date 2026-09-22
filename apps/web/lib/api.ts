@@ -20,6 +20,44 @@ const proposalRecord=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isIn
 const goalRecord=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isInteger(value.version)&&
   nonemptyString(value.owner_id)&&typeof value.period==='string'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(value.period)&&nonnegativeInteger(value.target_cents);
 function validResponse(data:Record<string,unknown>,path:string,method:string):boolean {
+  if(path.startsWith('/core/')){
+    if(path==='/core/overview')return data.id==='core-engine'&&['postgresql','sqlite'].includes(String(data.transport))&&
+      typeof data.n8n_configured==='boolean'&&isObject(data.counts)&&
+      ['pending','processing','completed','dead_letter'].every(key=>nonnegativeInteger((data.counts as Record<string,unknown>)[key]))&&
+      nonnegativeInteger(data.buffers)&&Array.isArray(data.workers)&&data.workers.every(item=>isObject(item)&&
+        ['bi','messaging','scheduler'].includes(String(item.role))&&['healthy','stale','unknown'].includes(String(item.status))&&
+        (item.last_seen_at===null||nonemptyString(item.last_seen_at)))&&Array.isArray(data.events_24h)&&
+      data.events_24h.every(item=>isObject(item)&&nonemptyString(item.event)&&nonnegativeInteger(item.count));
+    if(path==='/core/deliveries')return nonnegativeInteger(data.total)&&Array.isArray(data.items)&&data.items.every(item=>
+      isObject(item)&&hasId(item)&&['event_id','event_type','worker_role','created_at'].every(key=>nonemptyString(item[key]))&&
+      ['pending','processing','completed','dead_letter'].includes(String(item.status))&&nonnegativeInteger(item.attempts)&&
+      (item.last_error===null||typeof item.last_error==='string'));
+    if(path==='/core/message-batches')return nonnegativeInteger(data.total)&&Array.isArray(data.items)&&data.items.every(item=>
+      isObject(item)&&hasId(item)&&nonemptyString(item.conversation_id)&&nonnegativeInteger(item.message_count)&&
+      nonemptyString(item.created_at)&&['ready','blocked'].includes(String(item.status))&&(item.reason===null||typeof item.reason==='string'));
+    if(/^\/core\/deliveries\/[^/]+\/retry$/.test(path)&&method==='POST')return hasId(data)&&data.status==='pending';
+    return false;
+  }
+  if(path.startsWith('/synapse/')){
+    const configuration=(value:unknown)=>isObject(value)&&hasId(value)&&Number.isInteger(value.version)&&
+      ['pipeline_id','setup_product_id','license_product_id','agent_id'].every(key=>nonemptyString(value[key]))&&
+      (value.owner_id===null||nonemptyString(value.owner_id))&&typeof value.enabled==='boolean'&&
+      typeof value.capture_enabled==='boolean'&&Number.isInteger(value.sla_hours)&&Number(value.sla_hours)>0;
+    if(path==='/synapse/overview')return data.id==='synapse'&&typeof data.installed==='boolean'&&
+      (data.installed?configuration(data.configuration):data.configuration===null)&&isObject(data.metrics)&&
+      ['leads','deals','open_deals','won_deals','pending_tasks'].every(key=>nonnegativeInteger((data.metrics as Record<string,unknown>)[key]))&&
+      Array.isArray(data.readiness)&&data.readiness.every(item=>isObject(item)&&nonemptyString(item.key)&&
+        nonemptyString(item.label)&&['ready','pending'].includes(String(item.status))&&typeof item.detail==='string'&&typeof item.href==='string')&&
+      Array.isArray(data.recent_runs)&&data.recent_runs.every(hasId);
+    if(path==='/synapse/setup')return typeof data.created==='boolean'&&configuration(data.configuration);
+    if(path==='/synapse/settings')return configuration(data);
+    if(path==='/synapse/enroll')return hasId(data)&&['contact_id','deal_id','task_id','status','due_at'].every(key=>nonemptyString(data[key]))&&typeof data.duplicate==='boolean';
+    if(path==='/synapse/assist')return hasId(data)&&['draft','handoff'].includes(String(data.status))&&typeof data.body==='string'&&
+      data.sent===false&&data.provider==='lexical'&&Array.isArray(data.citations)&&
+      data.citations.every(item=>isObject(item)&&nonemptyString(item.id)&&nonemptyString(item.title));
+    if(path==='/synapse/runs')return Array.isArray(data.items)&&data.items.every(hasId)&&nonnegativeInteger(data.total);
+    return false;
+  }
   if(/^\/sales\/(proposals|goals)(\/[^/]+)?$/.test(path)){
     const check=path.startsWith('/sales/proposals')?proposalRecord:goalRecord;
     return method==='GET'&&path.split('/').length===3?
@@ -58,6 +96,18 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
     if(path==='/api-keys')return hasId(data)&&nonemptyString(data.key);
     // An import answers with a report rather than a record, so it declares its own shape.
     if(path==='/contacts/import')return ['total','ready','created'].every(key=>Number.isInteger(data[key]))&&typeof data.committed==='boolean'&&Array.isArray(data.invalid)&&Array.isArray(data.duplicates);
+    // O agente responde com decisao, passo e rascunho aplicado -- nunca com um registro. Estes
+    // contratos precisam viver AQUI, dentro do bloco de escrita: ele termina em `hasId(data)` e
+    // atende todo metodo diferente de GET, entao um contrato declarado na regiao de leitura nunca
+    // e alcancado por um POST. Custou uma rodada de teste de navegador descobrir isso.
+    if(/^\/agent\/steps\/[^/]+\/apply$/.test(path))
+      return nonemptyString(data.step_id)&&nonemptyString(data.tool)&&nonemptyString(data.aplicado_por);
+    if(path==='/agent/act')
+      return nonemptyString(data.run_id)&&nonemptyString(data.decision)&&Number.isInteger(data.seq);
+    if(path==='/agent/identity')
+      return nonemptyString(data.user_id)&&nonemptyString(data.key_id)&&nonemptyString(data.key)&&
+        Array.isArray(data.scopes);
+    if(/^\/agent\/runs\/[^/]+\/finish$/.test(path))return hasId(data)&&nonemptyString(data.status);
     return hasId(data);
   }
   // O grafo do conhecimento responde com familias, nos e arestas, nunca com um registro.
@@ -79,6 +129,34 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
       return Array.isArray(data.items)&&data.items.every(contrato)&&nonnegativeInteger(data.total)&&isObject(data.summary);
     return contrato(data);
   }
+  // A apuracao de conteudo nao e uma lista nem um registro: e um relatorio. Sem contrato proprio ela
+  // caia no `hasId` final e a tela recusava a resposta inteira -- o contrato e que nenhuma forma
+  // desconhecida chegue a tela, entao declarar a forma faz parte de entregar a tela.
+  if(path==='/content/indicadores')
+    return nonemptyString(data.mes)&&Array.isArray(data.contas)&&nonnegativeInteger(data.pecas_no_mes)&&
+      isObject(data.por_status)&&isObject(data.por_pilar)&&isObject(data.banco_de_pautas)&&
+      // Deficit nulo e um estado declarado (sem frequencia contratada), nao um campo faltando.
+      data.contas.every(c=>isObject(c)&&nonemptyString(c.account_id)&&nonnegativeInteger(c.publicadas)&&
+        (c.deficit===null||nonnegativeInteger(c.deficit))&&(c.contratado===null||nonnegativeInteger(c.contratado)));
+  if(path==='/content/pautas/importar')
+    return nonnegativeInteger(data.no_material)&&nonnegativeInteger(data.importadas)&&
+      nonnegativeInteger(data.ja_existiam)&&typeof data.commit==='boolean';
+  // A tela do agente lê três formas novas. Sem contrato declarado elas cairiam no `hasId` final e
+  // a tela recusaria a resposta inteira — declarar a forma faz parte de entregar a tela.
+  if(path==='/agent/suggestions')
+    return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&nonnegativeInteger(data.pendentes)&&
+      data.items.every(s=>isObject(s)&&nonemptyString(s.step_id)&&nonemptyString(s.tool));
+  if(path==='/agent/runs')
+    return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&nonnegativeInteger(data.gasto_cents)&&
+      isObject(data.por_status)&&data.items.every(hasId);
+  if(/^\/agent\/runs\/[^/]+$/.test(path))
+    return hasId(data)&&Array.isArray(data.steps)&&typeof data.rationale==='string'&&
+      data.steps.every(p=>isObject(p)&&Number.isInteger(p.seq)&&nonemptyString(p.decision));
+  if(path==='/agent/tools')
+    return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&nonnegativeInteger(data.executaveis);
+  if(path==='/audit/verify')
+    return typeof data.integra==='boolean'&&nonnegativeInteger(data.conferidas)&&
+      nonnegativeInteger(data.total_na_organizacao)&&Array.isArray(data.problemas);
   if(path==='/contacts/duplicates')
     return Array.isArray(data.items)&&nonnegativeInteger(data.total)&&
       data.items.every(g=>isObject(g)&&nonemptyString(g.survivor_id)&&Array.isArray(g.records)&&g.records.every(hasId));

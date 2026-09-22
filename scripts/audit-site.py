@@ -143,16 +143,23 @@ def conferir_upstream() -> list[str]:
               "clone com: gh repo clone ShunWalChin/FAT-Tech---Website "
               ".local/references/fat-tech-website")
         return []
-    declarados = (json.loads(PATCHES.read_text(encoding="utf-8"))["arquivos"]
-                  if PATCHES.exists() else {})
+    patches = json.loads(PATCHES.read_text(encoding="utf-8")) if PATCHES.exists() else {}
+    declarados = patches.get("arquivos", {})
+    # Divergencia e um arquivo do original que mudou; acrescimo e um arquivo que o original nao tem.
+    # Sem separar os dois, uma pagina nova soava como arquivo perdido na sincronizacao -- que e
+    # exatamente o alarme que esta auditoria existe para dar, e um alarme que sempre toca nao serve.
+    adicionados = patches.get("adicionados", {})
     problemas = []
     arquivos = arquivos_publicados()
     print(f"\n3. Repositorio oficial\n   {len(arquivos)} arquivos comparados com o clone")
-    sem_origem = divergentes = corrigidos = 0
+    sem_origem = divergentes = corrigidos = acrescentados = 0
     for caminho in arquivos:
         relativo = caminho.relative_to(PUBLICO)
         origem = UPSTREAM / relativo
         if not origem.exists():
+            if relativo.as_posix() in adicionados:
+                acrescentados += 1
+                continue
             problemas.append(f"{relativo.as_posix()} nao existe no repositorio oficial")
             sem_origem += 1
             continue
@@ -170,12 +177,16 @@ def conferir_upstream() -> list[str]:
                    (".git/", ".github/", "scripts/", "docs/", "node_modules/"))
                and caminho.name not in {"MANUAL.md", "README.md", "package.json", "package-lock.json",
                                         "server.ps1", ".gitignore", ".htaccess", ".htmlvalidate.json"}}
-    faltando = sorted(do_site - nossos)
+    # Um acrescimo nosso nao pode entrar na conta do que o original tem e nao publicamos.
+    faltando = sorted(do_site - nossos - set(adicionados))
     print(f"   sem origem      : {sem_origem}\n   divergentes     : {divergentes}\n"
           f"   nao publicados  : {len(faltando)}\n"
-          f"   correcoes declaradas: {corrigidos}")
+          f"   correcoes declaradas: {corrigidos}\n"
+          f"   acrescimos declarados: {acrescentados}")
     for nome in sorted(declarados):
         print(f"      {nome}: {declarados[nome][:96]}...")
+    for nome in sorted(adicionados):
+        print(f"      + {nome}: {adicionados[nome][:94]}...")
     problemas += [f"{nome} existe no repositorio oficial e nao esta publicado" for nome in faltando]
     return problemas
 

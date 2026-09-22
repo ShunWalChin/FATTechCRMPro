@@ -44,6 +44,19 @@
  ],
  "nodes": [
   {
+   "id": "fattech:openclaw:laco-cortado-na-origem",
+   "label": "A ação do próprio agente não o acorda de novo",
+   "family": "business_rule",
+   "summary": "Evento com prefixo `agent.` nunca materializa corrida. O prefixo é reservado.",
+   "why": "O agente escreve, a escrita emite evento, o evento acordaria o agente. O limite de cinco saltos do outbox cortaria o laço, mas só depois de cinco voltas com custo de modelo em cada uma. Cortar na origem é mais barato que cortar no quinto giro.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_dispatch.py (despertar)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:campos:chave-imutavel",
    "label": "A chave de um campo nao muda e uma definicao em uso nao some",
    "family": "business_rule",
@@ -70,6 +83,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:openclaw:justificativa-e-o-produto",
+   "label": "A justificativa do agente é o produto, não a ação",
+   "family": "business_rule",
+   "summary": "agent_runs.rationale guarda a justificativa declarada junto do trigger_event_id, e audit_log.details recebe run_id em toda ação de agente. agent_steps é append-only e grava também a tentativa recusada, com motivo.",
+   "why": "A trilha encadeada responde o que aconteceu e quem fez; nunca foi projetada para gravar por quê. Com metade das ações vindo de um modelo, 'o modelo decidiu' regrediria justamente o diferencial de auditabilidade do produto. Extensão de fattech:lead:explicacao-e-o-produto. Declaração honesta: justificativa é o que o modelo disse que pensou, não prova do que pensou.",
+   "status": "proposto",
+   "where": "docs/OPENCLAW_BLUEPRINT.md",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:mano:lacuna-real",
    "label": "A lacuna e a conta por organizacao, nao o webhook",
    "family": "business_rule",
@@ -91,6 +117,32 @@
    "status": "implementado",
    "where": "apps/api/fattech/approval_chain.py",
    "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:posiciona:pauta-gasta-na-publicacao",
+   "label": "A pauta é consumida pela peça publicada, não pela escolhida",
+   "family": "business_rule",
+   "summary": "Marcar uma pauta como usada é efeito da transição da peça para 'publicado'; cancelar a peça devolve a pauta ao banco.",
+   "why": "A planilha marcava 'Usado? S' na escolha, então uma peça abandonada levava a ideia junto. Um campo que alguém marca à mão não é um controle.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/content_ops.py (marcar_pauta)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:ativo-exige-gatilho",
+   "label": "Ativo sem gatilho é um agente que nunca acorda",
+   "family": "business_rule",
+   "summary": "`status='active'` exige ao menos um gatilho e ao menos uma ferramenta declarados, recusados na escrita. E `active` só abriu no E4, quando passou a haver despacho que o cumpra.",
+   "why": "O estado diria uma coisa e a operação faria outra: quem configurou ficaria esperando por uma corrida que nunca vem. É a mesma disciplina que manteve `status` fechado em `paused` do E1 ao E2 — o estado só abre junto do runtime que o torna verdadeiro.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/schemas.py (Agent)",
+   "source": "openclaw-integracao.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
@@ -161,6 +213,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:posiciona:deficit-contra-contrato",
+   "label": "Déficit é publicado contra frequência contratada",
+   "family": "business_rule",
+   "summary": "A apuração mensal compara peças publicadas com a frequência do contrato da conta. Frequência zero desliga a comparação e a conta aparece sem déficit, em vez de sumir do relatório.",
+   "why": "'Sem frequência contratada' e 'contratou zero' são estados diferentes; tratá-los igual acusaria toda conta de vitrine de inadimplência e esconderia a conta que ninguém apura.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/content_ops.py (indicadores)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:eligibility-is-preview",
    "label": "Elegibilidade pre-calculada e previa, nunca autorizacao",
    "family": "business_rule",
@@ -171,7 +236,20 @@
    "source": "walchat-engineering.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
-   "degree": 1
+   "degree": 2
+  },
+  {
+   "id": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "label": "Em modo sugestão a escrita vira proposta, e quem aplica é o autor",
+   "family": "business_rule",
+   "summary": "Escrita em modo sugestão grava um passo com decision='suggested' e o efeito não acontece. Uma pessoa aplica por POST /agent/steps/{id}/apply, e a escrita entra com o Principal dela. Chave de API é recusada nessa rota.",
+   "why": "Deixar o agente aplicar o próprio rascunho devolveria a ele escrita sem modo de execução, por caminho lateral — a mesma forma de fattech:aprovacao:segregacao-de-funcoes: quem propõe não decide. E a trilha precisa registrar quem decidiu, não quem sugeriu.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_gate.py (aplicar_sugestao)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
   },
   {
    "id": "fattech:contrato:ativar-exige-cadeia",
@@ -200,6 +278,19 @@
    "degree": 3
   },
   {
+   "id": "fattech:posiciona:vertente",
+   "label": "FAT Tech Posiciona: conteúdo e posicionamento como vertente",
+   "family": "business_rule",
+   "summary": "A vertente vende conteúdo em cinco linhas de catálogo (MEI, PME, grande porte, compliance e vitrine), com preço em faixa e implantação cobrada à parte.",
+   "why": "O catálogo do CRM nasceu para produto de preço único; serviço se vende em faixa negociada, e guardar só o piso fazia toda proposta nascer no mínimo da tabela.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/schemas.py (Product.price_max_cents, Product.setup_cents)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:business:closing-authority",
    "label": "Fechamento com autoridade do servidor",
    "family": "business_rule",
@@ -224,6 +315,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 4
+  },
+  {
+   "id": "fattech:core:message-batches",
+   "label": "Mensagens agrupadas com persistência",
+   "family": "business_rule",
+   "summary": "Agrupar mensagens por organização e conversa, persistindo associação e evento filho na mesma transação. Ready significa revisão, nunca autorização de envio.",
+   "why": "Evitar perda e repetição de mensagens e preservar o opt-out.",
+   "status": "implementado localmente",
+   "where": "apps/api/fattech/core_engine.py",
+   "source": "core-engine.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
   },
   {
    "id": "fattech:merge:historico-reapontado",
@@ -265,6 +369,32 @@
    "degree": 1
   },
   {
+   "id": "fattech:agente:obrigacao-antes-do-historico",
+   "label": "Na tela do agente, o que exige decisão vem antes do histórico",
+   "family": "business_rule",
+   "summary": "A seção 'Esperando você' fica acima de 'Execuções', e o rótulo do passo nomeia a obrigação ('Esperando você') em vez do objeto ('rascunho'). A confirmação nomeia a ação, a consequência, e os botões dizem o que fazem.",
+   "why": "Histórico é consulta; rascunho é obrigação. Numa lista varrida em três segundos, quem precisa agir tem de descobrir isso sem ler. E um rascunho que só existe dentro do detalhe de uma execução é um rascunho que ninguém encontra.",
+   "status": "implementado_localmente",
+   "where": "apps/web/components/agent-operations.tsx, GET /api/v1/agent/suggestions",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "label": "Nenhum agente nasce ativo enquanto não houver executor",
+   "family": "business_rule",
+   "summary": "`Agent.status` continua sendo `Literal['paused']`. O estado ativo abre no E2, junto com o portão de execução que o torna verdadeiro.",
+   "why": "Ao projetar o E1 eu abri o campo para 'active', argumentando que sugestão não age. A suíte pegou: test_flow_simulation_and_external_side_effects_fail_closed já guardava essa garantia. Um estado que declara operação sem runtime que a cumpra é o que o §10 da ordem proíbe, e a garantia anterior estava certa.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/schemas.py (Agent.status)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
    "id": "fattech:mano:ja-existe",
    "label": "O Mano Chat existe e tem esquema proprio",
    "family": "business_rule",
@@ -278,6 +408,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:openclaw:agente-como-principal",
+   "label": "O agente é um Principal próprio, não um humano emprestado",
+   "family": "business_rule",
+   "summary": "O OpenClaw recebe identidade própria com papel root marcada como agente, chave com escopo declarado, teto de gasto e de ações. Três modos: sugestão, execução interna e execução externa. Os dois primeiros não exigem nenhuma trava desligada.",
+   "why": "A capacidade pedida — o agente opera o CRM sozinho — se obtém inteira sem dissolver os quatro controles que tornam o produto vendível. Um agente root sem modos atravessaria a trava de envio externo, a cadeia de aprovação, o compliance e a recusa de chave em operação administrativa.",
+   "status": "proposto",
+   "where": "apps/api/fattech/permissions.py (RANK já tem root=50), apps/api/fattech/schemas.py (Agent.autonomy)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 4
+  },
+  {
    "id": "fattech:contrato:texto-de-cada-revisao",
    "label": "O contrato guarda o texto de cada revisao, nao so a corrente",
    "family": "business_rule",
@@ -289,6 +432,45 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 2
+  },
+  {
+   "id": "fattech:openclaw:agente-nao-aprova-a-si-mesmo",
+   "label": "O irreversível continua passando por aprovação, inclusive para o agente",
+   "family": "business_rule",
+   "summary": "Exclusão, fusão de contatos, assinatura de contrato e envio externo entram na cadeia de aprovação com a regra que já existe: quem solicita não decide. O agente não ganha licença de furar a janela de 24h por ser agente.",
+   "why": "Um agente que aprova a própria solicitação transforma a cadeia de aprovação em enfeite, e o enfeite é pior que a ausência: ele dá a impressão de controle a quem audita.",
+   "status": "proposto",
+   "where": "apps/api/fattech/approval_chain.py, apps/api/fattech/compliance.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:plano-e-previa",
+   "label": "O plano do agente é prévia; o CRM reavalia no instante da execução",
+   "family": "business_rule",
+   "summary": "O CRM é a camada de restrição e o OpenClaw a camada de intenção. Compliance é chamado de novo com os dados do momento, nunca com o estado que o agente leu ao planejar.",
+   "why": "Aplicação direta de fattech:walchat:eligibility-is-preview. Estado derivado envelhece entre o plano e a execução, e um agente autorizado pela própria leitura enviaria mensagem a quem pediu para parar três minutos antes.",
+   "status": "proposto",
+   "where": "apps/api/fattech/compliance.py, docs/OPENCLAW_BLUEPRINT.md",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 3
+  },
+  {
+   "id": "fattech:openclaw:teto-nao-conta-recusa",
+   "label": "O teto de ações conta o que foi permitido, nunca o que foi recusado",
+   "family": "business_rule",
+   "summary": "acoes_na_ultima_hora conta apenas passos com decision em (allowed, suggested).",
+   "why": "Contar recusas no teto puniria o agente por ser barrado: ele bateria no teto justamente quando o portão estivesse funcionando, e a recusa viraria um segundo castigo — além de esconder o motivo real da próxima recusa.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_gate.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 0
   },
   {
    "id": "fattech:walchat:compliance-order",
@@ -408,6 +590,32 @@
    "degree": 1
   },
   {
+   "id": "fattech:synapse:commercial-installation",
+   "label": "SYNAPSE: operação comercial por organização",
+   "family": "business_rule",
+   "summary": "Preparar o SYNAPSE cria funil e catálogo próprios sem substituir o padrão. Repetir a instalação devolve a configuração original.",
+   "why": "Estruturar a venda é diferente de provisionar o ambiente e a assinatura do comprador.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/synapse.py",
+   "source": "synapse-commercial.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:posiciona:seis-pilares",
+   "label": "Seis pilares fechados, um por peça",
+   "family": "business_rule",
+   "summary": "Toda peça e toda pauta declaram exatamente um dos seis pilares publicados: storytelling, bastidores, prova social, performance, autoridade e vitrine.",
+   "why": "Campo livre devolveria a distribuição mensal ao Excel. Enumeração fechada é o que permite a tela mostrar um pilar com zero peças, que é o achado que interessa.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/schemas.py (PILARES)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
    "id": "fattech:business:queue-deadline",
    "label": "Semântica temporal da fila",
    "family": "business_rule",
@@ -434,6 +642,58 @@
    "degree": 2
   },
   {
+   "id": "fattech:openclaw:teto-ausente-recusa",
+   "label": "Teto não declarado recusa executar, em vez de valer como ilimitado",
+   "family": "business_rule",
+   "summary": "budget_month_cents e max_actions_per_hour iguais a zero significam 'ninguém declarou' e o agente recusa executar. O gasto do mês é derivado da soma de agent_runs, nunca gravado num contador.",
+   "why": "Mesma distinção de fattech:lead:explicado-vs-zero: zero e ausente são estados diferentes. Aqui a diferença é entre um teto esquecido e um incidente com data marcada. O gasto derivado evita o segundo lugar onde o mesmo número mora, que fattech:contrato:lista-fixa-em-dois-lugares já mostrou como termina.",
+   "status": "proposto",
+   "where": "apps/api/fattech/schemas.py (Agent), docs/OPENCLAW_BLUEPRINT.md",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:openclaw:topologia-e-preco",
+   "label": "Topologia é faixa de preço, nunca bifurcação de código",
+   "family": "business_rule",
+   "summary": "Central multi-organização é o padrão; VPS dedicado é premium. Mesmo código, mesmas migrações, mesmo artefato de release; a topologia é variável de ambiente. O site do cliente nunca fica na máquina do banco do CRM.",
+   "why": "No dia em que a instalação dedicada divergir da central em código, existem dois produtos e a margem de um. E o custo de frota — trinta migrações, rotações, certificados e verificações de backup — escala com a contagem de clientes e não com a receita, então precisa estar no preço antes do primeiro cliente dedicado.",
+   "status": "proposto",
+   "where": "docs/OPENCLAW_BLUEPRINT.md, infra/install-release.sh",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:topologia-por-vps",
+   "label": "Um VPS por cliente é uma decisão de produto, não de deploy",
+   "family": "business_rule",
+   "summary": "Cada cliente roda banco, OpenClaw, core do CRM e o próprio site num VPS. A RLS por organização permanece como redundância barata. O core é o registro autoritativo, o OpenClaw é o motor de execução, e nenhum dos dois escreve no banco do outro: a API é o único caminho.",
+   "why": "Essa fronteira é o que permite atualizar o OpenClaw sem migrar o CRM. E a decisão do provedor de LLM muda o preço do plano: modelo local por VPS exige GPU, provedor central vira custo variável por cliente e precisa de teto por agente.",
+   "status": "proposto",
+   "where": "docs/ARCHITECTURE_MAP.md",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
+   "id": "fattech:synapse:enrollment",
+   "label": "Um vínculo comercial, uma oportunidade e uma próxima ação",
+   "family": "business_rule",
+   "summary": "A matrícula de um contato na instalação é transacional e idempotente; respeita os requisitos da etapa e o prazo configurado.",
+   "why": "",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/synapse.py",
+   "source": "synapse-commercial.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
    "id": "fattech:mano:conta-por-organizacao",
    "label": "Uma conta Instagram pertence a uma unica organizacao",
    "family": "business_rule",
@@ -445,6 +705,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 4
+  },
+  {
+   "id": "fattech:synapse:commercial-readiness",
+   "label": "Venda modular exige contrato, assinatura e ativação",
+   "family": "business_rule",
+   "summary": "Recorrência e bundle no catálogo não comprovam cobrança, entitlement, provisão do comprador ou operação autônoma. Publicação depende da jornada homologada.",
+   "why": "",
+   "status": "planejado",
+   "where": "docs/COMMERCIAL_READINESS.md",
+   "source": "synapse-commercial.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
   },
   {
    "id": "fattech:business:saved-views",
@@ -476,7 +749,7 @@
    "id": "fattech:domain:agents",
    "label": "agents",
    "family": "domain",
-   "summary": "8 campos declarados no schema.",
+   "summary": "15 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -535,7 +808,7 @@
    "source": "schema",
    "familyLabel": "Domínio do CRM",
    "tone": "#00ff88",
-   "degree": 4
+   "degree": 5
   },
   {
    "id": "fattech:domain:contacts",
@@ -549,6 +822,45 @@
    "familyLabel": "Domínio do CRM",
    "tone": "#00ff88",
    "degree": 5
+  },
+  {
+   "id": "fattech:domain:content_accounts",
+   "label": "content_accounts",
+   "family": "domain",
+   "summary": "9 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 1
+  },
+  {
+   "id": "fattech:domain:content_ideas",
+   "label": "content_ideas",
+   "family": "domain",
+   "summary": "9 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
+  },
+  {
+   "id": "fattech:domain:content_posts",
+   "label": "content_posts",
+   "family": "domain",
+   "summary": "13 campos declarados no schema.",
+   "why": "",
+   "status": "implementado",
+   "where": "apps/api/fattech/schemas.py",
+   "source": "schema",
+   "familyLabel": "Domínio do CRM",
+   "tone": "#00ff88",
+   "degree": 0
   },
   {
    "id": "fattech:domain:contract_templates",
@@ -671,7 +983,7 @@
    "id": "fattech:domain:products",
    "label": "products",
    "family": "domain",
-   "summary": "12 campos declarados no schema.",
+   "summary": "14 campos declarados no schema.",
    "why": "",
    "status": "implementado",
    "where": "apps/api/fattech/schemas.py",
@@ -707,6 +1019,19 @@
    "degree": 3
   },
   {
+   "id": "fattech:openclaw:deduplicacao-no-banco",
+   "label": "A deduplicação do gatilho é do banco, não da disciplina do agente",
+   "family": "engineering_pattern",
+   "summary": "agent_runs carrega UNIQUE (tenant_id, trigger_event_id). Evento repetido tenta inserir a mesma corrida e falha.",
+   "why": "A entrega do outbox é pelo menos uma vez. Confiar no agente para deduplicar deixaria a garantia numa camada que um prompt pode contrariar; no banco, não há caminho em que o cliente receba a mesma mensagem duas vezes por replay. Mesmo espírito de fattech:walchat:exactly-one-destination.",
+   "status": "proposto",
+   "where": "docs/OPENCLAW_BLUEPRINT.md, migração 0009",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
+  },
+  {
    "id": "fattech:lead:explicacao-e-o-produto",
    "label": "A explicacao e o produto, nao o numero",
    "family": "engineering_pattern",
@@ -715,6 +1040,45 @@
    "status": "implementado",
    "where": "apps/api/fattech/lead_scoring.py e GET /crm/leads/{id}/score",
    "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 3
+  },
+  {
+   "id": "fattech:auditoria:numeracao-serializada",
+   "label": "A numeração da trilha é serializada por organização",
+   "family": "engineering_pattern",
+   "summary": "Antes de selar, a transação toma trava consultiva da organização; o índice único em (tenant_id, seq) transforma a bifurcação restante em erro de gravação.",
+   "why": "O gatilho do manual Palantyr lê o último elo sem travar nada: duas requisições simultâneas do mesmo cliente leem a mesma cauda e a cadeia bifurca em silêncio, fazendo a verificação acusar problema num banco intacto.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/audit_chain.py (encadear), apps/api/fattech/migrate.py (0007)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:superficie-pronta",
+   "label": "A ponte de integração já existe; não é preciso construí-la",
+   "family": "engineering_pattern",
+   "summary": "Entrada por POST /api/v1/webhooks/n8n com HMAC-SHA256 sobre timestamp + '.' + bytes crus, janela de replay de ±300s, Idempotency-Key e hops<=5. Saída por outbox transacional com lease, retentativa limitada e dead-letter na oitava tentativa. Chaves de API com 50 escopos.",
+   "why": "O nome da rota diz n8n por história, não por exigência: quem tem a chave e sabe assinar entra. O OpenClaw fala direto, e acrescentar o n8n como salto obrigatório entre os dois adiciona um ponto de falha sem adicionar garantia nenhuma.",
+   "status": "medido",
+   "where": "apps/api/fattech/main.py, apps/api/fattech/outbound.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 3
+  },
+  {
+   "id": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "label": "A saída é pelo menos uma vez, e quem consome precisa deduplicar",
+   "family": "engineering_pattern",
+   "summary": "O worker entrega com retentativa; o mesmo evento pode chegar duas vezes. O ID do evento vai como Idempotency-Key justamente para o consumidor deduplicar antes de qualquer efeito externo.",
+   "why": "Um agente que dispara uma mensagem por evento recebido, sem deduplicar, manda a mesma mensagem duas vezes para o mesmo cliente. É a falha mais provável da integração e a mais constrangedora.",
+   "status": "medido",
+   "where": "apps/api/fattech/outbound.py, apps/api/API.md",
+   "source": "openclaw-integracao.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 2
@@ -754,6 +1118,32 @@
    "status": "implementado",
    "where": "apps/api/fattech/custom_fields.py e schemas.py",
    "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
+  },
+  {
+   "id": "fattech:synapse:extractive-assistance",
+   "label": "Consulta documental citável e revisão humana",
+   "family": "engineering_pattern",
+   "summary": "A consulta lexical usa documentos ativos do tenant; ausência de evidência produz tarefa de revisão. Não executa LLM nem envia mensagem.",
+   "why": "",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/synapse_assistant.py",
+   "source": "synapse-commercial.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:core:transactional-consumers",
+   "label": "Core-Engine: execução transacional",
+   "family": "engineering_pattern",
+   "summary": "Cada consumidor tem entrega e recibo próprios. Efeito, recibo e conclusão são atômicos. Tokens vencidos não autorizam efeitos.",
+   "why": "Recuperar falhas sem repetir efeitos nem depender da disponibilidade do n8n.",
+   "status": "implementado localmente; publicação não verificada",
+   "where": "apps/api/fattech/core_engine.py",
+   "source": "core-engine.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 2
@@ -811,6 +1201,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:synapse:instagram-inbound",
+   "label": "Mensagem Instagram autenticada vira conversa operacional",
+   "family": "engineering_pattern",
+   "summary": "Conta, assinatura e mid identificam o dono e a mensagem. Ecos são ignorados, datas preservam a janela, entrada não concede consentimento de marketing.",
+   "why": "",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/instagram_ingest.py",
+   "source": "synapse-commercial.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:merge:destrutivo-declarado",
    "label": "Mesclar e destrutivo e o sistema diz isso",
    "family": "engineering_pattern",
@@ -824,6 +1227,45 @@
    "degree": 1
   },
   {
+   "id": "fattech:openclaw:consumidor-nao-substituto",
+   "label": "O OpenClaw é consumidor do Core-Engine, não um segundo motor",
+   "family": "engineering_pattern",
+   "summary": "O agente entra como consumidor registrado do Core-Engine, com worker_role próprio, entrega e recibo próprios. A base das automações continua sendo o outbox transacional.",
+   "why": "O pedido original colocava o OpenClaw no lugar do motor existente, repetindo o débito registrado em fattech:walchat:two-engines-debt com outro nome. Como consumidor, se o agente ou o provedor de LLM cair, os eventos enfileiram e ele recupera o atraso — o modo degradado que o DR-02 do manual Palantyr exige.",
+   "status": "proposto",
+   "where": "apps/api/fattech/core_engine.py, docs/OPENCLAW_BLUEPRINT.md",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
+  },
+  {
+   "id": "fattech:openclaw:uma-porta-so",
+   "label": "O agente entra por uma porta só, e a restrição mora no ponto único",
+   "family": "engineering_pattern",
+   "summary": "Uma chave de um usuário `is_agent` só é aceita em rotas sob /api/v1/agent/. A verificação está em require_auth, por onde toda requisição passa.",
+   "why": "As rotas comuns aplicam escopo e versão, e não aplicam modo, teto, aprovação nem registro de passo. Aceitar a chave do agente nelas contornaria o portão inteiro. A restrição precisa morar no ponto único porque uma lista de rotas a proteger é uma lista a esquecer.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/security.py (require_auth)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:agente-puxa-o-crm-nao-empurra",
+   "label": "O agente puxa trabalho; o CRM não empurra",
+   "family": "engineering_pattern",
+   "summary": "O consumidor `openclaw` do Core-Engine materializa a corrida em `pending` dentro da transação, e para. O OpenClaw reclama por POST /api/v1/agent/runs/claim, com transição atômica pending -> planning.",
+   "why": "O blueprint previa empurrar por HTTP. Empurrar exigiria um segundo mecanismo de entrega — lease, retentativa, espera progressiva, carta morta — ao lado do outbox que já faz tudo isso, porque `core_engine.process()` proíbe chamada de rede dentro de transação. Puxar dá o modo degradado de graça (agente fora do ar, corridas enfileiram), dispensa credencial de saída e não abre porta de entrada no OpenClaw — o que importa na topologia por VPS.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_dispatch.py, apps/api/fattech/core_engine.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:mano:rls-assimetrica",
    "label": "O diretorio de contas fica fora da RLS de proposito",
    "family": "engineering_pattern",
@@ -832,6 +1274,32 @@
    "status": "implementado",
    "where": "apps/api/fattech/migrate.py e tests/test_postgres.py",
    "source": "mano-chat-fase-1.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:escopo-de-operar-e-de-reconfigurar",
+   "label": "Operar a si mesmo e reconfigurar a si mesmo são escopos diferentes",
+   "family": "engineering_pattern",
+   "summary": "O ciclo de corrida do agente exige `agent:operate`, distinto de `agents:write`, que escreve o registro de configuração de um agente.",
+   "why": "Usar agents:write para o ciclo daria ao agente, pelo mesmo escopo, a capacidade de reescrever a própria configuração — teto, ferramentas e modo. Um agente que pode ajustar o próprio limite não tem limite.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/main.py (api_scopes), apps/api/fattech/agent_identity.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
+   "id": "fattech:core:operations",
+   "label": "Operação de eventos e filas",
+   "family": "engineering_pattern",
+   "summary": "Administrador acompanha filas, falhas e heartbeats. Recuperação exige número de tentativas observado e preserva o histórico.",
+   "why": "Tornar a recuperação verificável e impedir acesso entre organizações.",
+   "status": "implementado localmente",
+   "where": "apps/api/fattech/core_api.py; apps/web/components/core-operations.tsx",
+   "source": "core-engine.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 1
@@ -861,6 +1329,19 @@
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 0
+  },
+  {
+   "id": "fattech:openclaw:recusa-nao-e-erro",
+   "label": "Recusa do portão é resultado, não erro de protocolo",
+   "family": "engineering_pattern",
+   "summary": "POST /api/v1/agent/act devolve 200 com decision=refused e o motivo, em vez de 4xx. O passo fica gravado em agent_steps de qualquer forma.",
+   "why": "Devolver 4xx faria o agente tratar decisão de negócio como falha de rede e reenviar, e a recusa que deveria contê-lo viraria laço de tentativas. E um portão cujas recusas não deixam rastro é indistinguível de um portão que não existe.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_gate.py (agir)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
   },
   {
    "id": "fattech:mano:rollback-por-chave-ausente",
@@ -913,6 +1394,19 @@
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 2
+  },
+  {
+   "id": "fattech:auditoria:cadeia-de-integridade",
+   "label": "Trilha de auditoria encadeada por hash, verificável por qualquer um",
+   "family": "engineering_pattern",
+   "summary": "Cada linha de audit_log carrega o hash da anterior da mesma organização. A verificação percorre a cadeia e reporta o denominador junto com o veredito.",
+   "why": "Revogar UPDATE e DELETE impede a aplicação de alterar a trilha, e não impede restore parcial, superusuário do banco nem linha apagada por fora. A cadeia não torna isso impossível: torna detectável, que é o que uma auditoria externa pede.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/audit_chain.py",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 4
   },
   {
    "id": "fattech:lead:utm-consultavel",
@@ -1019,6 +1513,32 @@
    "degree": 2
   },
   {
+   "id": "fattech:openclaw:dois-hosts",
+   "label": "O briefing descreve dois servidores como se fossem um",
+   "family": "licao",
+   "summary": "n8n, Evolution API, Nginx Proxy Manager e Portainer rodam em 163.176.163.204 (host Palantyr). O host do CRM, 64.181.178.125, tem 71 contêineres de nove projetos e nenhum dos quatro. Quem ocupa 80/443 lá é um nginx de sistema, configurado em infra/nginx.oracle.conf.",
+   "why": "A restrição de porta do briefing ('o NPM domina 80 e 443') é verdadeira num host e falsa no outro. O efeito prático é o mesmo — o OpenClaw não pode pegar 80/443 — mas o procedimento de roteamento é outro, e a Fase 4 muda inteira conforme o host escolhido.",
+   "status": "medido",
+   "where": "docs/ARCHITECTURE_MAP.md, docs/knowledge/server-inventory.json",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:posiciona:pilar-sem-pauta",
+   "label": "O kit de pautas não cobre o pilar 'performance'",
+   "family": "licao",
+   "summary": "As 330 pautas do kit cobrem cinco dos seis pilares: 110 em autoridade e 55 em cada um dos outros quatro. Nenhuma em performance, que é justamente o pilar vendido à Linha 3 (conteúdo plugado ao CRM).",
+   "why": "A divergência só apareceu porque o importador comparou os pilares do kit com os da página em vez de assumir que os dois materiais falavam a mesma língua. É um vazio do material, não do sistema, e está publicado como tal.",
+   "status": "medido",
+   "where": "docs/knowledge/data/posiciona-pautas.json",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
    "id": "fattech:chaves:limite-menor-que-o-catalogo",
    "label": "O limite de escopos ficou menor que o catalogo oferecido",
    "family": "licao",
@@ -1040,6 +1560,19 @@
    "status": "corrigido",
    "where": "apps/api/fattech/schemas.py",
    "source": "ordem-principal-onda-1.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:sandbox-incompativel",
+   "label": "O sandbox do OpenClaw não cabe no perfil de segurança do compose do CRM",
+   "family": "licao",
+   "summary": "Os contêineres do CRM sobem com read_only, cap_drop ALL e no-new-privileges. O OpenClaw executa ferramentas num sandbox Docker que normalmente exige socket do Docker ou privilégios elevados.",
+   "why": "Copiar o perfil do OpenClaw para dentro do compose do CRM relaxaria a segurança dos cinco contêineres em produção para acomodar um sexto. O OpenClaw fica em compose próprio, anexado à rede como serviço externo.",
+   "status": "medido",
+   "where": "infra/compose.yml",
+   "source": "openclaw-integracao.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
@@ -1097,6 +1630,45 @@
    "degree": 1
   },
   {
+   "id": "fattech:openclaw:contencao-nao-depende-de-patente",
+   "label": "Contenção de automatismo não pode depender de superar a patente do automatismo",
+   "family": "licao_de_debito",
+   "summary": "O agente é `root` (patente 50) e `can_manage` exige patente estritamente maior, então o owner (40) que criou o agente não conseguia revogar a chave dele por DELETE /api/v1/api-keys/{id}. O desligamento passou a ter rota própria, que revoga toda chave ativa e desativa o usuário, válida apenas para is_agent.",
+   "why": "Eu tinha escrito no cabeçalho do módulo que 'revogar a chave desliga o agente'. Era falso, e só apareceu porque o teste tentou revogar de verdade em vez de conferir a documentação. Um botão de desligar que o operador não alcança não é botão de desligar. A exceção é estreita de propósito: não afrouxa a regra de patente entre pessoas, porque um agente não é uma pessoa com patente.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/agent_identity.py (desligar), DELETE /api/v1/agent/identity/{agent_id}",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:web:contrato-de-escrita-fica-no-bloco-de-escrita",
+   "label": "Contrato de resposta de POST precisa morar no bloco de escrita",
+   "family": "licao_de_debito",
+   "summary": "validResponse resolve todo método diferente de GET dentro de um bloco que termina em `hasId(data)`. Um contrato declarado depois dele, na região de leitura, nunca é alcançado por um POST.",
+   "why": "Declarei quatro contratos novos do agente na região errada e o typecheck passou, os testes de API passaram, e só o teste de navegador pegou: a tela mostrava 'Resposta inválida do servidor' ao aplicar um rascunho. Contrato inalcançável tem a mesma aparência de contrato ausente, e a única coisa que distingue os dois é um teste que exercita a tela.",
+   "status": "corrigido",
+   "where": "apps/web/lib/api.ts (validResponse)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
+  },
+  {
+   "id": "fattech:openclaw:unicidade-por-agente-e-evento",
+   "label": "Dois agentes podem observar o mesmo evento, e cada um tem sua corrida",
+   "family": "licao_de_debito",
+   "summary": "A 0009 gravou UNIQUE (tenant_id, trigger_event_id); a 0010 trocou por (tenant_id, agent_id, trigger_event_id).",
+   "why": "Com a unicidade antiga, um agente que qualifica o lead e outro que agenda a próxima ação colidiam no mesmo evento, e o segundo perdia a corrida em silêncio. A dedupe continua sendo do banco — ela só passou a valer pelo par que sempre quis dizer. O defeito era invisível até o E4 porque até então nunca houve mais de um agente reagindo ao mesmo evento.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/migrate.py (0010), apps/api/fattech/models.py",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:two-engines-debt",
    "label": "Dois motores de automacao no mesmo produto",
    "family": "licao_de_debito",
@@ -1107,7 +1679,20 @@
    "source": "walchat-engineering.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
-   "degree": 0
+   "degree": 1
+  },
+  {
+   "id": "fattech:auditoria:selo-precisa-sobreviver-ao-banco",
+   "label": "O selo é calculado sobre a forma que sobrevive à ida e volta do banco",
+   "family": "licao_de_debito",
+   "summary": "O carimbo de tempo entra no hash normalizado como UTC sem fuso e com microssegundos, porque o SQLite perde o fuso e o Postgres o devolve reescrito.",
+   "why": "A primeira versão selava o isoformat cru e toda linha falhava a reconferência um instante depois de gravada. Um controle que acusa adulteração num banco intacto é pior que nenhum: ele grita sempre, e quem confere aprende a ignorá-lo.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/audit_chain.py (instante)",
+   "source": "posiciona-operacao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
   },
   {
    "id": "fattech:release:2026-09-12-acabamento-e-ficha",
@@ -1484,6 +2069,18 @@
    "note": "Sugestão futura; não é implementação de visões persistentes."
   },
   {
+   "source": "fattech:core:transactional-consumers",
+   "target": "fattech:core:message-batches",
+   "relation": "garante_persistencia",
+   "note": ""
+  },
+  {
+   "source": "fattech:core:operations",
+   "target": "fattech:core:transactional-consumers",
+   "relation": "monitora_e_recupera",
+   "note": ""
+  },
+  {
    "source": "fattech:mano:lacuna-real",
    "target": "fattech:mano:duplicacao",
    "relation": "explica",
@@ -1548,6 +2145,138 @@
    "target": "fattech:mano:conta-por-organizacao",
    "relation": "protege",
    "note": "A fase inteira entra atras de uma configuracao que pode simplesmente nao existir."
+  },
+  {
+   "source": "fattech:openclaw:dois-hosts",
+   "target": "fattech:openclaw:topologia-por-vps",
+   "relation": "condiciona",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:superficie-pronta",
+   "target": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "relation": "implica",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:agente-nao-aprova-a-si-mesmo",
+   "relation": "depende_de",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:auditoria:cadeia-de-integridade",
+   "relation": "torna_auditavel",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:sandbox-incompativel",
+   "target": "fattech:openclaw:superficie-pronta",
+   "relation": "reforca",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:consumidor-nao-substituto",
+   "target": "fattech:walchat:two-engines-debt",
+   "relation": "evita",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:plano-e-previa",
+   "target": "fattech:walchat:eligibility-is-preview",
+   "relation": "aplica",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:deduplicacao-no-banco",
+   "target": "fattech:openclaw:entrega-ao-menos-uma-vez",
+   "relation": "resolve",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:justificativa-e-o-produto",
+   "target": "fattech:auditoria:cadeia-de-integridade",
+   "relation": "complementa",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:teto-ausente-recusa",
+   "relation": "exige",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:topologia-e-preco",
+   "target": "fattech:openclaw:topologia-por-vps",
+   "relation": "refina",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:agente-como-principal",
+   "target": "fattech:openclaw:contencao-nao-depende-de-patente",
+   "relation": "corrigida_por",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "target": "fattech:openclaw:plano-e-previa",
+   "relation": "antecede",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:uma-porta-so",
+   "target": "fattech:openclaw:plano-e-previa",
+   "relation": "garante",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:recusa-nao-e-erro",
+   "target": "fattech:lead:explicacao-e-o-produto",
+   "relation": "aplica",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "target": "fattech:aprovacao:segregacao-de-funcoes",
+   "relation": "aplica",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:escopo-de-operar-e-de-reconfigurar",
+   "target": "fattech:openclaw:teto-ausente-recusa",
+   "relation": "protege",
+   "note": ""
+  },
+  {
+   "source": "fattech:agente:obrigacao-antes-do-historico",
+   "target": "fattech:openclaw:sugestao-nao-e-escrita-adiada",
+   "relation": "torna_usavel",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:agente-puxa-o-crm-nao-empurra",
+   "target": "fattech:openclaw:consumidor-nao-substituto",
+   "relation": "realiza",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:unicidade-por-agente-e-evento",
+   "target": "fattech:openclaw:deduplicacao-no-banco",
+   "relation": "corrige",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:laco-cortado-na-origem",
+   "target": "fattech:openclaw:superficie-pronta",
+   "relation": "protege",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:ativo-exige-gatilho",
+   "target": "fattech:openclaw:nenhum-agente-nasce-ativo",
+   "relation": "sucede",
+   "note": ""
   },
   {
    "source": "fattech:ordem:denominador",
@@ -1658,6 +2387,54 @@
    "note": "O catalogo congela o preco na proposta, e a proposta leva o valor ao contrato."
   },
   {
+   "source": "fattech:posiciona:vertente",
+   "target": "fattech:posiciona:seis-pilares",
+   "relation": "organiza",
+   "note": ""
+  },
+  {
+   "source": "fattech:posiciona:seis-pilares",
+   "target": "fattech:posiciona:pilar-sem-pauta",
+   "relation": "revela",
+   "note": ""
+  },
+  {
+   "source": "fattech:posiciona:pauta-gasta-na-publicacao",
+   "target": "fattech:posiciona:deficit-contra-contrato",
+   "relation": "alimenta",
+   "note": ""
+  },
+  {
+   "source": "fattech:auditoria:cadeia-de-integridade",
+   "target": "fattech:auditoria:numeracao-serializada",
+   "relation": "depende_de",
+   "note": ""
+  },
+  {
+   "source": "fattech:auditoria:cadeia-de-integridade",
+   "target": "fattech:auditoria:selo-precisa-sobreviver-ao-banco",
+   "relation": "corrigida_por",
+   "note": ""
+  },
+  {
+   "source": "fattech:synapse:commercial-installation",
+   "target": "fattech:synapse:enrollment",
+   "relation": "configura",
+   "note": ""
+  },
+  {
+   "source": "fattech:synapse:instagram-inbound",
+   "target": "fattech:synapse:extractive-assistance",
+   "relation": "fornece_contexto",
+   "note": ""
+  },
+  {
+   "source": "fattech:synapse:commercial-installation",
+   "target": "fattech:synapse:commercial-readiness",
+   "relation": "ainda_exige",
+   "note": ""
+  },
+  {
    "source": "fattech:walchat:compliance-order",
    "target": "fattech:walchat:opt-out-footer",
    "relation": "precede",
@@ -1683,6 +2460,12 @@
   },
   {
    "source": "fattech:domain:contacts",
+   "target": "fattech:domain:companies",
+   "relation": "referencia",
+   "note": "company_id"
+  },
+  {
+   "source": "fattech:domain:content_accounts",
    "target": "fattech:domain:companies",
    "relation": "referencia",
    "note": "company_id"
@@ -1887,14 +2670,14 @@
   }
  ],
  "counts": {
-  "nodes": 106,
-  "edges": 77,
+  "nodes": 151,
+  "edges": 110,
   "por_familia": {
-   "business_rule": 33,
-   "engineering_pattern": 19,
-   "licao": 11,
-   "licao_de_debito": 1,
-   "domain": 18,
+   "business_rule": 54,
+   "engineering_pattern": 33,
+   "licao": 14,
+   "licao_de_debito": 5,
+   "domain": 21,
    "release": 13,
    "service": 11,
    "guarantee": 0

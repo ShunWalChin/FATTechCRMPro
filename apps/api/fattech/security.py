@@ -73,6 +73,12 @@ def require_auth(request: Request, db=Depends(get_db)) -> Principal:
         user = db.get(User, key.created_by)
         if not user or not user.active or user.tenant_id != key.tenant_id or user.role not in RANK:
             raise HTTPException(401, "Conta inativa")
+        # Um agente entra por uma porta so. As rotas comuns aplicam escopo e versao, e nao aplicam
+        # modo, teto, aprovacao nem registro de passo -- entao aceitar a chave do agente nelas seria
+        # uma porta lateral que contorna o portao inteiro. A restricao mora aqui, no unico ponto por
+        # onde toda requisicao passa, porque uma lista de rotas a proteger e uma lista a esquecer.
+        if user.is_agent and not request.url.path.startswith("/api/v1/agent/"):
+            raise HTTPException(403, "Um agente opera pelo portão em /api/v1/agent, não pelas rotas comuns")
         set_tenant(db, key.tenant_id)
         return Principal(key.tenant_id, user.id, user.role, user, key=key)
     token = request.cookies.get("fattech_session", "")

@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     n8n_outbound_token: str = ""
     worker_max_attempts: int = 8
     worker_poll_seconds: int = 5
+    core_debounce_seconds: int = 5
+    core_max_buffer_seconds: int = 60
 
     @field_validator("database_url", "allowed_origins", "public_tenant_slug")
     @classmethod
@@ -82,6 +84,8 @@ class Settings(BaseSettings):
             raise ValueError("Invalid session duration or worker attempt limit")
         if self.worker_poll_seconds < 1 or self.max_body_bytes < 1024:
             raise ValueError("Invalid polling interval or body limit")
+        if not 1 <= self.core_debounce_seconds <= self.core_max_buffer_seconds <= 300:
+            raise ValueError("Core message buffer must have a debounce and maximum wait between 1 and 300 seconds")
         if self.n8n_outbound_url:
             url = urlsplit(self.n8n_outbound_url)
             if url.scheme not in ("http", "https") or not url.hostname or url.username or url.password:
