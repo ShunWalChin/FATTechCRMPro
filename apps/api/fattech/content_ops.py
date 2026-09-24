@@ -57,8 +57,12 @@ class ImportacaoPautas(StrictModel):
 def banco_de_pautas() -> dict:
     import json
     import pathlib
-    arquivo = pathlib.Path(__file__).resolve().parents[3] / "docs/knowledge/data/posiciona-pautas.json"
-    if not arquivo.exists():
+    modulo = pathlib.Path(__file__).resolve()
+    arquivo = modulo.parent / "data/posiciona-pautas.json"
+    if not arquivo.is_file():
+        arquivo = next((raiz / "docs/knowledge/data/posiciona-pautas.json" for raiz in modulo.parents
+                        if (raiz / "docs/knowledge/data/posiciona-pautas.json").is_file()), None)
+    if arquivo is None:
         raise HTTPException(503, "Banco de pautas não está publicado nesta instalação")
     return json.loads(arquivo.read_text(encoding="utf-8"))
 

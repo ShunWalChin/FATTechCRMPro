@@ -4,6 +4,7 @@ WORKDIR /app
 COPY apps/api/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt && useradd --create-home --uid 10001 fattech
 COPY --chown=fattech:fattech apps/api/ /app/
+COPY --chown=fattech:fattech docs/knowledge/data/ /app/fattech/data/
 USER fattech
 EXPOSE 8000
 CMD ["uvicorn", "fattech.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
