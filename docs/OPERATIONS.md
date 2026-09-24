@@ -67,6 +67,12 @@ valores booleanos/números explicitamente vazios falham na validação, não vir
 
 ## Migrações e atualização
 
+O deploy inclui `api`, `web`, `worker` e `core-worker`. As imagens são construídas antes da
+pausa da API e dos workers para migração. Essa pausa impede que a API antiga grave auditoria
+sem selo depois da migração 0007. O frontend público continua em execução durante essa etapa.
+Em falha de migração, interromper a publicação e verificar o estado do schema antes de reiniciar
+escritores; não iniciar indiscriminadamente uma imagem antiga contra um schema atualizado.
+
 As migrações são explícitas, não ocorrem implicitamente no início da API em produção.
 Esta versão acrescenta a migração `0002`, que cria o funil padrão de cada organização e grava
 `pipeline_id` nas oportunidades existentes, sem alterar a versão nem o `updated_at` desses registros.
