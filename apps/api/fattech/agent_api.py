@@ -302,13 +302,46 @@ def queue(agent_id: str, principal=Depends(require_auth), db=Depends(get_db)):
     fila = agent_dispatch.fila_do_agente(db, principal.tenant_id, agent_id)
     presas = list(db.scalars(select(AgentRun).where(
         AgentRun.tenant_id == principal.tenant_id, AgentRun.agent_id == agent_id,
-        AgentRun.status == "planning")))
+        AgentRun.status.in_(("planning", "executing")), AgentRun.finished_at.is_(None))))
     return {"agent_id": agent_id, "status": configuracao.get("status", "paused"),
             "mode": configuracao.get("mode", "sugestao"),
             "triggers": configuracao.get("triggers") or [], **fila,
             # Corrida reclamada que não voltou. Não há reciclagem automática neste estágio, e
             # declarar o número é melhor que fingir que o problema não existe.
             "reclamadas_sem_retorno": len(presas)}
+
+
+@router.get("/events/catalog")
+def event_catalog(principal=Depends(require_auth), db=Depends(get_db)):
+    """Os tipos de evento que o CRM emite — o que um gatilho de agente pode observar.
+
+    `GET /api/v1/core/contract` devolve o esquema do envelope: valida o **formato** do nome e não
+    sabe dizer se o evento existe. Um agente ativo com gatilho inexistente passa em toda validação e
+    nunca acorda. Este catálogo responde a pergunta que faltava, e traz junto o que a trilha desta
+    organização já registrou de fato — o código diz o que pode emitir, a trilha diz o que emitiu.
+    """
+    principal.require("agents:read")
+    from . import event_catalog as catalogo_de_eventos
+    return catalogo_de_eventos.catalogo(db, principal.tenant_id)
+
+
+@router.post("/runs/recycle")
+def recycle_runs(principal=Depends(require_auth), db=Depends(get_db),
+                 horas: int = Query(2, ge=1, le=72)):
+    """Devolve à fila as corridas reclamadas que nunca voltaram. Exige administrador.
+
+    O core-worker faz isso a cada ciclo; esta rota existe para quem precisa agir agora, sem esperar
+    o próximo. Ela diz quantas voltaram **e** quantas continuam presas dentro do limite — o segundo
+    número é o que revela um gateway morrendo em série.
+    """
+    principal.admin()
+    resultado = agent_dispatch.reciclar_presas(db, principal.tenant_id, horas=horas)
+    if resultado["recicladas"]:
+        audit_event(db, principal.tenant_id, principal.actor_id, "agent.runs_recycled",
+                    principal.tenant_id, {"recicladas": resultado["recicladas"],
+                                          "limite_horas": horas})
+    db.commit()
+    return resultado
 
 
 @router.get("/suggestions")

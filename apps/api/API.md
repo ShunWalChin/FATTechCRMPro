@@ -364,3 +364,50 @@ cinco voltas com custo de modelo em cada uma.
 `Agent.status` abre para `active` **aqui**, e não antes: agora existe despacho que o cumpra. Ativo
 exige ao menos um gatilho e uma ferramenta, recusados na escrita — um agente ativo sem gatilho nunca
 acorda, e o estado diria uma coisa enquanto a operação faz outra.
+
+## Operação de agente — E5: execução externa com compliance do instante
+
+O passo 6 do portão passou a decidir de verdade. Antes ele só conferia a trava global; agora, com a
+trava armada, ele chama `compliance.decidir_envio` **no instante da tentativa**, com
+`is_automated=True` — automação recebe o rodapé de opt-out contado dentro do limite e nunca pode usar
+a marca de atendimento humano.
+
+A ordem das oito checagens foi extraída de dentro de `create_app` para `compliance.decidir_envio`,
+onde a rota de envio e o portão do agente a compartilham. Duas cópias da mesma ordem divergiriam no
+primeiro ajuste, e a ordem **é contrato**: inverter dois passos muda quem recebe mensagem.
+
+**A prévia nunca autoriza.** O agente pode ter lido o contato três minutos atrás e o contato pode ter
+pedido para parar dois minutos atrás. A decisão é recalculada, nunca lembrada — há teste que registra
+o opt-out **entre** a leitura e o envio e exige a recusa.
+
+Envio externo atravessa **três camadas em série**: trava global, compliance do instante e — porque
+`messages.send` é declarado irreversível — a cadeia de aprovação. O agente não atravessa a terceira
+nem quando passa nas duas primeiras. Ferramenta externa sem alvo identificável é recusada: não saber
+o que seria enviado é razão para não enviar.
+
+## Reciclagem de corrida presa
+
+`POST /api/v1/agent/runs/recycle` (proprietário/administrador, parâmetro `horas` de 1 a 72) devolve a
+`pending` toda corrida em `planning` **ou** `executing` sem retorno além do limite, com o motivo
+gravado em `error`. O core-worker faz isso a cada ciclo, sem ninguém pedir.
+
+Cobrir `executing` não é detalhe: o agente costuma morrer trabalhando, não antes de começar, e uma
+corrida que já gravou um passo sai de `planning`. A resposta traz `recicladas` **e** `ainda_presas` —
+o segundo número é o que revela um gateway morrendo em série.
+
+`agent_steps` é append-only, então a segunda tentativa continua a numeração da primeira. Quem
+auditar vê as duas: o histórico de uma corrida abandonada não é apagado por ela voltar.
+
+## Catálogo de tipos de evento
+
+`GET /api/v1/agent/events/catalog` devolve os **108** tipos que o CRM emite: o ciclo de vida de cada
+domínio (`{kind}.created|updated|deleted`) mais os nomeados, varridos das chamadas literais de
+`audit_event`. Eventos de nome montado em tempo de execução — `agent.allowed` e irmãos — são
+declarados à parte em `DINAMICOS`, porque a varredura lê literais e o limite é declarado em vez de
+escondido. A resposta traz `observados_no_banco` junto: o código diz o que pode emitir, a trilha diz
+o que já emitiu.
+
+`GET /api/v1/core/contract` devolve o **esquema do envelope** — valida o formato do nome e não sabe
+dizer se o evento existe. Um agente ativo com gatilho inexistente passava em toda validação e **nunca
+acordava**. Agora `Agent.triggers` é conferido contra o catálogo na escrita, e a recusa nomeia o
+gatilho errado.

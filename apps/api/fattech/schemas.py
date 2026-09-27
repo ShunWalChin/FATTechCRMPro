@@ -308,6 +308,13 @@ class Agent(StrictModel):
             # Ativo sem gatilho e um agente que nunca acorda: o estado diria uma coisa e a operacao
             # faria outra, e quem configurou ficaria esperando por uma corrida que nao vem.
             raise ValueError("Um agente ativo precisa declarar ao menos um gatilho")
+        if self.triggers:
+            # Gatilho que nenhum evento emite tem o mesmo efeito de nao ter gatilho, com a diferenca
+            # de parecer configurado. A recusa acontece na escrita, com o nome errado no texto.
+            from .event_catalog import desconhecidos
+            fora = desconhecidos(self.triggers)
+            if fora:
+                raise ValueError(f"Gatilho que o CRM não emite: {', '.join(fora)}")
         if self.status == "active" and not self.tools:
             raise ValueError("Um agente ativo precisa declarar ao menos uma ferramenta")
         return self

@@ -152,3 +152,36 @@ def evaluate_whatsapp(*, message: str, is_automated: bool, last_inbound_at=None,
     if elapsed is None or elapsed > STANDARD_WINDOW:
         return deny("whatsapp_template_required")
     return Decision(True, "standard_24h", text, seconds_left=left)
+
+
+def decidir_envio(db, tenant_id: str, message_id: str, blocklist=(), *, is_automated=False,
+                  moment=None) -> tuple:
+    """A decisao de envio de uma mensagem, com os dados do instante da chamada.
+
+    Estava escrita como fechamento dentro de `create_app`, alcancavel so por HTTP. O portao do agente
+    precisa dela no passo 6 e nao pode chamar rota -- ou se duplicava a ordem das checagens, ou se
+    extraia. Duplicar era o pior caminho possivel: `fattech:walchat:compliance-order` registra que a
+    ordem **e contrato**, e duas copias divergem no primeiro ajuste, mudando quem recebe mensagem.
+
+    `is_automated` separa a pessoa do agente: automacao recebe o rodape de opt-out contado dentro do
+    limite, e nunca pode usar a marca de atendimento humano.
+
+    Devolve `(mensagem, decisao)`. Nada e enviado aqui: quem decide enviar e quem chamou.
+    """
+    from .services import get_record
+
+    message = get_record(db, tenant_id, "messages", message_id)
+    conversation = get_record(db, tenant_id, "conversations", message.data["conversation_id"])
+    contact = (get_record(db, tenant_id, "contacts", conversation.data["contact_id"])
+               if conversation.data.get("contact_id") else None)
+    body = message.data["body"]
+    if contact is not None and not contact.data.get("consent"):
+        return message, Decision(False, "blocked", body, reason="no_consent")
+    channel = conversation.data["channel"]
+    if channel not in ("whatsapp", "instagram"):
+        return message, Decision(True, "internal", body)
+    avaliador = evaluate_whatsapp if channel == "whatsapp" else evaluate
+    return message, avaliador(message=body, is_automated=is_automated, blocklist=blocklist,
+                              moment=moment,
+                              last_inbound_at=conversation.data.get("last_inbound_at"),
+                              opted_out_at=contact.data.get("opted_out_at") if contact else None)

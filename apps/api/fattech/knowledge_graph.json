@@ -145,7 +145,7 @@
    "source": "openclaw-integracao.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
-   "degree": 1
+   "degree": 2
   },
   {
    "id": "fattech:palantyr:portao",
@@ -286,6 +286,19 @@
    "status": "implementado",
    "where": "apps/api/fattech/contracts.py",
    "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:openclaw:tres-camadas-antes-de-sair",
+   "label": "Envio externo atravessa três camadas em série, e a terceira é uma pessoa",
+   "family": "business_rule",
+   "summary": "Passo 6 do portão: trava global `external_sends_enabled`, depois compliance reavaliado com os dados do instante, depois — porque `messages.send` é declarado irreversível — a cadeia de aprovação. O agente não atravessa a terceira nem quando passa nas duas primeiras.",
+   "why": "Eu esperava que, com compliance aprovado, o envio chegasse ao despachante e fosse recusado por falta de provedor. Não chega: o passo 7 transforma irreversível em solicitação depois do passo 6. A garantia é mais forte do que o desenho previa, e apareceu no teste em vez do projeto.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/agent_gate.py (avaliar, compliance_do_instante)",
+   "source": "openclaw-integracao.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
@@ -460,6 +473,19 @@
    "degree": 4
   },
   {
+   "id": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "label": "O compliance do envio é recalculado, nunca lembrado",
+   "family": "business_rule",
+   "summary": "`compliance.decidir_envio` é chamado no instante da tentativa, com `is_automated=True`. A ordem das oito checagens foi extraída de dentro de `create_app` para ser uma só — duas cópias divergiriam, e a ordem é contrato.",
+   "why": "O agente pode ter lido o contato três minutos atrás e o contato pode ter pedido para parar dois minutos atrás. Se o portão autorizasse pela leitura do plano, a mensagem sairia para quem acabou de pedir para não receber. É `fattech:walchat:eligibility-is-preview` aplicado ao envio.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/compliance.py (decidir_envio)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
    "id": "fattech:contrato:texto-de-cada-revisao",
    "label": "O contrato guarda o texto de cada revisao, nao so a corrente",
    "family": "business_rule",
@@ -522,7 +548,7 @@
    "source": "walchat-engineering.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
-   "degree": 2
+   "degree": 3
   },
   {
    "id": "fattech:contrato:assinatura-recusa",
@@ -1318,6 +1344,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "label": "O catálogo de eventos é derivado, e declara o que não alcança",
+   "family": "engineering_pattern",
+   "summary": "108 tipos de evento, montados do ciclo de vida de cada domínio mais a varredura de literais em `audit_event`. Eventos de nome montado em tempo de execução são declarados à parte em DINAMICOS, e a resposta traz `observados_no_banco` junto.",
+   "why": "`GET /core/contract` devolve o esquema do envelope: valida o formato do nome e não sabe dizer se o evento existe — era o DT-14 do Palantyr, impossível de cumprir com aquela rota. Um agente ativo com gatilho inexistente passa em toda validação e nunca acorda. O validador agora recusa na escrita, com o nome errado no texto. E o limite da varredura é declarado: a f-string `agent.{decisao}` não aparece nela, e precisou de linha própria.",
+   "status": "implementado_localmente",
+   "where": "apps/api/fattech/event_catalog.py, GET /api/v1/agent/events/catalog",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
+  },
+  {
    "id": "fattech:mano:rls-assimetrica",
    "label": "O diretorio de contas fica fora da RLS de proposito",
    "family": "engineering_pattern",
@@ -1669,6 +1708,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:medidor:nao-se-mede",
+   "label": "Um medidor não se mede",
+   "family": "licao",
+   "summary": "A varredura de eventos pula o próprio arquivo.",
+   "why": "O exemplo de `audit_event(...)` citado no cabeçalho do módulo entrava no catálogo como evento real, catalogado por auto-referência. O número ficava maior e um evento inexistente passaria na validação de gatilho.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/event_catalog.py (eventos_nomeados)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
    "id": "fattech:campos:redacao-no-lugar-errado",
    "label": "Uma redacao que nao apaga nada parece funcionar",
    "family": "licao",
@@ -1728,6 +1780,19 @@
    "why": "Declarei quatro contratos novos do agente na região errada e o typecheck passou, os testes de API passaram, e só o teste de navegador pegou: a tela mostrava 'Resposta inválida do servidor' ao aplicar um rascunho. Contrato inalcançável tem a mesma aparência de contrato ausente, e a única coisa que distingue os dois é um teste que exercita a tela.",
    "status": "corrigido",
    "where": "apps/web/lib/api.ts (validResponse)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
+  },
+  {
+   "id": "fattech:openclaw:reciclar-cobre-executing",
+   "label": "Corrida que morre no meio do trabalho também fica presa",
+   "family": "licao_de_debito",
+   "summary": "A reciclagem devolve a `pending` toda corrida em `planning` **ou** `executing` sem retorno há mais de duas horas, com o motivo gravado em `error`. O core-worker faz isso a cada ciclo.",
+   "why": "A primeira versão olhava só `planning`, e uma corrida que já tinha gravado um passo passava a `executing` e ficava presa para sempre — o caso mais comum, porque o agente costuma morrer trabalhando e não antes de começar. Era o DT-06 do Palantyr: medido em `reclamadas_sem_retorno` e nunca pago. Medir sem agir é pior que não medir: o número aparece na tela e ninguém sabe que ele nunca desce.",
+   "status": "corrigido",
+   "where": "apps/api/fattech/agent_dispatch.py (reciclar_presas)",
    "source": "openclaw-integracao.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
@@ -2396,6 +2461,30 @@
    "note": ""
   },
   {
+   "source": "fattech:openclaw:tres-camadas-antes-de-sair",
+   "target": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "relation": "contem",
+   "note": ""
+  },
+  {
+   "source": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "target": "fattech:walchat:compliance-order",
+   "relation": "reusa",
+   "note": ""
+  },
+  {
+   "source": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "target": "fattech:openclaw:ativo-exige-gatilho",
+   "relation": "torna_verificavel",
+   "note": ""
+  },
+  {
+   "source": "fattech:medidor:nao-se-mede",
+   "target": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "relation": "corrige",
+   "note": ""
+  },
+  {
    "source": "fattech:ordem:denominador",
    "target": "fattech:lead:estagio-separado-de-status",
    "relation": "orienta",
@@ -2835,13 +2924,13 @@
   }
  ],
  "counts": {
-  "nodes": 160,
-  "edges": 118,
+  "nodes": 165,
+  "edges": 122,
   "por_familia": {
-   "business_rule": 57,
-   "engineering_pattern": 35,
-   "licao": 15,
-   "licao_de_debito": 5,
+   "business_rule": 59,
+   "engineering_pattern": 36,
+   "licao": 16,
+   "licao_de_debito": 6,
    "domain": 21,
    "release": 16,
    "service": 11,

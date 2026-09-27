@@ -261,6 +261,56 @@
    "rule": "`status='active'` exige ao menos um gatilho e ao menos uma ferramenta declarados, recusados na escrita. E `active` só abriu no E4, quando passou a haver despacho que o cumpra.",
    "por_que_importa": "O estado diria uma coisa e a operação faria outra: quem configurou ficaria esperando por uma corrida que nunca vem. É a mesma disciplina que manteve `status` fechado em `paused` do E1 ao E2 — o estado só abre junto do runtime que o torna verdadeiro.",
    "onde_no_fattech": "apps/api/fattech/schemas.py (Agent)"
+  },
+  {
+   "id": "fattech:openclaw:tres-camadas-antes-de-sair",
+   "label": "Envio externo atravessa três camadas em série, e a terceira é uma pessoa",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Passo 6 do portão: trava global `external_sends_enabled`, depois compliance reavaliado com os dados do instante, depois — porque `messages.send` é declarado irreversível — a cadeia de aprovação. O agente não atravessa a terceira nem quando passa nas duas primeiras.",
+   "por_que_importa": "Eu esperava que, com compliance aprovado, o envio chegasse ao despachante e fosse recusado por falta de provedor. Não chega: o passo 7 transforma irreversível em solicitação depois do passo 6. A garantia é mais forte do que o desenho previa, e apareceu no teste em vez do projeto.",
+   "onde_no_fattech": "apps/api/fattech/agent_gate.py (avaliar, compliance_do_instante)"
+  },
+  {
+   "id": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "label": "O compliance do envio é recalculado, nunca lembrado",
+   "type": "business_rule",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "`compliance.decidir_envio` é chamado no instante da tentativa, com `is_automated=True`. A ordem das oito checagens foi extraída de dentro de `create_app` para ser uma só — duas cópias divergiriam, e a ordem é contrato.",
+   "por_que_importa": "O agente pode ter lido o contato três minutos atrás e o contato pode ter pedido para parar dois minutos atrás. Se o portão autorizasse pela leitura do plano, a mensagem sairia para quem acabou de pedir para não receber. É `fattech:walchat:eligibility-is-preview` aplicado ao envio.",
+   "onde_no_fattech": "apps/api/fattech/compliance.py (decidir_envio)"
+  },
+  {
+   "id": "fattech:openclaw:reciclar-cobre-executing",
+   "label": "Corrida que morre no meio do trabalho também fica presa",
+   "type": "licao_de_debito",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "A reciclagem devolve a `pending` toda corrida em `planning` **ou** `executing` sem retorno há mais de duas horas, com o motivo gravado em `error`. O core-worker faz isso a cada ciclo.",
+   "por_que_importa": "A primeira versão olhava só `planning`, e uma corrida que já tinha gravado um passo passava a `executing` e ficava presa para sempre — o caso mais comum, porque o agente costuma morrer trabalhando e não antes de começar. Era o DT-06 do Palantyr: medido em `reclamadas_sem_retorno` e nunca pago. Medir sem agir é pior que não medir: o número aparece na tela e ninguém sabe que ele nunca desce.",
+   "onde_no_fattech": "apps/api/fattech/agent_dispatch.py (reciclar_presas)"
+  },
+  {
+   "id": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "label": "O catálogo de eventos é derivado, e declara o que não alcança",
+   "type": "engineering_pattern",
+   "status": "implementado_localmente",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "108 tipos de evento, montados do ciclo de vida de cada domínio mais a varredura de literais em `audit_event`. Eventos de nome montado em tempo de execução são declarados à parte em DINAMICOS, e a resposta traz `observados_no_banco` junto.",
+   "por_que_importa": "`GET /core/contract` devolve o esquema do envelope: valida o formato do nome e não sabe dizer se o evento existe — era o DT-14 do Palantyr, impossível de cumprir com aquela rota. Um agente ativo com gatilho inexistente passa em toda validação e nunca acorda. O validador agora recusa na escrita, com o nome errado no texto. E o limite da varredura é declarado: a f-string `agent.{decisao}` não aparece nela, e precisou de linha própria.",
+   "onde_no_fattech": "apps/api/fattech/event_catalog.py, GET /api/v1/agent/events/catalog"
+  },
+  {
+   "id": "fattech:medidor:nao-se-mede",
+   "label": "Um medidor não se mede",
+   "type": "licao",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "A varredura de eventos pula o próprio arquivo.",
+   "por_que_importa": "O exemplo de `audit_event(...)` citado no cabeçalho do módulo entrava no catálogo como evento real, catalogado por auto-referência. O número ficava maior e um evento inexistente passaria na validação de gatilho.",
+   "onde_no_fattech": "apps/api/fattech/event_catalog.py (eventos_nomeados)"
   }
  ],
  "edges": [
@@ -416,6 +466,34 @@
    "target": "fattech:openclaw:nenhum-agente-nasce-ativo",
    "relation": "sucede",
    "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:tres-camadas-antes-de-sair",
+   "target": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "relation": "contem",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:openclaw:previa-nao-autoriza-no-envio",
+   "target": "fattech:walchat:compliance-order",
+   "relation": "reusa",
+   "confidence": "DECLARED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "target": "fattech:openclaw:ativo-exige-gatilho",
+   "relation": "torna_verificavel",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:medidor:nao-se-mede",
+   "target": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "relation": "corrige",
+   "confidence": "MEASURED",
    "source_file": "docs/knowledge/openclaw-integracao.json"
   }
  ]

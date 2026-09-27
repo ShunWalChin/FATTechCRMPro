@@ -82,8 +82,14 @@ def acoes_na_ultima_hora(db, tenant_id: str, agent_id: str) -> int:
                AgentStep.decision.in_(("allowed", "suggested")), AgentStep.created_at >= corte)) or 0
 
 
-def avaliar(db, principal, configuracao: dict, corrida: AgentRun, ferramenta: str, settings) -> str:
-    """Devolve a decisao: allowed, suggested, approval_required. Levanta Recusa para o resto."""
+def avaliar(db, principal, configuracao: dict, corrida: AgentRun, ferramenta: str, settings,
+            argumentos: dict | None = None) -> str:
+    """Devolve a decisao: allowed, suggested, approval_required. Levanta Recusa para o resto.
+
+    `argumentos` entra porque o passo 6 precisa saber **qual** mensagem seria enviada para reavaliar
+    o compliance dela no instante. Sem isso a checagem seria genérica, e genérica não decide nada.
+    """
+    argumentos = argumentos or {}
     catalogo = agent_tools.por_nome()
     descricao = catalogo.get(ferramenta)
     if descricao is None:
@@ -125,10 +131,18 @@ def avaliar(db, principal, configuracao: dict, corrida: AgentRun, ferramenta: st
         if gasto >= teto_mes:
             raise Recusa(f"orçamento do mês esgotado: {gasto} de {teto_mes} centavos")
 
-    # 6. Envio externo continua atras da trava global. A reavaliacao de compliance com os dados do
-    # momento e o E5; ate la a trava recusa antes, e recusar e melhor que fingir que avaliou.
-    if descricao["classe"] == "externa" and not settings.external_sends_enabled:
-        raise Recusa("envio externo desligado nesta instalação")
+    # 6. Envio externo: a trava global primeiro, e depois o compliance **com os dados de agora**.
+    #
+    # E o E5, e o ponto inteiro dele esta em `fattech:walchat:eligibility-is-preview`: a previa nunca
+    # autoriza. O agente pode ter lido o contato tres minutos atras e o contato pode ter pedido para
+    # parar dois minutos atras. Quem decide e a chamada do instante, com a mesma ordem de oito
+    # checagens que vale para uma pessoa -- o agente nao ganha licenca por ser agente.
+    if descricao["classe"] == "externa":
+        if not settings.external_sends_enabled:
+            raise Recusa("envio externo desligado nesta instalação")
+        motivo = compliance_do_instante(db, principal, ferramenta, argumentos, settings)
+        if motivo:
+            raise Recusa(motivo)
 
     # 7. Irreversivel ou marcado pela configuracao: vira solicitacao, e o agente nunca e o decisor.
     if not descricao["reversivel"] or ferramenta in (configuracao.get("require_approval_for") or []):
@@ -184,7 +198,7 @@ def agir(db, principal, corrida: AgentRun, configuracao: dict, ferramenta: str,
         AgentStep.tenant_id == principal.tenant_id, AgentStep.run_id == corrida.id)) or 0) + 1
     decisao, motivo, referencia, corpo = "refused", "", "", None
     try:
-        decisao = avaliar(db, principal, configuracao, corrida, ferramenta, settings)
+        decisao = avaliar(db, principal, configuracao, corrida, ferramenta, settings, argumentos)
         if decisao == "allowed":
             referencia, corpo = executar(db, principal, ferramenta, argumentos)
     except Recusa as recusa:
@@ -341,7 +355,19 @@ def _fila_de_trabalho(db, principal, argumentos: dict):
                           offset=min(int(argumentos.get("offset") or 0), 10000))
 
 
+def _enviar_mensagem(db, principal, argumentos: dict):
+    """Entrega a mensagem ao provedor externo. So chega aqui o que passou pelo portao inteiro.
+
+    Sem provedor configurado, recusa com motivo e **nao** marca a mensagem como enviada: fingir envio
+    e o unico resultado pior que nao enviar, porque some do radar de quem cobra a resposta.
+    """
+    message_id = argumentos.get("id") or argumentos.get("message_id")
+    registro = get_record(db, principal.tenant_id, "messages", message_id)
+    raise Recusa("provedor de envio não configurado; a mensagem permanece como rascunho")
+
+
 DESPACHO_NOMEADO = {
+    "messages.send": _enviar_mensagem,
     "crm.dashboard": _painel,
     "crm.radar": _radar,
     "crm.leads.fila": _fila_de_leads,
@@ -352,3 +378,30 @@ DESPACHO_NOMEADO = {
     "content.indicadores": _apuracao_de_conteudo,
     "work_queue.read": _fila_de_trabalho,
 }
+
+
+def compliance_do_instante(db, principal, ferramenta: str, argumentos: dict, settings) -> str:
+    """Reavalia o compliance da mensagem agora. Devolve o motivo da recusa, ou vazio se pode sair.
+
+    `is_automated=True` nao e detalhe: a automacao recebe o rodape de opt-out contado dentro do
+    limite, e `fattech:walchat:compliance-order` registra que a marca de atendimento humano nunca
+    pode ser usada por automacao. O agente nao se declara humano para furar a janela de 24h.
+
+    Ferramenta externa cujo alvo nao e identificavel e recusada em vez de liberada: nao saber o que
+    seria enviado e razao para nao enviar.
+    """
+    from . import compliance
+
+    message_id = argumentos.get("id") or argumentos.get("message_id")
+    if not message_id:
+        return f"{ferramenta} exige o id da mensagem para avaliar o envio"
+    try:
+        _mensagem, decisao = compliance.decidir_envio(
+            db, principal.tenant_id, message_id, settings.blocklist, is_automated=True)
+    except HTTPException as erro:
+        detalhe = erro.detail
+        return (detalhe if isinstance(detalhe, str) else str(detalhe))[:200]
+    if decisao.allowed:
+        return ""
+    # O motivo tecnico vai para o passo gravado; a tela traduz pelo mesmo dicionario que a pessoa ve.
+    return f"compliance recusou no instante do envio: {decisao.reason}"

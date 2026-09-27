@@ -588,20 +588,10 @@ def create_app(settings: Settings | None = None, engine=None):
 
     def message_decision(db, principal, record_id):
         """Shared by the preview and the send path, so the operator never sees a verdict the sender would not apply."""
-        message = get_record(db, principal.tenant_id, "messages", record_id)
-        conversation = get_record(db, principal.tenant_id, "conversations", message.data["conversation_id"])
-        contact = (get_record(db, principal.tenant_id, "contacts", conversation.data["contact_id"])
-                   if conversation.data.get("contact_id") else None)
-        body = message.data["body"]
-        if contact is not None and not contact.data.get("consent"):
-            return message, compliance.Decision(False, "blocked", body, reason="no_consent")
-        channel = conversation.data["channel"]
-        if channel not in ("whatsapp", "instagram"):
-            return message, compliance.Decision(True, "internal", body)
-        evaluator = compliance.evaluate_whatsapp if channel == "whatsapp" else compliance.evaluate
-        return message, evaluator(message=body, is_automated=False, blocklist=settings.blocklist,
-                                  last_inbound_at=conversation.data.get("last_inbound_at"),
-                                  opted_out_at=contact.data.get("opted_out_at") if contact else None)
+        # A ordem das checagens vive em compliance.decidir_envio porque o portao do agente tambem a
+        # usa. Duas copias da mesma ordem divergiriam, e a ordem e contrato: inverter dois passos
+        # muda quem recebe mensagem.
+        return compliance.decidir_envio(db, principal.tenant_id, record_id, settings.blocklist)
 
     @app.post("/api/v1/messages/{record_id}/compliance")
     def message_compliance(record_id: str, principal=Depends(require_auth), db=Depends(get_db)):

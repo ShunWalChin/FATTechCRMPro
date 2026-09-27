@@ -27,6 +27,8 @@ que a originou e para. Todo o resto continua passando pelo portao do E2, com a m
 checagens -- um caminho de execucao que existisse so para o despacho automatico seria uma segunda
 porta, e o E2 fechou as portas laterais de proposito.
 """
+from datetime import timedelta
+
 from sqlalchemy import select, update
 
 from .events import utc
@@ -133,3 +135,46 @@ def fila_do_agente(db, tenant_id: str, agent_id: str) -> dict:
     return {"pendentes": len(pendentes),
             "mais_antiga_em": mais_antiga.isoformat() if mais_antiga else None,
             "espera_segundos": int((now() - mais_antiga).total_seconds()) if mais_antiga else 0}
+
+
+# Depois de quanto tempo uma corrida reclamada e considerada abandonada. Duas horas e generoso: um
+# ciclo do Marvin fecha em segundos, e o limite existe para o caso em que o gateway morreu no meio.
+ABANDONO_HORAS = 2
+
+
+def reciclar_presas(db, tenant_id: str, *, horas: int = ABANDONO_HORAS, agora=None) -> dict:
+    """Devolve a `pending` as corridas que foram reclamadas e nunca voltaram.
+
+    Era divida registrada (DT-06 do Palantyr v5): `reclamadas_sem_retorno` era **medido** e nunca
+    reciclado, entao uma corrida abandonada ficava em `planning` para sempre -- o evento que a
+    originou nunca seria processado, e ninguem seria avisado disso.
+
+    A reciclagem devolve ao inicio em vez de descartar: o trabalho continua pendente porque continua
+    existindo. E ela nao apaga a tentativa anterior -- os passos que a corrida chegou a gravar ficam,
+    porque `agent_steps` e append-only e a segunda tentativa continua a numeracao da primeira. Quem
+    auditar ve as duas.
+
+    `error` recebe o motivo. Reciclar em silencio esconderia um gateway que morre toda hora.
+    """
+    instante = agora or now()
+    limite = instante - timedelta(hours=horas)
+    # `planning` e `executing`: o agente pode morrer antes de agir ou no meio do trabalho, e o
+    # segundo caso e mais comum. A primeira versao olhava so `planning` e uma corrida que ja tinha
+    # gravado um passo ficava presa para sempre -- o teste pegou porque tentou reclama-la de novo.
+    presas = list(db.scalars(select(AgentRun).where(
+        AgentRun.tenant_id == tenant_id, AgentRun.status.in_(("planning", "executing")),
+        AgentRun.finished_at.is_(None))))
+    recicladas = []
+    for corrida in presas:
+        if utc(corrida.started_at) > limite:
+            continue
+        mudou = db.execute(update(AgentRun).where(
+            AgentRun.id == corrida.id, AgentRun.tenant_id == tenant_id,
+            AgentRun.status.in_(("planning", "executing"))).values(
+                status="pending",
+                error=f"reclamada e sem retorno por mais de {horas}h; devolvida a fila")
+            .execution_options(synchronize_session=False))
+        if mudou.rowcount == 1:
+            recicladas.append(corrida.id)
+    return {"recicladas": len(recicladas), "ids": recicladas,
+            "ainda_presas": len(presas) - len(recicladas), "limite_horas": horas}

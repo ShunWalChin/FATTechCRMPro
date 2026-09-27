@@ -83,13 +83,17 @@ def test_o_catalogo_declara_executavel_toda_leitura_que_o_despachante_atende():
     assert set(agent_gate.DESPACHO_NOMEADO).issubset(pron)
 
 
-def test_o_que_continua_fora_e_o_irreversivel_e_o_externo():
-    """Não é omissão: o portão manda essas para aprovação antes de chegar ao despachante, e
-    implementá-las sem o E5 abriria caminho para efeito que ninguém pediu."""
+def test_o_que_continua_fora_e_a_escrita_de_proposta_e_contrato():
+    """`messages.send` saiu desta lista quando o E5 entrou: ele executa e continua atravessando três
+    camadas em série — trava global, compliance do instante e aprovação humana.
+
+    O que segue fora é escrita de proposta e contrato, transição de estado, assinatura e fusão. Não é
+    omissão: o portão manda as irreversíveis para aprovação antes de chegar ao despachante."""
     pron = {f["nome"] for f in agent_tools.catalogo_publicado()["items"] if f["executavel"]}
-    for fora in ("messages.send", "contracts.signature", "contracts.transition",
-                 "sales.proposals.issue", "contacts.merge"):
-        assert fora not in pron, f"{fora} não deveria executar antes do E5"
+    for fora in ("contracts.signature", "contracts.transition", "contracts.write",
+                 "sales.proposals.issue", "sales.proposals.write", "contacts.merge"):
+        assert fora not in pron, f"{fora} não deveria executar nesta versão"
+    assert "messages.send" in pron, "o E5 despachou o envio; ele recusa por compliance, não por falta de código"
 
 
 # ------------------------------------------------------------------ cada leitura

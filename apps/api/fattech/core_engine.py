@@ -304,6 +304,13 @@ def run_once(factory, settings, *, per_role=25, on_progress=None):
                 db.commit()
         with factory() as db:
             count += flush_buffers(db, tenant_id, settings)
+        with factory() as db:
+            # Corrida reclamada que nunca voltou volta para a fila. Sem isto o evento que a originou
+            # ficava sem dono para sempre -- DT-06 do Palantyr v5, medido e nunca pago.
+            from .agent_dispatch import reciclar_presas
+            set_tenant(db, tenant_id)
+            count += reciclar_presas(db, tenant_id)["recicladas"]
+            db.commit()
         if on_progress:
             on_progress()
     return count
