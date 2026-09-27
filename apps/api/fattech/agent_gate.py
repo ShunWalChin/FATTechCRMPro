@@ -28,7 +28,9 @@ from sqlalchemy import func, select
 
 from . import agent_tools
 from .models import AgentRun, AgentStep, now
-from .services import audit_event, create_record, get_record, list_records, serialize, update_record
+from .services import (audit_event, build_dashboard, build_radar, create_record,
+                       default_pipeline, get_record, list_records, scoped, serialize,
+                       update_record)
 
 # O que cada modo autoriza. `sugestao` nao escreve: ela propoe, e uma pessoa aplica.
 MODO_PERMITE = {
@@ -45,7 +47,10 @@ def executaveis() -> set[str]:
         if kind in agent_tools.FORA_DO_ALCANCE:
             continue
         nomes |= {f"{kind}.read", f"{kind}.write"}
-    return nomes
+    # Mais as leituras agregadas que o despachante sabe executar. O que nao esta no mapa continua
+    # recusando com motivo, e o catalogo publica isso em `executavel`: ferramenta anunciada que nao
+    # executa seria o catalogo mentindo.
+    return nomes | set(DESPACHO_NOMEADO)
 
 
 class Recusa(Exception):
@@ -97,7 +102,9 @@ def avaliar(db, principal, configuracao: dict, corrida: AgentRun, ferramenta: st
     permite = MODO_PERMITE.get(modo)
     if permite is None:
         raise Recusa(f"modo de operação desconhecido: {modo}")
-    escreve = not ferramenta.endswith(".read")
+    # A classe da acao vem do catalogo, nunca do nome. Inferir de `.read` classificava
+    # `crm.dashboard` como escrita e devolvia um painel como rascunho para uma pessoa aplicar.
+    escreve = descricao["escreve"]
 
     # 3. Classe da acao contra o modo.
     if descricao["classe"] == "externa" and not permite["externo"]:
@@ -142,6 +149,9 @@ def executar(db, principal, ferramenta: str, argumentos: dict) -> tuple[str, dic
     """
     if ferramenta not in executaveis():
         raise Recusa(f"ferramenta ainda não executável nesta versão: {ferramenta}")
+    adaptador = DESPACHO_NOMEADO.get(ferramenta)
+    if adaptador is not None:
+        return adaptador(db, principal, argumentos)
     kind, operacao = ferramenta.rsplit(".", 1)
     if operacao == "read":
         record_id = argumentos.get("id")
@@ -218,3 +228,127 @@ def aplicar_sugestao(db, principal, passo: AgentStep, corrida: AgentRun) -> dict
                  "result_ref": referencia or ""})
     return {"step_id": passo.id, "tool": passo.tool, "result_ref": referencia or "", "result": corpo,
             "aplicado_por": principal.actor_id}
+
+
+# ----------------------------------------------------------------- leituras agregadas
+# As dezesseis operacoes nomeadas do catalogo existiam como anuncio e nao executavam: o despachante
+# so conhecia `{kind}.read` e `{kind}.write`. O contrato do Marvin, no Palantyr v5, escreve que ele
+# le o mundo por `crm.dashboard`, `crm.radar` e `crm.leads.fila` -- e as tres devolviam
+# `refused: ferramenta ainda nao executavel`. O briefing das 08h nao sairia.
+#
+# Cada adaptador chama o que **ja existe**, nunca reimplementa a consulta. Onde a logica morava
+# dentro de `create_app` e era inalcancavel (o painel), ela foi extraida para
+# `services.build_dashboard`: uma fonte, dois consumidores -- a tela e o agente.
+#
+# O que continua fora, de proposito: escrita de proposta e contrato, transicao de estado,
+# assinatura, fusao de contatos e envio de mensagem. Sao irreversiveis ou externas, entao o portao
+# ja as manda para aprovacao antes de chegar aqui; implementa-las sem o E5 abriria caminho para
+# efeito que ninguem pediu. Elas continuam recusando com motivo, e o catalogo publica isso.
+
+
+def _painel(db, principal, argumentos: dict):
+    return "", build_dashboard(db, principal.tenant_id, argumentos.get("pipeline_id") or None)
+
+
+def _radar(db, principal, argumentos: dict):
+    funil = (get_record(db, principal.tenant_id, "pipelines", argumentos["pipeline_id"])
+             if argumentos.get("pipeline_id") else default_pipeline(db, principal.tenant_id))
+    return "", build_radar(db, principal.tenant_id, funil)
+
+
+def _fila_de_leads(db, principal, argumentos: dict):
+    """A fila de leads com SLA e temperatura. Os filtros do agente sao os mesmos da tela.
+
+    Os argumentos entram um a um, com limite, em vez de repassados em bloco: `**argumentos` deixaria
+    o agente escolher o `limit` e passar chave que a funcao nao espera.
+    """
+    from .lead_queue import leads
+    return "", leads(principal=principal, db=db,
+                     q=str(argumentos.get("q") or "")[:200],
+                     owner_id=str(argumentos.get("owner_id") or "")[:36],
+                     stage=argumentos.get("stage") or "open",
+                     temperature=argumentos.get("temperature") or "all",
+                     attention=argumentos.get("attention") or "all",
+                     order=argumentos.get("order") or "score",
+                     limit=min(int(argumentos.get("limit") or 50), 100),
+                     offset=min(int(argumentos.get("offset") or 0), 10000))
+
+
+def _score_explicado(db, principal, argumentos: dict):
+    from .lead_queue import explicar
+    record_id = argumentos.get("id") or argumentos.get("record_id")
+    if not record_id:
+        raise Recusa("crm.leads.score exige o id do contato")
+    return record_id, explicar(record_id=record_id, principal=principal, db=db)
+
+
+def _relatorio_comercial(db, principal, argumentos: dict):
+    from datetime import date as _date
+    from .sales_operations import sales_report
+
+    def dia(valor):
+        return _date.fromisoformat(valor[:10]) if valor else None
+
+    return "", sales_report(principal=principal, db=db,
+                            owner_id=argumentos.get("owner_id") or None,
+                            source=str(argumentos.get("source") or "")[:100] or None,
+                            date_from=dia(argumentos.get("date_from")),
+                            date_to=dia(argumentos.get("date_to")),
+                            date_basis=argumentos.get("date_basis") or "created",
+                            period=argumentos.get("period") or None)
+
+
+def _propostas(db, principal, argumentos: dict):
+    from .sales_operations import list_proposals, proposal
+    proposal_id = argumentos.get("id")
+    if proposal_id:
+        return proposal_id, proposal(proposal_id=proposal_id, principal=principal, db=db)
+    return "", list_proposals(principal=principal, db=db,
+                              deal_id=argumentos.get("deal_id") or None,
+                              status=argumentos.get("status") or None,
+                              limit=min(int(argumentos.get("limit") or 50), 100),
+                              offset=min(int(argumentos.get("offset") or 0), 10000))
+
+
+def _contratos(db, principal, argumentos: dict):
+    from .contracts import detalhar, listar
+    contract_id = argumentos.get("id")
+    if contract_id:
+        return contract_id, detalhar(contract_id=contract_id, principal=principal, db=db)
+    return "", listar(principal=principal, db=db,
+                      status=argumentos.get("status") or None,
+                      company_id=argumentos.get("company_id") or None,
+                      contact_id=argumentos.get("contact_id") or None,
+                      attention=argumentos.get("attention") or "all",
+                      limit=min(int(argumentos.get("limit") or 50), 200),
+                      offset=min(int(argumentos.get("offset") or 0), 10000))
+
+
+def _apuracao_de_conteudo(db, principal, argumentos: dict):
+    from .content_ops import indicadores
+    return "", indicadores(principal=principal, db=db, mes=str(argumentos.get("mes") or "")[:7])
+
+
+def _fila_de_trabalho(db, principal, argumentos: dict):
+    from .work_queue import work_queue
+    return "", work_queue(principal=principal, db=db,
+                          q=str(argumentos.get("q") or "")[:200],
+                          owner_id=str(argumentos.get("owner_id") or "")[:36],
+                          status=argumentos.get("status") or "open",
+                          priority=argumentos.get("priority") or "all",
+                          due=argumentos.get("due") or "all",
+                          limit=min(int(argumentos.get("limit") or 50), 100),
+                          offset=min(int(argumentos.get("offset") or 0), 10000))
+
+
+DESPACHO_NOMEADO = {
+    "crm.dashboard": _painel,
+    "crm.radar": _radar,
+    "crm.leads.fila": _fila_de_leads,
+    "crm.leads.score": _score_explicado,
+    "sales.report": _relatorio_comercial,
+    "sales.proposals.read": _propostas,
+    "contracts.read": _contratos,
+    "content.indicadores": _apuracao_de_conteudo,
+    "work_queue.read": _fila_de_trabalho,
+}

@@ -34,7 +34,7 @@ from .agent_api import register_agent_api
 from .audit_chain import verificar as verificar_trilha
 from .sales_operations import router as sales_router
 from . import compliance
-from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications, build_radar,
+from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_dashboard, build_notifications, build_radar,
                        capture_lead, create_record,
                        default_pipeline, delete_record, get_record, list_records, serialize, simulate,
                        update_record)
@@ -340,53 +340,8 @@ def create_app(settings: Settings | None = None, engine=None):
     @app.get("/api/v1/dashboard")
     def dashboard(principal=Depends(require_auth), db=Depends(get_db), pipeline_id: str | None = None):
         principal.require("dashboard:read")
-        # SQL aggregate operations avoid loading customer/message bodies into the dashboard.
-        def count(kind, predicate=None):
-            query = select(func.count()).select_from(Record).where(Record.tenant_id == principal.tenant_id,
-                               Record.kind == kind, Record.deleted.is_(False))
-            if predicate is not None:
-                query = query.where(predicate)
-            return db.scalar(query) or 0
-        def money(kind, field, predicate=None):
-            query = select(func.coalesce(func.sum(cast(Record.data[field].as_string(), BigInteger)), 0)).where(
-                Record.tenant_id == principal.tenant_id, Record.kind == kind, Record.deleted.is_(False))
-            if predicate is not None:
-                query = query.where(predicate)
-            return int(db.scalar(query) or 0)
-        def weighted(predicate):
-            # Sum the products first and divide once, so the forecast never accumulates per-row rounding.
-            amount = cast(Record.data["value_cents"].as_string(), BigInteger)
-            chance = cast(Record.data["probability"].as_string(), BigInteger)
-            return int(db.scalar(select(func.coalesce(func.sum(amount * chance), 0)).where(
-                Record.tenant_id == principal.tenant_id, Record.kind == "deals",
-                Record.deleted.is_(False), predicate)) or 0) // 100
-        funnel = (get_record(db, principal.tenant_id, "pipelines", pipeline_id) if pipeline_id
-                  else default_pipeline(db, principal.tenant_id))
-        def at(stage):
-            return and_(Record.data["stage"].as_string() == stage,
-                        Record.data["pipeline_id"].as_string() == funnel.id)
-        pipeline = [{"stage": stage["key"], "label": stage["label"], "outcome": stage["outcome"],
-                     "count": count("deals", at(stage["key"])),
-                     "value_cents": money("deals", "value_cents", at(stage["key"])),
-                     "weighted_cents": weighted(at(stage["key"]))}
-                    for stage in (funnel.data["stages"] if funnel else [])]
-        opened = [stage for stage in pipeline if stage["outcome"] == "open"]
-        closed_won = sum(stage["count"] for stage in pipeline if stage["outcome"] == "won")
-        total = sum(stage["count"] for stage in pipeline)
-        activity = db.scalars(select(Audit).where(Audit.tenant_id == principal.tenant_id)
-                              .order_by(Audit.created_at.desc()).limit(10))
-        return {"contacts": count("contacts"), "open_deals": sum(x["count"] for x in opened),
-                "pipeline_value_cents": sum(x["value_cents"] for x in opened),
-                "weighted_pipeline_cents": sum(x["weighted_cents"] for x in opened),
-                "revenue_cents": money("invoices", "amount_cents", Record.data["status"].as_string() == "paid"),
-                "open_tasks": count("tasks", Record.data["status"].as_string() != "done"),
-                "open_conversations": count("conversations", Record.data["status"].as_string() != "closed"),
-                "pending_approvals": count("approvals", Record.data["status"].as_string() == "pending"),
-                "active_automations": 0, "conversion_rate": round(closed_won / total * 100, 1) if total else 0,
-                "pipeline": pipeline, "pipeline_id": funnel.id if funnel else None,
-                "pipeline_name": funnel.data["name"] if funnel else "",
-                "recent_activity": describe_audit(db, principal.tenant_id, list(activity)),
-                "capabilities": CAPABILITIES}
+        # A consulta vive em services.build_dashboard porque o despachante do agente tambem a usa.
+        return build_dashboard(db, principal.tenant_id, pipeline_id, capabilities=CAPABILITIES)
 
     @app.get("/api/v1/integrations")
     def integrations(principal=Depends(require_auth), db=Depends(get_db)):

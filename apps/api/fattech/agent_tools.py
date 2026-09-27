@@ -30,23 +30,30 @@ FORA_DO_ALCANCE = {
     "approvals": "o agente e solicitante da cadeia, nunca decisor",
 }
 # Operacoes nomeadas que nao sao CRUD de kind. O escopo de cada uma e o que a API ja exige.
+# (nome, descricao, escopo, classe, reversivel, escreve)
+#
+# `escreve` e declarado e nao inferido do nome. O portao derivava isso de
+# `not nome.endswith(".read")`, e a heuristica quebrou aqui: `crm.dashboard` nao termina em `.read`
+# e virava rascunho em modo sugestao -- uma leitura tratada como escrita, esperando uma pessoa
+# aplicar um painel. `contracts.read` passava por acidente do sufixo. Nome nao e contrato; o
+# catalogo e.
 NOMEADAS = [
-    ("crm.leads.fila", "Ler a fila de leads com SLA e temperatura", "contacts:read", "interna", True),
-    ("crm.leads.score", "Ler a pontuacao explicada de um lead", "contacts:read", "interna", True),
-    ("crm.radar", "Ler oportunidades paradas e seu tempo de parada", "deals:read", "interna", True),
-    ("crm.dashboard", "Ler funil, previsao ponderada e conversao", "dashboard:read", "interna", True),
-    ("sales.report", "Ler o relatorio comercial do periodo", "deals:read", "interna", True),
-    ("sales.proposals.read", "Ler propostas", "invoices:read", "interna", True),
-    ("sales.proposals.write", "Criar ou ajustar proposta em rascunho", "invoices:write", "interna", True),
-    ("sales.proposals.issue", "Emitir proposta ao cliente", "invoices:write", "externa", False),
-    ("contracts.read", "Ler contratos e suas revisoes", "contracts:read", "interna", True),
-    ("contracts.write", "Criar ou editar contrato", "contracts:write", "interna", True),
-    ("contracts.transition", "Mudar o estado de um contrato", "contracts:write", "interna", False),
-    ("contracts.signature", "Solicitar assinatura externa", "contracts:write", "externa", False),
-    ("content.indicadores", "Ler a apuracao mensal de conteudo", "content_posts:read", "interna", True),
-    ("contacts.merge", "Fundir dois contatos", "contacts:write", "interna", False),
-    ("work_queue.read", "Ler a fila de trabalho", "tasks:read", "interna", True),
-    ("messages.send", "Enviar mensagem por um canal externo", "messages:write", "externa", False),
+    ("crm.leads.fila", "Ler a fila de leads com SLA e temperatura", "contacts:read", "interna", True, False),
+    ("crm.leads.score", "Ler a pontuacao explicada de um lead", "contacts:read", "interna", True, False),
+    ("crm.radar", "Ler oportunidades paradas e seu tempo de parada", "deals:read", "interna", True, False),
+    ("crm.dashboard", "Ler funil, previsao ponderada e conversao", "dashboard:read", "interna", True, False),
+    ("sales.report", "Ler o relatorio comercial do periodo", "deals:read", "interna", True, False),
+    ("sales.proposals.read", "Ler propostas", "invoices:read", "interna", True, False),
+    ("sales.proposals.write", "Criar ou ajustar proposta em rascunho", "invoices:write", "interna", True, True),
+    ("sales.proposals.issue", "Emitir proposta ao cliente", "invoices:write", "externa", False, True),
+    ("contracts.read", "Ler contratos e suas revisoes", "contracts:read", "interna", True, False),
+    ("contracts.write", "Criar ou editar contrato", "contracts:write", "interna", True, True),
+    ("contracts.transition", "Mudar o estado de um contrato", "contracts:write", "interna", False, True),
+    ("contracts.signature", "Solicitar assinatura externa", "contracts:write", "externa", False, True),
+    ("content.indicadores", "Ler a apuracao mensal de conteudo", "content_posts:read", "interna", True, False),
+    ("contacts.merge", "Fundir dois contatos", "contacts:write", "interna", False, True),
+    ("work_queue.read", "Ler a fila de trabalho", "tasks:read", "interna", True, False),
+    ("messages.send", "Enviar mensagem por um canal externo", "messages:write", "externa", False, True),
 ]
 # Kind cuja escrita cria efeito fora da maquina ou destroi historico.
 ESCRITA_EXTERNA = {"messages"}
@@ -60,17 +67,19 @@ def ferramentas() -> list[dict]:
         if kind in FORA_DO_ALCANCE:
             continue
         catalogo.append({"nome": f"{kind}.read", "descricao": f"Listar e ler {kind}",
-                         "escopo": f"{kind}:read", "classe": "interna", "reversivel": True})
+                         "escopo": f"{kind}:read", "classe": "interna", "reversivel": True,
+                         "escreve": False})
         catalogo.append({"nome": f"{kind}.write", "descricao": f"Criar e editar {kind}",
                          "escopo": f"{kind}:write",
                          "classe": "externa" if kind in ESCRITA_EXTERNA else "interna",
-                         "reversivel": kind not in ESCRITA_IRREVERSIVEL})
+                         "reversivel": kind not in ESCRITA_IRREVERSIVEL, "escreve": True})
         # Excluir e irreversivel em todo kind: `fattech:merge:destrutivo-declarado`.
         catalogo.append({"nome": f"{kind}.delete", "descricao": f"Excluir {kind}",
-                         "escopo": f"{kind}:write", "classe": "interna", "reversivel": False})
-    for nome, descricao, escopo, classe, reversivel in NOMEADAS:
+                         "escopo": f"{kind}:write", "classe": "interna", "reversivel": False,
+                         "escreve": True})
+    for nome, descricao, escopo, classe, reversivel, escreve in NOMEADAS:
         catalogo.append({"nome": nome, "descricao": descricao, "escopo": escopo,
-                         "classe": classe, "reversivel": reversivel})
+                         "classe": classe, "reversivel": reversivel, "escreve": escreve})
     return sorted(catalogo, key=lambda ferramenta: ferramenta["nome"])
 
 

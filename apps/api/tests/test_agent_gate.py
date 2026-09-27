@@ -338,9 +338,12 @@ def test_o_catalogo_declara_o_que_ainda_nao_executa(sistema):
 
 def test_ferramenta_ainda_nao_executavel_recusa_com_motivo_em_vez_de_nao_fazer_nada(sistema):
     client, _factory, _tenant, app = sistema
+    # crm.dashboard passou a executar no estágio das leituras agregadas; o exemplo agora é uma
+    # escrita que o despachante ainda não atende — interna e reversível, então ela chega até ele em
+    # vez de parar antes na aprovação.
     agente, agentado = montar(client, app, modo="execucao_interna",
-                              tools=["contacts.read", "crm.dashboard"])
+                              tools=["contacts.read", "sales.proposals.write"])
     corrida = abrir(agentado, agente["id"])
-    resultado = agir(agentado, corrida["id"], "crm.dashboard")
+    resultado = agir(agentado, corrida["id"], "sales.proposals.write")
     assert resultado["decision"] == "refused"
     assert "ainda não executável" in resultado["refusal_reason"]

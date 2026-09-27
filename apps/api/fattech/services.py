@@ -312,6 +312,75 @@ def build_radar(db, tenant_id, pipeline):
 NOTICE_ORDER = {"critical": 3, "attention": 2, "info": 1}
 
 
+def build_dashboard(db, tenant_id, pipeline_id=None, capabilities=None):
+    """O painel de diretoria, como funcao de servico em vez de fechamento dentro de create_app.
+
+    Estava escrito como closure de `create_app`, alcancavel so por HTTP. O despachante do agente
+    precisa dela e nao pode chamar a rota -- entao ou se duplicava a consulta, ou se extraia. Mesma
+    escolha que `build_radar` ja tinha feito: uma fonte, dois consumidores (a tela e o agente).
+
+    `capabilities` entra por parametro porque a lista mora em main.py e e resposta de API, nao regra
+    de negocio; o agente nao precisa dela e recebe o painel sem esse campo.
+    """
+    from sqlalchemy import BigInteger, and_, cast
+
+    def count(kind, predicate=None):
+        query = select(func.count()).select_from(Record).where(
+            Record.tenant_id == tenant_id, Record.kind == kind, Record.deleted.is_(False))
+        if predicate is not None:
+            query = query.where(predicate)
+        return db.scalar(query) or 0
+
+    def money(kind, field, predicate=None):
+        query = select(func.coalesce(func.sum(cast(Record.data[field].as_string(), BigInteger)), 0)).where(
+            Record.tenant_id == tenant_id, Record.kind == kind, Record.deleted.is_(False))
+        if predicate is not None:
+            query = query.where(predicate)
+        return int(db.scalar(query) or 0)
+
+    def weighted(predicate):
+        # Soma os produtos primeiro e divide uma vez, para a previsao nao acumular arredondamento.
+        amount = cast(Record.data["value_cents"].as_string(), BigInteger)
+        chance = cast(Record.data["probability"].as_string(), BigInteger)
+        return int(db.scalar(select(func.coalesce(func.sum(amount * chance), 0)).where(
+            Record.tenant_id == tenant_id, Record.kind == "deals",
+            Record.deleted.is_(False), predicate)) or 0) // 100
+
+    funnel = (get_record(db, tenant_id, "pipelines", pipeline_id) if pipeline_id
+              else default_pipeline(db, tenant_id))
+
+    def at(stage):
+        return and_(Record.data["stage"].as_string() == stage,
+                    Record.data["pipeline_id"].as_string() == funnel.id)
+
+    pipeline = [{"stage": stage["key"], "label": stage["label"], "outcome": stage["outcome"],
+                 "count": count("deals", at(stage["key"])),
+                 "value_cents": money("deals", "value_cents", at(stage["key"])),
+                 "weighted_cents": weighted(at(stage["key"]))}
+                for stage in (funnel.data["stages"] if funnel else [])]
+    opened = [stage for stage in pipeline if stage["outcome"] == "open"]
+    closed_won = sum(stage["count"] for stage in pipeline if stage["outcome"] == "won")
+    total = sum(stage["count"] for stage in pipeline)
+    activity = db.scalars(select(Audit).where(Audit.tenant_id == tenant_id)
+                          .order_by(Audit.created_at.desc()).limit(10))
+    from .main import describe_audit
+    painel = {"contacts": count("contacts"), "open_deals": sum(x["count"] for x in opened),
+              "pipeline_value_cents": sum(x["value_cents"] for x in opened),
+              "weighted_pipeline_cents": sum(x["weighted_cents"] for x in opened),
+              "revenue_cents": money("invoices", "amount_cents", Record.data["status"].as_string() == "paid"),
+              "open_tasks": count("tasks", Record.data["status"].as_string() != "done"),
+              "open_conversations": count("conversations", Record.data["status"].as_string() != "closed"),
+              "pending_approvals": count("approvals", Record.data["status"].as_string() == "pending"),
+              "active_automations": 0,
+              "conversion_rate": round(closed_won / total * 100, 1) if total else 0,
+              "pipeline": pipeline, "pipeline_id": funnel.id if funnel else None,
+              "pipeline_name": funnel.data["name"] if funnel else "",
+              "recent_activity": describe_audit(db, tenant_id, list(activity))}
+    if capabilities is not None:
+        painel["capabilities"] = capabilities
+    return painel
+
+
 def build_notifications(db, tenant_id, limit=25, allowed=None):
     """Derived at read time from the records themselves.
 
