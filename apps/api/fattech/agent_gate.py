@@ -28,7 +28,7 @@ from sqlalchemy import func, select
 
 from . import agent_tools
 from .models import AgentRun, AgentStep, now
-from .services import audit_event, create_record, get_record, list_records, scoped, serialize, update_record
+from .services import audit_event, create_record, get_record, list_records, serialize, update_record
 
 # O que cada modo autoriza. `sugestao` nao escreve: ela propoe, e uma pessoa aplica.
 MODO_PERMITE = {

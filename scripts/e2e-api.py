@@ -23,10 +23,10 @@ os.environ.update({
     "FATTECH_LOGIN_ATTEMPTS_PER_EMAIL": "500",
     "FATTECH_LOGIN_ATTEMPTS_PER_IP": "1500",
 })
-from fattech.config import get_settings
-from fattech.db import make_engine, session_factory
-from fattech.migrate import migrate
-from fattech.seed import bootstrap
+from fattech.config import get_settings  # noqa: E402 - test environment must be configured first
+from fattech.db import make_engine, session_factory  # noqa: E402
+from fattech.migrate import migrate  # noqa: E402
+from fattech.seed import bootstrap  # noqa: E402
 
 engine = make_engine(get_settings().database_url)
 migrate(engine)
@@ -34,5 +34,5 @@ with session_factory(engine)() as session:
     bootstrap(session, slug="fattech", email="e2e@fattech.com.br",
               password="Test-only-Fattech-Password-2026!", demo=True)
 engine.dispose()
-import uvicorn
+import uvicorn  # noqa: E402
 uvicorn.run("fattech.main:app", host="127.0.0.1", port=8100, log_level="warning")

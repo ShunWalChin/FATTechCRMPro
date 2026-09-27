@@ -15,7 +15,7 @@ from fattech.main import create_app
 from fattech.migrate import UNRECORDED_LOSS, migrate
 from fattech.schemas import DEFAULT_PIPELINE, RESOURCES, Pipeline
 from fattech.services import default_pipeline
-from fattech.models import Audit, InstagramAccount, Outbox, Record, Tenant, User, now
+from fattech.models import Audit, InstagramAccount, KnowledgeChunk, Outbox, Record, Tenant, User, now
 from fattech.seed import bootstrap
 
 PASSWORD = "Development-Test-Only-2026!"
@@ -85,6 +85,58 @@ def test_knowledge_search_returns_tenant_scoped_citations(system):
     assert response.status_code == 200
     assert response.json()["provider"] == "lexical"
     assert any(item["citation"]["kind"] == "knowledge" for item in response.json()["items"])
+
+
+def test_knowledge_index_replaces_chunks_and_rejects_empty_or_foreign_records(system):
+    client, app, factory, tenant_id, _, _, _ = system
+    record = post(client, "knowledge", {"title": "Manual", "content": "um dois três", "source": "manual"})
+    url = f"/api/v1/knowledge/{record['id']}/index"
+    assert client.post(url).json() == {"knowledge_id": record["id"], "chunks": 1, "provider": "lexical"}
+    with factory() as db:
+        chunks = list(db.scalars(select(KnowledgeChunk).where(KnowledgeChunk.tenant_id == tenant_id)))
+        assert len(chunks) == 1 and chunks[0].content == "um dois três"
+    changed = client.patch(f"/api/v1/knowledge/{record['id']}", json={"version": 1, "content": "quatro cinco"})
+    assert changed.status_code == 200, changed.text
+    assert client.post(url).json()["chunks"] == 1
+    with factory() as db:
+        chunks = list(db.scalars(select(KnowledgeChunk).where(KnowledgeChunk.tenant_id == tenant_id)))
+        assert len(chunks) == 1 and chunks[0].content == "quatro cinco"
+    assert client.patch(f"/api/v1/knowledge/{record['id']}",
+                        json={"version": 2, "content": ""}).status_code == 200
+    assert client.post(url).status_code == 422
+    with TestClient(app) as outsider:
+        login = outsider.post("/api/v1/auth/login", json={
+            "email": "other@example.com", "password": PASSWORD})
+        assert login.status_code == 200
+        outsider.headers["X-CSRF-Token"] = login.json()["csrf_token"]
+        assert outsider.post(url).status_code == 404
+
+
+def test_campaign_crud_preserves_status_and_version(system):
+    client, _, _, *_ = system
+    campaign = post(client, "campaigns", {"name": "Setembro", "channel": "email", "budget_cents": 3000})
+    url = f"/api/v1/campaigns/{campaign['id']}"
+    assert client.get(url).json()["status"] == "draft"
+    assert any(item["id"] == campaign["id"] for item in client.get("/api/v1/campaigns").json()["items"])
+    changed = client.patch(url, json={"version": campaign["version"], "status": "paused"})
+    assert changed.status_code == 200 and changed.json()["status"] == "paused"
+    assert client.patch(url, json={"version": campaign["version"], "status": "archived"}).status_code == 409
+    assert client.delete(url, params={"version": changed.json()["version"]}).json() == {"deleted": True}
+    assert client.get(url).status_code == 404
+
+
+def test_core_contract_is_admin_only(system):
+    client, app, _, *_ = system
+    response = client.get("/api/v1/core/contract")
+    assert response.status_code == 200
+    assert response.json()["id"] == "core-engine-v1"
+    assert "event" in response.json()["envelope"]["properties"]
+    post(client, "team", {"name": "Viewer Core", "email": "core-viewer@example.com",
+                          "password": PASSWORD, "role": "viewer"})
+    with TestClient(app) as viewer:
+        assert viewer.post("/api/v1/auth/login", json={
+            "email": "core-viewer@example.com", "password": PASSWORD}).status_code == 200
+        assert viewer.get("/api/v1/core/contract").status_code == 403
 
 
 def test_auth_cookie_csrf_password_and_sessions(system):

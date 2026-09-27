@@ -18,7 +18,7 @@ from fattech.core_models import CoreDelivery
 from fattech.db import make_engine, session_factory
 from fattech.main import create_app
 from fattech.migrate import migrate
-from fattech.models import AgentRun, Outbox
+from fattech.models import AgentRun
 from fattech.seed import bootstrap
 
 PASSWORD = "Development-Test-Only-2026!"

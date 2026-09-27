@@ -209,6 +209,16 @@ distribuição, inclusive com zero, porque o pilar vazio é o achado.
 
 O processamento interno possui filas independentes da entrega externa ao n8n. Consulte [contratos, permissões, migração 0008 e operação](../../docs/CORE_ENGINE_IMPLEMENTATION.md). Rotas administrativas em `/api/v1/core`; interface em `/crm/synapse/eventos`. Lotes de mensagens disponíveis para revisão não representam envio ou execução autônoma de IA.
 
+`GET /api/v1/core/contract` exige sessão administrativa e publica o esquema JSON do envelope de
+eventos (`core-engine-v1`), o limite de saltos e o contrato de entrega externa. A rota é coberta
+por teste de autorização para impedir exposição a usuários somente de leitura.
+
+`POST /api/v1/knowledge/{record_id}/index` exige `knowledge:write` e reconstrói os blocos lexicais
+de um documento da própria organização. Recusa conteúdo vazio, substitui os blocos anteriores em
+uma transação e devolve a contagem. A indexação não habilita embeddings nem envio de dados a um
+provedor externo. Campanhas usam o CRUD versionado `/api/v1/campaigns` e são somente registros de
+planejamento; criar ou alterar uma campanha não dispara mensagens.
+
 ## Operação de agente — E1: identidade e catálogo (migração 0009)
 
 O agente é um `Principal` próprio, nunca uma pessoa emprestada: um `users` com papel `root` e

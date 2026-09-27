@@ -132,7 +132,7 @@ def conferir_servidos(base: str) -> list[str]:
         disco = publicado(alvo_caminho)
         if codigo != 200 or digest(normalizar(alvo_caminho, servido)) != digest(normalizar(alvo_caminho, disco)):
             problemas.append(f"{rota} deveria servir {alvo} byte a byte (respondeu {codigo})")
-    print(f"   conferidos byte a byte contra o arquivo de destino")
+    print("   conferidos byte a byte contra o arquivo de destino")
     return problemas
 
 

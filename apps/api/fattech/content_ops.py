@@ -17,14 +17,12 @@ Três decisões que a planilha não tomava e esta camada toma:
    banco; a planilha marcava "Usado? S" na escolha e perdia a ideia junto com a peça.
 """
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import Field
-from sqlalchemy import select
 
 from .db import get_db
-from .models import Record, User
 from .schemas import PILARES, StrictModel
 from .security import require_auth
 from .services import audit_event, create_record, get_record, scoped

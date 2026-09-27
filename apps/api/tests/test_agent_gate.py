@@ -15,7 +15,7 @@ from fattech.config import Settings
 from fattech.db import make_engine, session_factory
 from fattech.main import create_app
 from fattech.migrate import migrate
-from fattech.models import AgentRun, AgentStep, Record, now
+from fattech.models import AgentRun, Record, now
 from fattech.seed import bootstrap
 
 PASSWORD = "Development-Test-Only-2026!"

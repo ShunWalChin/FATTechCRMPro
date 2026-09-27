@@ -40,6 +40,8 @@ jobs:
           apps/api/.venv/bin/pip install -e 'apps/api[test]'
       - run: npm ci
       - run: python scripts/check_secrets.py
+      - name: Python lint
+        run: apps/api/.venv/bin/ruff check apps/api/fattech apps/api/tests scripts integrations/palantyr-v5/infra/scripts
       - name: API behavior and security tests
         env:
           FATTECH_TEST_POSTGRES_OWNER_URL: postgresql+psycopg://fattech_test_owner:ci-only@localhost:5432/fattech_test
@@ -48,6 +50,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm audit --omit=dev --audit-level=high
+      - name: Palantyr MCP dependency and behavior tests
+        working-directory: integrations/palantyr-v5/services/fattech-crm-mcp
+        run: |
+          npm ci
+          npm test
+          npm audit --omit=dev --audit-level=high
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4

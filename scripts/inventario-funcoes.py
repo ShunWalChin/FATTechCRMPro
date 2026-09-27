@@ -96,7 +96,7 @@ AUTOTESTE = [
     ("/api/v1/contracts/{contract_id}/revisions", "testes", True),
     ("/api/v1/contacts/{record_id}/merge", "testes", True),
     ("/api/v1/crm/leads/{record_id}/score", "testes", True),
-    ("/api/v1/campaigns", "testes", False),
+    ("/api/v1/campaigns", "testes", True),
     ("/api/v1/content/indicadores", "web", True),
     ("/api/v1/audit/verify", "testes", True),
 ]
@@ -172,9 +172,9 @@ def main() -> int:
         print("-" * 78)
         for grupo in sorted(por_grupo, key=lambda g: -len(por_grupo[g])):
             conjunto = por_grupo[grupo]
-            tela = sum(1 for l in conjunto if l["tela"])
-            teste = sum(1 for l in conjunto if l["teste"])
-            documentada = sum(1 for l in conjunto if l["doc"])
+            tela = sum(1 for linha in conjunto if linha["tela"])
+            teste = sum(1 for linha in conjunto if linha["teste"])
+            documentada = sum(1 for linha in conjunto if linha["doc"])
             # Cobertura pondera o que importa para quem mantem: uma rota testada vale mais que uma
             # documentada, porque o teste avisa quando ela quebra e o documento nao.
             cobertura = (teste * 0.6 + tela * 0.3 + documentada * 0.1) / len(conjunto) * 100
@@ -183,12 +183,12 @@ def main() -> int:
         total = len(linhas)
         for rotulo, chave in (("Chamadas por alguma tela", "tela"), ("Exercidas por algum teste", "teste"),
                               ("Descritas na API.md", "doc")):
-            quantas = sum(1 for l in linhas if l[chave])
+            quantas = sum(1 for linha in linhas if linha[chave])
             print(f"{rotulo:28} {quantas:>4} de {total}  ({quantas / total * 100:.0f}%)")
 
-    orfas = [l for l in linhas if not (l["tela"] or l["teste"] or l["doc"]) and not l["infra"]]
-    declaradas = [l for l in linhas if l["infra"]]
-    sem_teste = [l for l in linhas if not l["teste"] and not l["infra"]]
+    orfas = [linha for linha in linhas if not (linha["tela"] or linha["teste"] or linha["doc"]) and not linha["infra"]]
+    declaradas = [linha for linha in linhas if linha["infra"]]
+    sem_teste = [linha for linha in linhas if not linha["teste"] and not linha["infra"]]
 
     print(f"\nSEM TESTE NENHUM ({len(sem_teste)} de {len(linhas)}) — quebram em silêncio")
     for linha in sem_teste[:30]:
