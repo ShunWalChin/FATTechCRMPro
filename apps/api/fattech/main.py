@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .config import Settings, get_settings
 from .db import Base, get_db, make_engine, session_factory, set_tenant
-from .models import AgentRun, AgentStep, ApiKey, Audit, Idempotency, KnowledgeChunk, LoginSession, Outbox, Record, Tenant, User, now, uid
+from .models import ApiKey, Audit, Idempotency, KnowledgeChunk, LoginSession, Outbox, Record, Tenant, User, now, uid
 from .schemas import (RESOURCES, Decision, KeyCreate, Lead, Login, PasswordChange, PasswordReset,
                       Simulation, TeamCreate,
                       TeamUpdate, Version, Webhook)
@@ -106,7 +106,7 @@ def api_scopes():
         # O agente opera o proprio ciclo de corrida com este escopo. Ele e deliberadamente distinto
         # de `agents:write`, que escreve o registro de configuracao de um agente: operar a si mesmo
         # e reconfigurar a si mesmo sao coisas diferentes, e so a primeira e do agente.
-        "agent:operate"}
+        "agent:operate", "agent:observe"}
 
 
 COMPLIANCE_REASONS = {

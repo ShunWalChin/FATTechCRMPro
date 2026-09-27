@@ -76,9 +76,9 @@ export class CrmClient {
     return this.get("/api/v1/agent/tools");
   }
 
-  /** A identidade MCP lê apenas a própria fila; supervisão global usa sessão humana no CRM. */
-  queue(): Promise<unknown> {
-    return this.get(`/api/v1/agent/${encodeURIComponent(this.config.agentId)}/queue`);
+  /** Outra fila só é visível com escopo agent:observe e agents.read no CRM. */
+  queue(agentId: string = this.config.agentId): Promise<unknown> {
+    return this.get(`/api/v1/agent/${encodeURIComponent(agentId)}/queue`);
   }
 
   budget(): Promise<unknown> {

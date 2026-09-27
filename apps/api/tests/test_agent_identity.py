@@ -176,6 +176,28 @@ def test_chave_de_agente_nao_opera_corridas_de_outro_agente(sistema):
     assert chave_a.get(f"/api/v1/agent/runs/{run_id}").status_code == 200
 
 
+def test_supervisor_observa_metricas_da_fila_sem_operar_corridas_alheias(sistema):
+    client, _factory, _tenant, app, _settings = sistema
+    operador = criar_agente(client, name="Operador")
+    supervisor = criar_agente(client, name="Supervisor", tools=["agents.read"])
+    chave_operador = cliente_do_agente(app, provisionar(client, operador["id"])["key"])
+    identidade = provisionar(client, supervisor["id"], tools=("agents.read",))
+    assert "agent:observe" in identidade["scopes"]
+    chave_supervisor = cliente_do_agente(app, identidade["key"])
+    assert chave_supervisor.get(f"/api/v1/agent/{operador['id']}/queue").status_code == 200
+    assert chave_supervisor.get(f"/api/v1/agent/{operador['id']}/budget").status_code == 403
+    aberta = chave_operador.post("/api/v1/agent/runs", json={
+        "agent_id": operador["id"], "trigger_event_id": "evt-observar",
+        "trigger_type": "manual", "rationale": "Supervisão lê somente as métricas de fila",
+    })
+    assert aberta.status_code == 201
+    run_id = aberta.json()["id"]
+    assert chave_supervisor.get(f"/api/v1/agent/runs/{run_id}").status_code == 403
+    assert chave_supervisor.post(f"/api/v1/agent/runs/{run_id}/finish", json={
+        "status": "done",
+    }).status_code == 403
+
+
 def test_a_chave_do_agente_e_recusada_em_toda_operacao_administrativa(sistema):
     """O teste central do E1. Nenhuma regra nova: `admin()` recusa qualquer chave de API."""
     client, _factory, _tenant, app, _settings = sistema

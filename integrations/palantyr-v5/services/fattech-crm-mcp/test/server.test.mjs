@@ -74,12 +74,12 @@ test("ciclo completo: reclamar → agir → encerrar", async () => {
   assert.match(text(again), /409/);
 });
 
-test("fila MCP permanece vinculada à própria identidade", async () => {
+test("fila própria por padrão e outra somente pela permissão do CRM", async () => {
   const own = await mcp.callTool({ name: "crm_fila", arguments: {} });
   assert.match(text(own), /agente-sdr/);
   const other = await mcp.callTool({ name: "crm_fila", arguments: { agente: "agente-outro" } });
-  assert.match(text(other), /agente-sdr/, "argumento extra não altera a identidade da fila");
-  assert.equal(crm.state.calls.at(-1).url, "/api/v1/agent/agente-sdr/queue");
+  assert.equal(other.isError, true, "o dublê não concede observação cruzada");
+  assert.equal(crm.state.calls.at(-1).url, "/api/v1/agent/agente-outro/queue");
   assert.equal(crm.state.calls.at(-1).method, "GET");
 });
 

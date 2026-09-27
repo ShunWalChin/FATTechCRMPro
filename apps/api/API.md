@@ -266,8 +266,9 @@ operar a si mesmo e reconfigurar a si mesmo são coisas diferentes, e um agente 
 próprio teto não tem teto. A chave emitida recebe `agent:operate` e `agents:read` além dos escopos
 das ferramentas. Na versão 0.7.0, a API também vincula a chave de um agente ao `agent_id` da sua
 própria identidade. Abrir, reclamar, consultar, agir e encerrar a corrida de outro agente da mesma
-organização recebe 403. `GET /runs` filtra implicitamente pela identidade; a supervisão de todas
-as filas é da sessão humana, não da chave MCP.
+organização recebe 403. `GET /runs` filtra implicitamente pela identidade. Somente métricas de
+`GET /{agent_id}/queue` podem ser observadas entre agentes, quando a chave inclui `agent:observe`
+e a configuração atual do observador mantém `agents.read`; isso não concede detalhe nem ação.
 
 `POST /api/v1/agent/runs` abre a corrida com `{agent_id, trigger_event_id, trigger_type, rationale}`.
 `rationale` é obrigatório. **O replay devolve a corrida existente**, não erro: a entrega do outbox é

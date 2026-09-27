@@ -6,7 +6,7 @@
       "label": "Cada identidade de agente opera só as próprias corridas",
       "type": "business_rule",
       "status": "implementado-local",
-      "rule": "O escopo autoriza a ferramenta; a identidade vinculada ao usuário-agente autoriza o agent_id e a corrida. Consultar, reclamar, agir e encerrar corridas de outro agente recebe 403.",
+      "rule": "O escopo autoriza a ferramenta; a identidade vinculada ao usuário-agente autoriza o agent_id e a corrida. Consultar detalhe, reclamar, agir e encerrar corridas de outro agente recebe 403. Só métricas de fila admitem observação cruzada com agent:observe e agents.read vigente.",
       "por_que_importa": "Escopos iguais entre agentes da mesma organização não podem virar permissão para assumir a fila ou a trilha do colega.",
       "onde_no_fattech": "apps/api/fattech/agent_api.py; apps/api/tests/test_agent_identity.py"
     },
@@ -15,7 +15,7 @@
       "label": "Ponte MCP para o portão auditável do CRM",
       "type": "engineering_pattern",
       "status": "implementado-local",
-      "rule": "Uma instância da ponte por agente usa sua própria chave e agent_id fixo no ambiente. O cliente HTTP não repete POST automaticamente e crm_fila não aceita selecionar outra identidade.",
+      "rule": "Uma instância da ponte por agente usa sua própria chave e agent_id fixo no ambiente. O cliente HTTP não repete POST automaticamente; crm_fila pode selecionar outra fila apenas se o portão conceder observação de métricas.",
       "por_que_importa": "O runtime propõe ações, mas só o CRM decide efeitos, tetos, aprovação e auditoria.",
       "onde_no_fattech": "integrations/palantyr-v5/services/fattech-crm-mcp"
     },

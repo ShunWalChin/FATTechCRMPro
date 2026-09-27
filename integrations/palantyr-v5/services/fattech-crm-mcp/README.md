@@ -9,7 +9,7 @@ Inclui a **palantyr-probe**, sonda de saúde sem shell para o Sentinela.
 | Ferramenta | Rota do CRM | Efeito |
 |---|---|---|
 | `crm_catalogo` | `GET /agent/tools` | leitura |
-| `crm_fila` | `GET /agent/{id}/queue` | leitura apenas da própria fila |
+| `crm_fila` (`agente?`) | `GET /agent/{id}/queue` | leitura própria; outra fila requer `agent:observe` e `agents.read` |
 | `crm_orcamento` | `GET /agent/{id}/budget` | leitura |
 | `crm_corrida` | `GET /agent/runs/{id}` | leitura |
 | `crm_reclamar_corridas` | `POST /agent/runs/claim` | move corridas para `planning` |

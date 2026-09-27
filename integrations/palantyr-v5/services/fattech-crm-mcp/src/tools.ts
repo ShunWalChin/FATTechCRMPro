@@ -88,10 +88,11 @@ export function createCrmServer({ client, limiter, log = () => {} }: ServerDeps)
     {
       title: "Fila de um agente",
       description:
-        "Mostra corridas pendentes, idade da mais antiga e corridas reclamadas sem retorno da própria identidade. Não reclama nada.",
+        "Mostra a própria fila. Outra fila exige permissão de observação no CRM e devolve só métricas; não reclama nem opera corridas.",
+      inputSchema: { agente: z.string().min(1).max(36).optional() },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    () => guarded("crm_fila", async () => ok(await client.queue(), false)),
+    ({ agente }) => guarded("crm_fila", async () => ok(await client.queue(agente), false)),
   );
 
   server.registerTool(

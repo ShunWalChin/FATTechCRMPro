@@ -130,6 +130,17 @@ def exigir_agente_da_chave(principal, agent_id: str) -> None:
         raise HTTPException(403, "Esta chave só pode operar o próprio agente")
 
 
+def exigir_observacao_da_fila(db, principal, agent_id: str) -> None:
+    """Supervisão cruzada lê apenas métricas de fila, com concessão explícita e revogável."""
+    if not principal.user.is_agent or principal.user.name == f"agente:{agent_id}":
+        return
+    principal.require("agent:observe")
+    own_id = principal.user.name.removeprefix("agente:")
+    own_config = configuracao_do_agente(db, principal, own_id)
+    if "agents.read" not in (own_config.get("tools") or []):
+        raise HTTPException(403, "A observação de filas foi removida deste agente")
+
+
 def corrida_ou_404(db, principal, run_id: str) -> AgentRun:
     corrida = db.scalar(select(AgentRun).where(AgentRun.id == run_id,
                                                AgentRun.tenant_id == principal.tenant_id))
@@ -286,7 +297,7 @@ def claim_runs(payload: Reclamacao, principal=Depends(require_auth), db=Depends(
 def queue(agent_id: str, principal=Depends(require_auth), db=Depends(get_db)):
     """A fila do agente, para a tela e para quem opera. Não reclama nada; só mede."""
     principal.require("agents:read")
-    exigir_agente_da_chave(principal, agent_id)
+    exigir_observacao_da_fila(db, principal, agent_id)
     configuracao = configuracao_do_agente(db, principal, agent_id)
     fila = agent_dispatch.fila_do_agente(db, principal.tenant_id, agent_id)
     presas = list(db.scalars(select(AgentRun).where(

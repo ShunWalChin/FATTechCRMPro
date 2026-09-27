@@ -28,7 +28,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from . import agent_tools
-from .models import ApiKey, User, now, uid
+from .models import ApiKey, User, now
 from .security import digest, hasher
 from .services import audit_event, get_record
 
@@ -96,7 +96,8 @@ def provisionar(db, principal, tenant_slug: str, agent_id: str, ferramentas: lis
     # Alem dos escopos das ferramentas, o agente precisa operar o proprio ciclo: abrir corrida,
     # tentar acao, encerrar. Sem isso a chave nao alcanca nem o portao, e a ferramenta declarada
     # seria uma permissao que nunca chega a ser exercida.
-    escopos = sorted(derivados | {"agent:operate", "agents:read"})
+    escopos = sorted(derivados | {"agent:operate", "agents:read"}
+                     | ({"agent:observe"} if "agents.read" in ferramentas else set()))
 
     usuario = usuario_do_agente(db, principal.tenant_id, agent_id)
     if usuario is None:
