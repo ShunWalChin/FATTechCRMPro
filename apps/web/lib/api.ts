@@ -50,6 +50,9 @@ function validResponse(data:Record<string,unknown>,path:string,method:string):bo
         nonemptyString(item.label)&&['ready','pending'].includes(String(item.status))&&typeof item.detail==='string'&&typeof item.href==='string')&&
       Array.isArray(data.recent_runs)&&data.recent_runs.every(hasId);
     if(path==='/synapse/setup')return typeof data.created==='boolean'&&configuration(data.configuration);
+    if(path==='/synapse/knowledge/bootstrap')return Array.isArray(data.created)&&
+      data.created.every(value=>typeof value==='string'&&value.length>0)&&Number.isInteger(data.count)&&
+      Number(data.count)>=0&&data.provider==='reviewed_seed';
     if(path==='/synapse/settings')return configuration(data);
     if(path==='/synapse/enroll')return hasId(data)&&['contact_id','deal_id','task_id','status','due_at'].every(key=>nonemptyString(data[key]))&&typeof data.duplicate==='boolean';
     if(path==='/synapse/assist')return hasId(data)&&['draft','handoff'].includes(String(data.status))&&typeof data.body==='string'&&

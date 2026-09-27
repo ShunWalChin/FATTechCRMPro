@@ -531,9 +531,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   /* ══════════════════════════════════════════════
-     6. FORMULÁRIO → WHATSAPP
-     Coleta os dados do formulário e abre o WhatsApp
-     com uma mensagem pré-formatada.
+     6. FORMULÁRIO → CRM + WHATSAPP
+     Registra o lead no CRM antes de abrir o WhatsApp com
+     uma mensagem pré-formatada. A falha do CRM nunca impede
+     o contato manual, mas não é escondida do console.
   ══════════════════════════════════════════════ */
   var contactForm = document.getElementById('contactForm');
 
@@ -566,6 +567,30 @@ document.addEventListener('DOMContentLoaded', function () {
       };
 
       var interesseTexto = interesseMap[interesse] || interesse;
+
+      // O endpoint público é o ponto de entrada do SYNAPSE. `keepalive` permite que a
+      // requisição termine mesmo quando o navegador abre a nova aba do WhatsApp.
+      // O formulário já exige nome, e-mail e interesse no site institucional; a página
+      // do CRM valida o mesmo contrato antes de chegar aqui.
+      fetch('/api/v1/public/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          name: nome,
+          email: email,
+          phone: whatsapp,
+          interest: interesseTexto,
+          message: mensagem,
+          consent: true,
+          utm_source: 'fattech-site',
+          utm_medium: 'contact-form'
+        })
+      }).then(function (response) {
+        if (!response.ok) console.warn('[FAT Tech] CRM recusou a captura:', response.status);
+      }).catch(function (error) {
+        console.warn('[FAT Tech] captura CRM indisponível; seguindo para WhatsApp:', error);
+      });
 
       // Monta uma mensagem mais humana, incluindo apenas o que o lead informou.
       var linhas = [];

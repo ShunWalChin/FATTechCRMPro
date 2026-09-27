@@ -40,7 +40,7 @@ from .services import (PRIVILEGED, RISK_ORDER, audit_event, build_notifications,
                        update_record)
 
 # One declaration; the health endpoint and the OpenAPI catalogue must never disagree.
-APP_VERSION = "0.5.1"
+APP_VERSION = "0.7.0"
 
 RESOURCE_NOUNS = {"contacts": ("contato", "o"), "companies": ("empresa", "a"), "pipelines": ("funil", "o"),
                   "deals": ("oportunidade", "a"), "tasks": ("tarefa", "a"), "conversations": ("conversa", "a"),
@@ -63,10 +63,13 @@ ACTION_LABELS = {
     "webhook.accepted": "Recebeu um evento externo", "event.retried": "Reprocessou um evento",
     "approval.decided": "Decidiu uma solicitação", "contacts.recaptured": "Recebeu um contato pelo site",
     "synapse.assisted": "Consultou a base de conhecimento do SYNAPSE",
+    "synapse.auto_assisted": "Preparou atendimento do SYNAPSE a partir de mensagem recebida",
+    "synapse.ai_generated": "Gerou rascunho de IA do SYNAPSE para revisão humana",
     "synapse.capture_pending": "Registrou captação aguardando configuração do SYNAPSE",
     "synapse.installed": "Preparou a operação comercial SYNAPSE",
     "synapse.configured": "Alterou a configuração do SYNAPSE",
     "synapse.enrolled": "Vinculou um lead à operação SYNAPSE",
+    "synapse.knowledge_bootstrapped": "Preparou a base inicial do SYNAPSE",
     "core.delivery.retried": "Recolocou uma entrega interna na fila de processamento",
     "messages.received": "Registrou uma mensagem recebida",
     "contacts.opted_out": "Registrou pedido de interrupção de mensagens",

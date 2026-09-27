@@ -92,12 +92,15 @@ def release_nodes() -> tuple[list[dict], list[dict]]:
     for path in sorted((ROOT / "docs/releases").glob("*.md")):
         texto = path.read_text(encoding="utf-8")
         titulo = texto.splitlines()[0].lstrip("# ").strip()
+        estado = next((linha.split(":", 1)[1].strip() for linha in texto.splitlines()
+                       if linha.lower().startswith("estado:") or linha.lower().startswith("status:")),
+                      "publicado")
         primeiro = next((linha.strip() for linha in texto.splitlines()[1:]
                          if linha.strip() and not linha.startswith("#")), "")
         node_id = f"fattech:release:{path.stem}"
         nodes.append({
             "id": node_id, "label": titulo, "family": "release",
-            "summary": primeiro[:240], "why": "", "status": "publicado",
+            "summary": primeiro[:240], "why": "", "status": estado,
             "where": f"docs/releases/{path.name}", "source": "releases",
         })
         if anteriores:

@@ -1,0 +1,35 @@
+// =============================================================================
+// Tailnet do Palantyr v5 — política de acesso (colar em login.tailscale.com → Access controls)
+// Padrão NEGAR: só o que está listado conversa. Nenhum SSH pela tailnet.
+// =============================================================================
+{
+  "tagOwners": {
+    "tag:h1-nucleo":   ["autogroup:admin"], // 64.181.178.125 — CRM + OpenClaw
+    "tag:h2-borda":    ["autogroup:admin"], // 163.176.163.204 — n8n, Evolution, NPM
+    "tag:desktop-gpu": ["autogroup:admin"], // hoth-desktop-do-wal — Ollama/Nemotron Nano, Ruflo
+  },
+
+  "grants": [
+    // Wal (dispositivos pessoais) → painel do OpenClaw e n8n
+    { "src": ["autogroup:admin"], "dst": ["tag:h1-nucleo"], "ip": ["tcp:8443"] },
+    { "src": ["autogroup:admin"], "dst": ["tag:h2-borda"],  "ip": ["tcp:8443"] },
+
+    // Desktop GPU → gateway (node host WebSocket para node_inference)
+    { "src": ["tag:desktop-gpu"], "dst": ["tag:h1-nucleo"], "ip": ["tcp:8443"] },
+
+    // Borda → núcleo: n8n acorda agentes pelos webhooks /hooks/*
+    { "src": ["tag:h2-borda"], "dst": ["tag:h1-nucleo"], "ip": ["tcp:8443"] },
+
+    // Núcleo → borda: OpenClaw chama o MCP Server Trigger do n8n
+    { "src": ["tag:h1-nucleo"], "dst": ["tag:h2-borda"], "ip": ["tcp:8443"] },
+  ],
+
+  // SSH pela tailnet desligado de propósito: acesso administrativo segue pela chave Oracle.
+  "ssh": [],
+
+  "tests": [
+    { "src": "tag:desktop-gpu", "accept": ["tag:h1-nucleo:8443"], "deny": ["tag:h2-borda:8443", "tag:h1-nucleo:22"] },
+    { "src": "tag:h2-borda",    "accept": ["tag:h1-nucleo:8443"], "deny": ["tag:h1-nucleo:5432", "tag:desktop-gpu:11434"] },
+    { "src": "tag:h1-nucleo",   "accept": ["tag:h2-borda:8443"],  "deny": ["tag:desktop-gpu:11434"] },
+  ],
+}

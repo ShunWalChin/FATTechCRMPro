@@ -1,0 +1,89 @@
+# =============================================================================
+# PALANTYR v5 — OpenClaw no host H1 (núcleo, 64.181.178.125, Oracle A1 ARM64)
+# -----------------------------------------------------------------------------
+# Projeto Compose PRÓPRIO. Nunca editar /opt/fattechcrmpro/infra/compose.yml.
+# Anexa-se à rede do CRM como EXTERNA (o compose do CRM continua dono dela).
+#
+# Diferença decisiva em relação ao OPENCLAW_BLUEPRINT.md §6 do CRM:
+#   SEM /var/run/docker.sock. Nenhum agente tem exec/process (ver openclaw.json5),
+#   então o sandbox Docker não é necessário — e o socket (= root no host) some.
+#
+# Subir:   docker compose --env-file /etc/palantyr/openclaw.env up -d
+# Validar: docker compose exec openclaw-gateway node dist/index.js config validate
+# =============================================================================
+name: palantyr-openclaw
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "5" }
+
+services:
+  openclaw-gateway:
+    # Imagem oficial, tag FIXA (reprodutível). Conferir arm64 antes do deploy:
+    #   docker manifest inspect ghcr.io/openclaw/openclaw:2026.9.6 | grep arm64
+    image: ghcr.io/openclaw/openclaw:2026.9.6
+    container_name: palantyr-openclaw
+    restart: unless-stopped
+    init: true
+    env_file:
+      - path: /etc/palantyr/openclaw.env
+        required: true
+    environment:
+      HOME: /home/node
+      OPENCLAW_HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json5
+      OPENCLAW_CONFIG_DIR: /home/node/.openclaw
+      OPENCLAW_GATEWAY_PORT: "18789"
+      OPENCLAW_DISABLE_BONJOUR: "1"
+      TZ: America/Sao_Paulo
+    volumes:
+      # Estado (sessões SQLite, cron, credenciais do canal WhatsApp) — volume nomeado.
+      - openclaw-state:/home/node/.openclaw
+      # Configuração versionada no Git, só leitura.
+      - /opt/palantyr/infra/h1-nucleo/openclaw/openclaw.json5:/home/node/.openclaw/openclaw.json5:ro
+      # Workspaces dos agentes (AGENTS.md, SOUL.md, memória) — gravável: o agente escreve memória.
+      - /opt/palantyr/runtime/workspaces:/home/node/.openclaw/workspaces
+      # Ponte MCP compilada (dist + node_modules), só leitura.
+      - /opt/palantyr/mcp:/opt/palantyr/mcp:ro
+      # Cérebro canônico (PALANTYR_BRAIN / CÓRTEX) sincronizado do Git, só leitura.
+      - /opt/palantyr/brain:/opt/palantyr/brain:ro
+    ports:
+      # Só loopback. Acesso remoto = `tailscale serve --https=8443` no host.
+      - "127.0.0.1:18789:18789"
+    networks:
+      - fattech          # fala com http://api:8000 do CRM pela rede interna
+      - palantyr         # rede própria
+    # Raiz só leitura. Se o primeiro boot falhar por escrita fora destes caminhos,
+    # registrar em docs/06-divida-tecnica.md (DT-07) antes de afrouxar.
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+      - /home/node/.cache:size=256m,mode=0700,uid=1000,gid=1000
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # gateway + 8 processos MCP stdio (~50 MB cada)
+    mem_limit: 2048m
+    memswap_limit: 2048m
+    cpus: 1.5
+    pids_limit: 512
+    logging: *logging
+    command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
+    healthcheck:
+      test: ["CMD", "node", "dist/docker-healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+networks:
+  fattech:
+    name: fattechcrmpro-network
+    external: true
+  palantyr:
+    name: palantyr-network
+
+volumes:
+  openclaw-state:
+    name: palantyr-openclaw-state

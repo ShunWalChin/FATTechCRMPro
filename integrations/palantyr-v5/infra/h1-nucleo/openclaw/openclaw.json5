@@ -1,0 +1,377 @@
+// =============================================================================
+// PALANTYR v5 — OpenClaw Gateway (host H1 · núcleo · 64.181.178.125)
+// -----------------------------------------------------------------------------
+// Validado contra openclaw@2026.9.6 com `openclaw config validate`.
+// Segredos NUNCA ficam aqui: toda referência ${VAR} vem do .env injetado pelo
+// Doppler (ver infra/h1-nucleo/openclaw/.env.example).
+//
+// Princípio que organiza o arquivo (herdado de docs/OPENCLAW_BLUEPRINT.md do CRM):
+//   O CRM é a camada de restrição. O OpenClaw é a camada de intenção.
+//   O agente propõe; o CRM decide e recusa com motivo.
+// =============================================================================
+{
+  // ---------------------------------------------------------------------------
+  // Gateway: loopback dentro do contêiner, publicado só em 127.0.0.1 do host.
+  // O acesso remoto (Wal, desktop-node, n8n da borda) entra pela tailnet via
+  // `tailscale serve --https=8443` NO HOST (ver scripts/bootstrap-h1.sh).
+  // O nginx de sistema do CRM continua dono de 80/443. Nada novo na internet.
+  // ---------------------------------------------------------------------------
+  gateway: {
+    mode: "local",
+    port: 18789,
+    bind: "lan", // dentro do contêiner; o host publica só em 127.0.0.1
+    auth: {
+      mode: "token",
+      token: { source: "env", provider: "default", id: "OPENCLAW_GATEWAY_TOKEN" },
+      allowTailscale: false,
+    },
+    tailscale: { mode: "off" },
+    controlUi: { enabled: true },
+    reload: { mode: "hybrid" },
+  },
+
+  // Só o Wal comanda automações e recebe heartbeat de dono.
+  commands: {
+    ownerAllowFrom: ["whatsapp:${WAL_WHATSAPP_E164}"],
+  },
+
+  logging: {
+    level: "info",
+    consoleLevel: "info",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Modelos — roteamento Nemotron-first por nível de privacidade (ADR-004)
+  //   T1  local/privado  : Nemotron 3 Nano 4B no desktop (node_inference)
+  //   T2  nuvem ZDR      : Nemotron 3 Super (Marvin) / 3.5 Lightning (Squad)
+  //   T3  fronteira      : Claude Sonnet — fallback e tarefas críticas PT-BR
+  //   API grátis NVIDIA (build.nvidia.com): SÓ dev/eval. Os termos proíbem
+  //   produção e dado pessoal, e a NVIDIA usa o conteúdo para treino.
+  // ---------------------------------------------------------------------------
+  models: {
+    mode: "merge",
+    providers: {
+      openrouter: {
+        // Política padrão para TODO request via OpenRouter: provedor que não
+        // coleta dado e com retenção zero. Lead e cliente são dado pessoal (LGPD).
+        params: {
+          provider: {
+            data_collection: "deny",
+            zdr: true,
+            require_parameters: true,
+            sort: "price",
+          },
+        },
+      },
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Agentes
+  // ---------------------------------------------------------------------------
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      workspace: "~/.openclaw/workspaces/_default",
+      userTimezone: "America/Sao_Paulo",
+      model: {
+        primary: "openrouter/nvidia/nemotron-3.5-lightning",
+        fallbacks: ["openrouter/anthropic/claude-sonnet-4.6"],
+      },
+      models: {
+        "openrouter/nvidia/nemotron-3-super-120b-a12b": { alias: "super" },
+        "openrouter/nvidia/nemotron-3.5-lightning": { alias: "lightning" },
+        "openrouter/anthropic/claude-sonnet-4.6": { alias: "sonnet" },
+      },
+      thinkingDefault: "low",
+      timeoutSeconds: 600,
+      maxConcurrent: 3,
+      elevatedDefault: "off",
+      // Heartbeat pertence ao Marvin; cadência e horário em entries.marvin.
+      heartbeat: { agentId: "marvin" },
+      systemAgent: { agentId: "marvin" },
+      subagents: {
+        maxSpawnDepth: 2,
+        maxConcurrent: 4,
+        maxChildrenPerAgent: 5,
+        archiveAfterMinutes: 120,
+      },
+    },
+
+    entries: {
+      // ------------------------------------------------------------------
+      // MARVIN — COO digital. Único agente que fala com o Wal.
+      // ------------------------------------------------------------------
+      marvin: {
+        name: "Marvin",
+        workspace: "~/.openclaw/workspaces/marvin",
+        model: {
+          primary: "openrouter/nvidia/nemotron-3-super-120b-a12b",
+          fallbacks: ["openrouter/anthropic/claude-sonnet-4.6"],
+        },
+        thinkingDefault: "medium",
+        identity: { name: "Marvin", theme: "COO digital da FAT Tech", emoji: "🛰️" },
+        heartbeat: {
+          every: "60m",
+          target: "owner",
+          directPolicy: "allow",
+          activeHours: { start: "07:30", end: "21:00" },
+        },
+        subagents: {
+          allowAgents: ["trafego", "sdr", "conteudo", "cobranca", "sentinela"],
+          delegationMode: "prefer",
+          requireAgentId: true,
+        },
+        tools: {
+          deny: [
+            "crm-trafego__*", "crm-sdr__*", "crm-conteudo__*",
+            "crm-cobranca__*", "crm-sentinela__*",
+            "exec", "process", "apply_patch", "browser",
+          ],
+        },
+      },
+
+      // ------------------------------------------------------------------
+      // TRÁFEGO — Meta/Google Ads. Só recomenda; nunca muda budget.
+      // ------------------------------------------------------------------
+      trafego: {
+        name: "Tráfego Pago",
+        workspace: "~/.openclaw/workspaces/trafego",
+        identity: { name: "Tráfego", emoji: "📈" },
+        subagents: { allowAgents: [] },
+        tools: {
+          deny: [
+            "crm-marvin__*", "crm-sdr__*", "crm-conteudo__*",
+            "crm-cobranca__*", "crm-sentinela__*",
+            "exec", "process", "write", "edit", "apply_patch", "browser", "message",
+          ],
+        },
+      },
+
+      // ------------------------------------------------------------------
+      // SDR — qualifica e rascunha resposta. Não envia (E5 fechado).
+      // ------------------------------------------------------------------
+      sdr: {
+        name: "SDR",
+        workspace: "~/.openclaw/workspaces/sdr",
+        identity: { name: "SDR", emoji: "🎯" },
+        subagents: { allowAgents: [] },
+        tools: {
+          deny: [
+            "crm-marvin__*", "crm-trafego__*", "crm-conteudo__*",
+            "crm-cobranca__*", "crm-sentinela__*",
+            "n8n-borda__ads_*",
+            "exec", "process", "write", "edit", "apply_patch", "browser", "message",
+          ],
+        },
+      },
+
+      // ------------------------------------------------------------------
+      // CONTEÚDO — pautas, roteiros, copy. Publicação passa por pessoa.
+      // ------------------------------------------------------------------
+      conteudo: {
+        name: "Conteúdo",
+        workspace: "~/.openclaw/workspaces/conteudo",
+        identity: { name: "Conteúdo", emoji: "✍️" },
+        subagents: { allowAgents: [] },
+        tools: {
+          deny: [
+            "crm-marvin__*", "crm-trafego__*", "crm-sdr__*",
+            "crm-cobranca__*", "crm-sentinela__*",
+            "n8n-borda__ads_*",
+            "exec", "process", "apply_patch", "browser", "message",
+          ],
+        },
+      },
+
+      // ------------------------------------------------------------------
+      // COBRANÇA — higiene do CRM, follow-up, vencimentos, travas.
+      // ------------------------------------------------------------------
+      cobranca: {
+        name: "Cobrança & Higiene",
+        workspace: "~/.openclaw/workspaces/cobranca",
+        identity: { name: "Cobrança", emoji: "🧾" },
+        subagents: { allowAgents: [] },
+        tools: {
+          deny: [
+            "crm-marvin__*", "crm-trafego__*", "crm-sdr__*",
+            "crm-conteudo__*", "crm-sentinela__*",
+            "n8n-borda__ads_*",
+            "exec", "process", "write", "edit", "apply_patch", "browser", "message",
+          ],
+        },
+      },
+
+      // ------------------------------------------------------------------
+      // SENTINELA — observa a infraestrutura. Lê, mede, abre incidente.
+      // Sem shell: sonda só uma lista fechada de alvos pelo MCP palantyr-probe.
+      // Correção de código é do squad de engenharia Ruflo, não daqui.
+      // ------------------------------------------------------------------
+      sentinela: {
+        name: "Sentinela",
+        workspace: "~/.openclaw/workspaces/sentinela",
+        identity: { name: "Sentinela", emoji: "🛡️" },
+        subagents: { allowAgents: [] },
+        tools: {
+          deny: [
+            "crm-marvin__*", "crm-trafego__*", "crm-sdr__*",
+            "crm-conteudo__*", "crm-cobranca__*",
+            "n8n-borda__ads_*",
+            "exec", "process", "write", "edit", "apply_patch", "browser", "message",
+          ],
+        },
+      },
+    },
+  },
+
+  // Só o WhatsApp dedicado do Marvin entra, e só o Wal fala com ele.
+  bindings: [
+    { agentId: "marvin", match: { channel: "whatsapp", accountId: "*" } },
+  ],
+
+  channels: {
+    whatsapp: {
+      dmPolicy: "allowlist",
+      allowFrom: ["${WAL_WHATSAPP_E164}"],
+      groupPolicy: "allowlist",
+      groupAllowFrom: [],
+    },
+  },
+
+  session: {
+    dmScope: "per-channel-peer",
+    reset: { mode: "daily", atHour: 4, idleMinutes: 240 },
+    maintenance: { mode: "enforce", pruneAfter: "30d", maxEntries: 2000 },
+  },
+
+  messages: {
+    visibleReplies: "automatic",
+    queue: { mode: "followup", cap: 20, drop: "summarize" },
+  },
+
+  // Delegação entre agentes: só o Marvin conversa com o Squad.
+  tools: {
+    agentToAgent: { allow: ["marvin", "trafego", "sdr", "conteudo", "cobranca", "sentinela"] },
+    sessions: { visibility: "tree" },
+    exec: { backgroundMs: 10000, timeoutSeconds: 300 },
+  },
+
+  // ---------------------------------------------------------------------------
+  // MCP — cada agente tem SUA ponte com o CRM e SUA chave (identidade própria
+  // no CRM, com escopos declarados). O n8n da borda expõe as ações externas.
+  // ---------------------------------------------------------------------------
+  mcp: {
+    servers: {
+      "crm-marvin": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_MARVIN}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_MARVIN}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      "crm-trafego": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_TRAFEGO}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_TRAFEGO}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      "crm-sdr": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_SDR}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_SDR}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      "crm-conteudo": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_CONTEUDO}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_CONTEUDO}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      "crm-cobranca": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_COBRANCA}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_COBRANCA}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      "crm-sentinela": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/index.js"],
+        transport: "stdio",
+        env: {
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+          FATTECH_CRM_API_KEY: "${CRM_KEY_SENTINELA}",
+          FATTECH_CRM_AGENT_ID: "${CRM_AGENT_ID_SENTINELA}",
+        },
+        requestTimeoutMs: 30000,
+      },
+      // Sonda de saúde sem shell: alvos fixos em PROBE_TARGETS, só GET, só leitura.
+      "palantyr-probe": {
+        command: "node",
+        args: ["/opt/palantyr/mcp/fattech-crm-mcp/dist/probe.js"],
+        transport: "stdio",
+        env: {
+          PROBE_TARGETS: "${PROBE_TARGETS}",
+          FATTECH_CRM_BASE_URL: "http://api:8000",
+        },
+        requestTimeoutMs: 30000,
+      },
+      // n8n na borda (H2) exposto como servidor MCP via Tailscale.
+      // Cada workflow publicado no "MCP Server Trigger" vira uma ferramenta.
+      // Credenciais de Meta/Google/Evolution ficam no n8n, nunca aqui.
+      "n8n-borda": {
+        url: "${N8N_MCP_URL}",
+        transport: "streamable-http",
+        headers: { Authorization: "Bearer ${N8N_MCP_TOKEN}" },
+        connectionTimeoutMs: 5000,
+        requestTimeoutMs: 45000,
+      },
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Webhooks de entrada: SÓ o n8n da borda acorda agentes, pela tailnet.
+  // O payload é dado, nunca instrução (ver AGENTS.md de cada agente).
+  // ---------------------------------------------------------------------------
+  hooks: {
+    enabled: true,
+    path: "/hooks",
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    allowedAgentIds: ["sdr", "trafego", "cobranca", "sentinela", "marvin"],
+    allowRequestSessionKey: false,
+  },
+
+  cron: {
+    enabled: true,
+    sessionRetention: "24h",
+  },
+
+  // Cadeia de suprimentos: nenhuma skill entra por upload ou instalação em runtime.
+  // Skill nova = PR no repositório palantyr-v5, revisado pelo gate do Ruflo.
+  skills: {
+    install: { allowUploadedArchives: false },
+  },
+}

@@ -1,0 +1,114 @@
+flowchart LR
+  wal["Wal · CEO"]
+  iasmim["Iasmim · sócia"]
+  deivisson["Deivisson"]
+  time["Time humano"]
+  h1["H1 · núcleo"]
+  h2["H2 · borda"]
+  desk["Desktop RTX 4060"]
+  crm_api["CRM · API FastAPI"]
+  crm_web["CRM · Web Next.js"]
+  pg["Postgres 17 (RLS)"]
+  outbox["Outbox + Core-Engine"]
+  portao["Portão de agente"]
+  gw["OpenClaw gateway"]
+  mcp_crm["fattech-crm-mcp ×6"]
+  probe["palantyr-probe"]
+  n8n["n8n"]
+  evo["Evolution API"]
+  npm["Nginx Proxy Manager"]
+  nginx["nginx de sistema"]
+  tailnet["Tailscale"]
+  doppler["Doppler"]
+  ollama["Ollama"]
+  brain["CÓRTEX / BRAIN"]
+  ruflo["Ruflo 3.46"]
+  github["GitHub"]
+  wa_marvin["WhatsApp do Marvin"]
+  openrouter["OpenRouter (ZDR)"]
+  marvin["🛰️ Marvin"]
+  sdr["🎯 SDR"]
+  trafego["📈 Tráfego"]
+  conteudo["✍️ Conteúdo"]
+  cobranca["🧾 Cobrança"]
+  sentinela["🛡️ Sentinela"]
+  nemo_super["Nemotron 3 Super 120B-A12B"]
+  nemo_light["Nemotron 3.5 Lightning 30B-A3B"]
+  nemo_nano["Nemotron 3 Nano 4B"]
+  sonnet["Claude Sonnet"]
+  nvidia_trial["API trial NVIDIA"]
+  evals["evals/ptbr"]
+  meta["Meta Ads"]
+  google["Google Ads"]
+  h1 -- hospeda --> crm_api
+  h1 -- hospeda --> crm_web
+  h1 -- hospeda --> pg
+  h1 -- hospeda --> outbox
+  h1 -- hospeda --> gw
+  h1 -- hospeda --> nginx
+  h2 -- hospeda --> n8n
+  h2 -- hospeda --> evo
+  h2 -- hospeda --> npm
+  desk -- hospeda --> ollama
+  desk -- hospeda --> ruflo
+  crm_api -- depende --> pg
+  portao -- depende --> crm_api
+  outbox -- depende --> pg
+  crm_web -- depende --> crm_api
+  gw -- depende --> mcp_crm
+  gw -- depende --> probe
+  mcp_crm -- depende --> portao
+  gw -- depende --> openrouter
+  openrouter -- depende --> nemo_super
+  openrouter -- depende --> nemo_light
+  openrouter -- depende --> sonnet
+  gw -- depende --> doppler
+  n8n -- depende --> crm_api
+  evo -- depende --> n8n
+  n8n -- depende --> meta
+  n8n -- depende --> google
+  gw -- depende --> brain
+  probe -- depende --> crm_api
+  desk -- rede --> tailnet
+  h1 -- rede --> tailnet
+  h2 -- rede --> tailnet
+  n8n -- acorda (hook) --> gw
+  gw -- ferramentas MCP --> n8n
+  ollama -- node_inference --> gw
+  ollama -- roda --> nemo_nano
+  wal -- comanda --> wa_marvin
+  wa_marvin -- canal --> marvin
+  marvin -- briefing --> wal
+  marvin -- delega --> sdr
+  sdr -- opera via --> mcp_crm
+  sdr -- pensa com --> nemo_light
+  marvin -- delega --> trafego
+  trafego -- opera via --> mcp_crm
+  trafego -- pensa com --> nemo_light
+  marvin -- delega --> conteudo
+  conteudo -- opera via --> mcp_crm
+  conteudo -- pensa com --> nemo_light
+  marvin -- delega --> cobranca
+  cobranca -- opera via --> mcp_crm
+  cobranca -- pensa com --> nemo_light
+  marvin -- delega --> sentinela
+  sentinela -- opera via --> mcp_crm
+  sentinela -- pensa com --> nemo_light
+  marvin -- opera via --> mcp_crm
+  marvin -- pensa com --> nemo_super
+  sentinela -- sonda --> probe
+  trafego -- lê Ads --> n8n
+  sentinela -- abre eng:ruflo --> ruflo
+  time -- aplica rascunho --> crm_web
+  wal -- lidera --> time
+  wal -- sócios --> iasmim
+  conteudo -- apoia --> iasmim
+  conteudo -- pauta --> deivisson
+  ruflo -- PR --> github
+  github -- release --> crm_api
+  github -- release --> gw
+  ruflo -- roda --> evals
+  evals -- usa (sintético) --> nvidia_trial
+  evals -- avalia --> nemo_super
+  evals -- avalia --> nemo_light
+  evals -- avalia --> nemo_nano

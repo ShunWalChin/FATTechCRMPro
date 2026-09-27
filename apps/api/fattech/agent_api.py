@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 
 from . import agent_dispatch, agent_gate, agent_identity, agent_tools
 from .db import get_db
-from .models import AgentRun, AgentStep, ApiKey, Tenant, User, now
+from .models import AgentRun, AgentStep, ApiKey, Tenant, now
 from typing import Literal
 
 from .schemas import StrictModel
@@ -119,11 +119,23 @@ def configuracao_do_agente(db, principal, agent_id: str) -> dict:
     return get_record(db, principal.tenant_id, "agents", agent_id).data or {}
 
 
+def exigir_agente_da_chave(principal, agent_id: str) -> None:
+    """Uma chave de agente só opera sua própria identidade dentro do portão.
+
+    Escopos descrevem ferramentas, mas não identificam qual agente pode usá-las. Sem esta
+    verificação, uma chave comprometida poderia reclamar ou encerrar corridas de outro agente
+    da mesma organização, mesmo sem acesso às rotas comuns do CRM.
+    """
+    if principal.user.is_agent and principal.user.name != f"agente:{agent_id}":
+        raise HTTPException(403, "Esta chave só pode operar o próprio agente")
+
+
 def corrida_ou_404(db, principal, run_id: str) -> AgentRun:
     corrida = db.scalar(select(AgentRun).where(AgentRun.id == run_id,
                                                AgentRun.tenant_id == principal.tenant_id))
     if corrida is None:
         raise HTTPException(404, "Corrida não encontrada")
+    exigir_agente_da_chave(principal, corrida.agent_id)
     return corrida
 
 
@@ -136,6 +148,7 @@ def open_run(payload: AberturaDeCorrida, principal=Depends(require_auth), db=Dep
     isso em vez de falhar, e nenhum efeito acontece duas vezes.
     """
     principal.require("agent:operate")
+    exigir_agente_da_chave(principal, payload.agent_id)
     configuracao = configuracao_do_agente(db, principal, payload.agent_id)
     existente = db.scalar(select(AgentRun).where(
         AgentRun.tenant_id == principal.tenant_id, AgentRun.agent_id == payload.agent_id,
@@ -251,6 +264,7 @@ def claim_runs(payload: Reclamacao, principal=Depends(require_auth), db=Depends(
     atrás é um agente que morreu.
     """
     principal.require("agent:operate")
+    exigir_agente_da_chave(principal, payload.agent_id)
     configuracao = configuracao_do_agente(db, principal, payload.agent_id)
     if configuracao.get("status") != "active":
         # Recusa explícita em vez de lista vazia: "não há trabalho" e "você está pausado" são
@@ -272,6 +286,7 @@ def claim_runs(payload: Reclamacao, principal=Depends(require_auth), db=Depends(
 def queue(agent_id: str, principal=Depends(require_auth), db=Depends(get_db)):
     """A fila do agente, para a tela e para quem opera. Não reclama nada; só mede."""
     principal.require("agents:read")
+    exigir_agente_da_chave(principal, agent_id)
     configuracao = configuracao_do_agente(db, principal, agent_id)
     fila = agent_dispatch.fila_do_agente(db, principal.tenant_id, agent_id)
     presas = list(db.scalars(select(AgentRun).where(
@@ -298,6 +313,8 @@ def suggestions(principal=Depends(require_auth), db=Depends(get_db),
     sob controle, e um total que é o tamanho da página mente sobre isso.
     """
     principal.require("agents:read")
+    if principal.user.is_agent:
+        raise HTTPException(403, "Rascunhos de todos os agentes são visíveis apenas para a equipe")
     condicoes = (AgentStep.tenant_id == principal.tenant_id,
                  AgentStep.decision == "suggested", AgentStep.result_ref == "")
     total = db.scalar(select(func.count()).select_from(AgentStep).where(*condicoes)) or 0
@@ -335,6 +352,11 @@ def runs(principal=Depends(require_auth), db=Depends(get_db),
     resumo aqui é calculado sobre o filtro inteiro.
     """
     principal.require("agents:read")
+    if principal.user.is_agent:
+        own_id = principal.user.name.removeprefix("agente:")
+        if agent_id and agent_id != own_id:
+            raise HTTPException(403, "Esta chave só pode consultar as próprias corridas")
+        agent_id = own_id
     condicoes = [AgentRun.tenant_id == principal.tenant_id]
     if agent_id:
         condicoes.append(AgentRun.agent_id == agent_id)
@@ -381,10 +403,7 @@ def run(run_id: str, principal=Depends(require_auth), db=Depends(get_db)):
     atribuir intenção.
     """
     principal.require("agents:read")
-    corrida = db.scalar(select(AgentRun).where(AgentRun.id == run_id,
-                                               AgentRun.tenant_id == principal.tenant_id))
-    if corrida is None:
-        raise HTTPException(404, "Corrida não encontrada")
+    corrida = corrida_ou_404(db, principal, run_id)
     passos = list(db.scalars(select(AgentStep).where(AgentStep.tenant_id == principal.tenant_id,
                                                     AgentStep.run_id == run_id)
                              .order_by(AgentStep.seq.asc())))
@@ -410,6 +429,7 @@ def budget(agent_id: str, principal=Depends(require_auth), db=Depends(get_db),
     tratá-lo como ilimitado.
     """
     principal.require("agents:read")
+    exigir_agente_da_chave(principal, agent_id)
     from datetime import datetime, timezone
     registro = next((r for r in db.scalars(scoped(principal.tenant_id, "agents")) if r.id == agent_id), None)
     if registro is None:

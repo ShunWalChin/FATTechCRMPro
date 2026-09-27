@@ -148,6 +148,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:palantyr:portao",
+   "label": "Cada identidade de agente opera só as próprias corridas",
+   "family": "business_rule",
+   "summary": "O escopo autoriza a ferramenta; a identidade vinculada ao usuário-agente autoriza o agent_id e a corrida. Consultar, reclamar, agir e encerrar corridas de outro agente recebe 403.",
+   "why": "Escopos iguais entre agentes da mesma organização não podem virar permissão para assumir a fila ou a trilha do colega.",
+   "status": "implementado-local",
+   "where": "apps/api/fattech/agent_api.py; apps/api/tests/test_agent_identity.py",
+   "source": "palantyr-v5.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 2
+  },
+  {
    "id": "fattech:campos:redacao-no-servidor",
    "label": "Campo restrito nao sai da API, nao apenas da tela",
    "family": "business_rule",
@@ -195,6 +208,19 @@
    "status": "implemented",
    "where": "",
    "source": "business-rules-0.4.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
+  },
+  {
+   "id": "fattech:palantyr:modelo",
+   "label": "Copiloto IA requer provedor e opt-in por organização",
+   "family": "business_rule",
+   "summary": "O SYNAPSE só gera rascunho humano a partir de fontes atuais citadas. Provedor remoto exige flag do operador além do opt-in do tenant; geração não envia mensagem.",
+   "why": "A escolha do modelo não deve liberar transmissão de dados nem automação externa por acidente.",
+   "status": "implementado-local",
+   "where": "apps/api/fattech/config.py; apps/api/fattech/synapse_assistant.py; apps/api/fattech/ai_provider.py",
+   "source": "palantyr-v5.json",
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 1
@@ -315,6 +341,19 @@
    "familyLabel": "Regra de negócio",
    "tone": "#00b8cc",
    "degree": 4
+  },
+  {
+   "id": "fattech:palantyr:squad",
+   "label": "Marvin e cinco especialistas nascem pausados",
+   "family": "business_rule",
+   "summary": "O elenco declara Marvin, SDR, Tráfego, Conteúdo, Cobrança e Sentinela. A criação de registros e chaves no CRM é etapa operacional separada; importar o pacote não ativa agentes.",
+   "why": "Um contrato de agente versionado não equivale a uma capacidade disponível em produção.",
+   "status": "contrato-importado-nao-provisionado",
+   "where": "integrations/palantyr-v5/agents/roster.json",
+   "source": "palantyr-v5.json",
+   "familyLabel": "Regra de negócio",
+   "tone": "#00b8cc",
+   "degree": 1
   },
   {
    "id": "fattech:core:message-batches",
@@ -756,7 +795,7 @@
    "source": "schema",
    "familyLabel": "Domínio do CRM",
    "tone": "#00ff88",
-   "degree": 0
+   "degree": 1
   },
   {
    "id": "fattech:domain:approvals",
@@ -938,7 +977,7 @@
    "source": "schema",
    "familyLabel": "Domínio do CRM",
    "tone": "#00ff88",
-   "degree": 0
+   "degree": 1
   },
   {
    "id": "fattech:domain:lead_rules",
@@ -1188,6 +1227,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:palantyr:host",
+   "label": "Gateway Oracle depende de auditoria e acesso ao H1",
+   "family": "engineering_pattern",
+   "summary": "O compose do OpenClaw é separado do CRM, publica somente loopback e requer rede externa, segredos, ACL e capacidade verificadas no host antes de ativar.",
+   "why": "Importar uma configuração não prova que o gateway subiu ou que o modelo e os canais estão disponíveis.",
+   "status": "pendente-producao",
+   "where": "integrations/palantyr-v5/infra/h1-nucleo/openclaw; integrations/palantyr-v5/docs/08-roadmap.md",
+   "source": "palantyr-v5.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:walchat:security-invoker-views",
    "label": "Leitura agregada como view que preserva o RLS do chamador",
    "family": "engineering_pattern",
@@ -1303,6 +1355,19 @@
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
    "degree": 1
+  },
+  {
+   "id": "fattech:palantyr:mcp",
+   "label": "Ponte MCP para o portão auditável do CRM",
+   "family": "engineering_pattern",
+   "summary": "Uma instância da ponte por agente usa sua própria chave e agent_id fixo no ambiente. O cliente HTTP não repete POST automaticamente e crm_fila não aceita selecionar outra identidade.",
+   "why": "O runtime propõe ações, mas só o CRM decide efeitos, tetos, aprovação e auditoria.",
+   "status": "implementado-local",
+   "where": "integrations/palantyr-v5/services/fattech-crm-mcp",
+   "source": "palantyr-v5.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 2
   },
   {
    "id": "fattech:lead:explicado-vs-zero",
@@ -1630,6 +1695,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:site:dominio-nao-aponta-para-o-deploy",
+   "label": "fattech.com.br não é servido pelo host onde o deploy acontece",
+   "family": "licao",
+   "summary": "Medido em 2026-09-25. fattechcrmpro.64.181.178.125.nip.io (Oracle, nginx) serve o site byte a byte idêntico ao repositório: 22 links wa.me/5535998491017 e nenhum número fictício. fattech.com.br (Cloudflare) serve uma versão anterior, com wa.me/15559098369 e \"telephone\": \"+1-555-909-8369\" nos dados estruturados, e URLs limpas (/crm, /blog/) que são da transcrição React já substituída. /posiciona.html responde 200 no Oracle e 301 no domínio.",
+   "why": "Explica por que os links de WhatsApp corrigidos no repositório nunca chegaram ao ar: o domínio comercial não aponta para o servidor onde o deploy acontece. Não é defeito de código nem de release — é origem. E 555-909-8369 é prefixo reservado para ficção nos EUA, então todo CTA do site no ar aponta para um número que não existe. O relatório de deploy registrou \"Site: HTTP 200\", o que é verdade e insuficiente: 200 mede disponibilidade, não identidade.",
+   "status": "medido",
+   "where": "docs/releases/2026-09-24-core-engine.md, scripts/audit-site.py",
+   "source": "server-inventory.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
+  },
+  {
    "id": "fattech:openclaw:contencao-nao-depende-de-patente",
    "label": "Contenção de automatismo não pode depender de superar a patente do automatismo",
    "family": "licao_de_debito",
@@ -1728,6 +1806,19 @@
    "why": "",
    "status": "publicado",
    "where": "docs/releases/2026-09-12-compliance-e-radar.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-24-core-engine",
+   "label": "Deploy Oracle — 24/09/2026 UTC",
+   "family": "release",
+   "summary": "- Commit: `6e8484a0cadd87fd59279b7236086d80af7e6f6b`.",
+   "why": "",
+   "status": "publicado",
+   "where": "docs/releases/2026-09-24-core-engine.md",
    "source": "releases",
    "familyLabel": "Publicação",
    "tone": "#ff2d78",
@@ -1861,6 +1952,32 @@
    "source": "releases",
    "familyLabel": "Publicação",
    "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-26-versao-0.6.0",
+   "label": "Versão 0.6.0 — cinco áreas de trabalho",
+   "family": "release",
+   "summary": "Estado: código local compilado, ainda não publicado. Este documento não afirma implantação em produção.",
+   "why": "",
+   "status": "código local compilado, ainda não publicado. Este documento não afirma implantação em produção.",
+   "where": "docs/releases/2026-09-26-versao-0.6.0.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
+   "degree": 2
+  },
+  {
+   "id": "fattech:release:2026-09-27-versao-0.7.0",
+   "label": "Versão 0.7.0 — copiloto SYNAPSE e portão Palantyr",
+   "family": "release",
+   "summary": "Estado: código local validado; ainda não publicado. A produção Oracle respondia `0.5.1` em 27/09/2026 antes desta entrega.",
+   "why": "",
+   "status": "código local validado; ainda não publicado. A produção Oracle respondia `0.5.1` em 27/09/2026 antes desta entrega.",
+   "where": "docs/releases/2026-09-27-versao-0.7.0.md",
+   "source": "releases",
+   "familyLabel": "Publicação",
+   "tone": "#ff2d78",
    "degree": 1
   },
   {
@@ -1913,7 +2030,7 @@
    "source": "server-inventory",
    "familyLabel": "Serviço no servidor",
    "tone": "#7c8f9c",
-   "degree": 10
+   "degree": 11
   },
   {
    "id": "fattech:infra:medify",
@@ -2387,6 +2504,36 @@
    "note": "O catalogo congela o preco na proposta, e a proposta leva o valor ao contrato."
   },
   {
+   "source": "fattech:palantyr:portao",
+   "target": "fattech:domain:agents",
+   "relation": "restringe",
+   "note": ""
+  },
+  {
+   "source": "fattech:palantyr:mcp",
+   "target": "fattech:palantyr:portao",
+   "relation": "usa",
+   "note": ""
+  },
+  {
+   "source": "fattech:palantyr:squad",
+   "target": "fattech:palantyr:mcp",
+   "relation": "depende",
+   "note": ""
+  },
+  {
+   "source": "fattech:palantyr:modelo",
+   "target": "fattech:domain:knowledge",
+   "relation": "consulta",
+   "note": ""
+  },
+  {
+   "source": "fattech:palantyr:host",
+   "target": "fattech:infra:host",
+   "relation": "implantado-em",
+   "note": ""
+  },
+  {
    "source": "fattech:posiciona:vertente",
    "target": "fattech:posiciona:seis-pilares",
    "relation": "organiza",
@@ -2609,6 +2756,24 @@
    "note": "publicação seguinte"
   },
   {
+   "source": "fattech:release:2026-09-16-versao-0.5.1",
+   "target": "fattech:release:2026-09-24-core-engine",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-24-core-engine",
+   "target": "fattech:release:2026-09-26-versao-0.6.0",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
+   "source": "fattech:release:2026-09-26-versao-0.6.0",
+   "target": "fattech:release:2026-09-27-versao-0.7.0",
+   "relation": "precede",
+   "note": "publicação seguinte"
+  },
+  {
    "source": "fattech:infra:host",
    "target": "fattech:infra:fattechcrmpro",
    "relation": "hospeda",
@@ -2670,15 +2835,15 @@
   }
  ],
  "counts": {
-  "nodes": 151,
-  "edges": 110,
+  "nodes": 160,
+  "edges": 118,
   "por_familia": {
-   "business_rule": 54,
-   "engineering_pattern": 33,
-   "licao": 14,
+   "business_rule": 57,
+   "engineering_pattern": 35,
+   "licao": 15,
    "licao_de_debito": 5,
    "domain": 21,
-   "release": 13,
+   "release": 16,
    "service": 11,
    "guarantee": 0
   }

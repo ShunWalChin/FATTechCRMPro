@@ -77,6 +77,21 @@ def test_installation_is_singleton_and_preserves_existing_catalog_and_default(sy
         assert len(list(db.scalars(select(Audit).where(Audit.action == "synapse.installed")))) == 1
 
 
+def test_installation_bootstraps_reviewed_knowledge_once(system):
+    client, _, factory, tenant_id, *_ = system
+    install(client)
+    documents = client.get("/api/v1/knowledge").json()["items"]
+    assert {item["title"] for item in documents} >= {
+        "SYNAPSE · proposta de valor", "SYNAPSE · limites de atendimento",
+        "SYNAPSE · qualificação comercial",
+    }
+    response = client.post("/api/v1/synapse/knowledge/bootstrap")
+    assert response.status_code == 200, response.text
+    assert response.json()["count"] == 0
+    with factory() as db:
+        assert len(list(db.scalars(scoped(tenant_id, "knowledge")))) >= 3
+
+
 def test_enrollment_is_durable_once_per_contact_and_uses_current_price_and_sla(system):
     client, _, factory, tenant_id, _, owner_id, _ = system
     config = install(client, sla_hours=6)
@@ -225,7 +240,7 @@ def test_readiness_does_not_claim_external_runtime_or_sends(system):
     states = {item["key"]: item["status"] for item in overview["readiness"]}
     assert states["commercial"] == "ready"
     assert states["whatsapp"] == states["autonomy"] == states["calendar"] == "pending"
-    assert states["knowledge"] == states["capture"] == "pending"
+    assert states["knowledge"] == "ready" and states["capture"] == "pending"
 
 
 def test_concurrent_setup_and_enrollment_create_one_receipt(system):

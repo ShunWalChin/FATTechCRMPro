@@ -1,4 +1,4 @@
-# FAT Tech API v1 · aplicação 0.5.1
+# FAT Tech API v1 · aplicação 0.7.0
 
 Base `/api/v1`, JSON UTF-8, dates ISO-8601 UTC, money integer BRL cents. Interactive typed documentation: `/api/docs`; machine contract: `/api/openapi.json`.
 
@@ -158,11 +158,12 @@ papel e atualização versionada do valor. O relatório conserva a base temporal
 ## SYNAPSE: operação comercial (implementação local)
 
 Rotas autenticadas em `/api/v1/synapse`: `GET /overview`, `POST /setup`, `POST /settings`,
-`POST /enroll`, `GET /runs` e `POST /assist`. Contratos detalhados, scopes, persistência,
+`POST /enroll`, `GET /runs`, `POST /assist` e `POST /assists/{id}/generate`. Contratos detalhados, scopes, persistência,
 idempotência e limitações em [SYNAPSE_IMPLEMENTATION.md](../../docs/SYNAPSE_IMPLEMENTATION.md).
 
 `setup` prepara catálogo/funil no tenant atual; não cria assinatura ou tenant de comprador.
-`assist` retorna trechos documentais com `provider=lexical` e `sent=false`; não executa LLM.
+`assist` retorna trechos documentais com `provider=lexical` e `sent=false`. O atendente pode gerar
+uma segunda versão com IA se o servidor e o tenant habilitarem a função; continua `sent=false`.
 Webhook Instagram materializa mensagens autenticadas em conversas e mantém opt-out/janela
 controlados pelo servidor. O envio externo permanece dependente de implementação do provedor.
 
@@ -263,7 +264,10 @@ rotas a proteger é uma lista a esquecer.
 O ciclo do agente exige o escopo **`agent:operate`**, deliberadamente distinto de `agents:write`:
 operar a si mesmo e reconfigurar a si mesmo são coisas diferentes, e um agente que pode ajustar o
 próprio teto não tem teto. A chave emitida recebe `agent:operate` e `agents:read` além dos escopos
-das ferramentas.
+das ferramentas. Na versão 0.7.0, a API também vincula a chave de um agente ao `agent_id` da sua
+própria identidade. Abrir, reclamar, consultar, agir e encerrar a corrida de outro agente da mesma
+organização recebe 403. `GET /runs` filtra implicitamente pela identidade; a supervisão de todas
+as filas é da sessão humana, não da chave MCP.
 
 `POST /api/v1/agent/runs` abre a corrida com `{agent_id, trigger_event_id, trigger_type, rationale}`.
 `rationale` é obrigatório. **O replay devolve a corrida existente**, não erro: a entrega do outbox é

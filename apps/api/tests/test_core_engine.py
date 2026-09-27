@@ -77,6 +77,89 @@ def test_consumers_run_without_n8n_and_message_batch_is_atomic(system, monkeypat
         assert db.get(MessageBuffer, (tenant_id, conversation.id)) is None
 
 
+def test_ready_inbound_batch_creates_one_grounded_synapse_draft(system):
+    client, app, factory, tenant_id, *_ = system
+    assert client.post("/api/v1/synapse/setup", json={}).status_code == 200
+    contact = client.post("/api/v1/contacts", json={"name": "Lead WhatsApp", "email": "lead-core@example.com"}).json()
+    conversation = client.post("/api/v1/conversations", json={
+        "title": "Dúvida SYNAPSE", "contact_id": contact["id"], "channel": "whatsapp"}).json()
+    with factory() as db:
+        message = Record(tenant_id=tenant_id, kind="messages", data={
+            "conversation_id": conversation["id"], "contact_id": contact["id"],
+            "direction": "inbound", "status": "received",
+            "body": "Quero entender a implantação do SYNAPSE", "channel": "whatsapp"})
+        db.add(message)
+        db.flush()
+        audit_event(db, tenant_id, None, "messages.received", message.id,
+                    {"conversation_id": conversation["id"], "contact_id": contact["id"]})
+        db.commit()
+
+    assert run_once(factory, app.state.settings) > 0
+    with factory() as db:
+        buffer = db.get(MessageBuffer, (tenant_id, conversation["id"]))
+        assert buffer is not None
+        buffer.due_at = now() - timedelta(seconds=1)
+        db.commit()
+        assert flush_buffers(db, tenant_id, app.state.settings) == 1
+    with factory() as db:
+        batch = db.scalar(select(MessageBatch).where(MessageBatch.tenant_id == tenant_id))
+        assists = list(db.scalars(select(Record).where(Record.tenant_id == tenant_id,
+                                                        Record.kind == "synapse_assists")))
+        assert batch and batch.status == "ready"
+        assert len(assists) == 1
+        assert assists[0].data["source_batch_id"] == batch.id
+        assert assists[0].data["status"] == "draft"
+        assert assists[0].data["sent"] is False
+        assert assists[0].data["citations"]
+        assert assists[0].data["requested_by"] == "core-engine"
+    activity = client.get("/api/v1/synapse/overview").json()["recent_runs"]
+    assert any(item["id"] == assists[0].id and item["status"] == "draft"
+               and item["conversation_id"] == conversation["id"] for item in activity)
+
+    # A replay or a second worker cycle cannot create another action for the same batch.
+    run_once(factory, app.state.settings)
+    with factory() as db:
+        assert len(list(db.scalars(select(Record).where(Record.tenant_id == tenant_id,
+                                                        Record.kind == "synapse_assists")))) == 1
+
+
+def test_inbound_batch_without_evidence_creates_one_handoff_task(system):
+    client, app, factory, tenant_id, *_ = system
+    assert client.post("/api/v1/synapse/setup", json={}).status_code == 200
+    contact = client.post("/api/v1/contacts", json={"name": "Lead sem evidência", "email": "lead-handoff@example.com"}).json()
+    conversation = client.post("/api/v1/conversations", json={
+        "title": "Pergunta fora da base", "contact_id": contact["id"], "channel": "whatsapp"}).json()
+    with factory() as db:
+        message = Record(tenant_id=tenant_id, kind="messages", data={
+            "conversation_id": conversation["id"], "contact_id": contact["id"],
+            "direction": "inbound", "status": "received",
+            "body": "Vocês integram helicópteros ao CRM?", "channel": "whatsapp"})
+        db.add(message)
+        db.flush()
+        audit_event(db, tenant_id, None, "messages.received", message.id,
+                    {"conversation_id": conversation["id"], "contact_id": contact["id"]})
+        db.commit()
+
+    assert run_once(factory, app.state.settings) > 0
+    with factory() as db:
+        buffer = db.get(MessageBuffer, (tenant_id, conversation["id"]))
+        assert buffer is not None
+        buffer.due_at = now() - timedelta(seconds=1)
+        db.commit()
+        assert flush_buffers(db, tenant_id, app.state.settings) == 1
+    with factory() as db:
+        assist = db.scalar(select(Record).where(Record.tenant_id == tenant_id,
+                                                 Record.kind == "synapse_assists"))
+        tasks = list(db.scalars(select(Record).where(Record.tenant_id == tenant_id,
+                                                      Record.kind == "tasks")))
+        assert assist and assist.data["status"] == "handoff" and assist.data["reason"] == "no_evidence"
+        assert assist.data["sent"] is False and assist.data["task_id"]
+        assert len(tasks) == 1
+        assert tasks[0].id == assist.data["task_id"]
+        assert tasks[0].data["synapse_conversation_id"] == conversation["id"]
+        assert db.get(Record, conversation["id"]).data["status"] == "pending"
+
+
 def test_invalid_envelope_is_dead_lettered_and_can_be_recovered_by_attempt_count(system):
     _client, app, factory, tenant_id, *_ = system
     with factory() as db:

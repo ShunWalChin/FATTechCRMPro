@@ -1,0 +1,57 @@
+{
+  "origem": "Integração do pacote Palantyr v5 em 2026-09-27; código local validado, implantação H1 pendente",
+  "nodes": [
+    {
+      "id": "fattech:palantyr:portao",
+      "label": "Cada identidade de agente opera só as próprias corridas",
+      "type": "business_rule",
+      "status": "implementado-local",
+      "rule": "O escopo autoriza a ferramenta; a identidade vinculada ao usuário-agente autoriza o agent_id e a corrida. Consultar, reclamar, agir e encerrar corridas de outro agente recebe 403.",
+      "por_que_importa": "Escopos iguais entre agentes da mesma organização não podem virar permissão para assumir a fila ou a trilha do colega.",
+      "onde_no_fattech": "apps/api/fattech/agent_api.py; apps/api/tests/test_agent_identity.py"
+    },
+    {
+      "id": "fattech:palantyr:mcp",
+      "label": "Ponte MCP para o portão auditável do CRM",
+      "type": "engineering_pattern",
+      "status": "implementado-local",
+      "rule": "Uma instância da ponte por agente usa sua própria chave e agent_id fixo no ambiente. O cliente HTTP não repete POST automaticamente e crm_fila não aceita selecionar outra identidade.",
+      "por_que_importa": "O runtime propõe ações, mas só o CRM decide efeitos, tetos, aprovação e auditoria.",
+      "onde_no_fattech": "integrations/palantyr-v5/services/fattech-crm-mcp"
+    },
+    {
+      "id": "fattech:palantyr:squad",
+      "label": "Marvin e cinco especialistas nascem pausados",
+      "type": "business_rule",
+      "status": "contrato-importado-nao-provisionado",
+      "rule": "O elenco declara Marvin, SDR, Tráfego, Conteúdo, Cobrança e Sentinela. A criação de registros e chaves no CRM é etapa operacional separada; importar o pacote não ativa agentes.",
+      "por_que_importa": "Um contrato de agente versionado não equivale a uma capacidade disponível em produção.",
+      "onde_no_fattech": "integrations/palantyr-v5/agents/roster.json"
+    },
+    {
+      "id": "fattech:palantyr:modelo",
+      "label": "Copiloto IA requer provedor e opt-in por organização",
+      "type": "business_rule",
+      "status": "implementado-local",
+      "rule": "O SYNAPSE só gera rascunho humano a partir de fontes atuais citadas. Provedor remoto exige flag do operador além do opt-in do tenant; geração não envia mensagem.",
+      "por_que_importa": "A escolha do modelo não deve liberar transmissão de dados nem automação externa por acidente.",
+      "onde_no_fattech": "apps/api/fattech/config.py; apps/api/fattech/synapse_assistant.py; apps/api/fattech/ai_provider.py"
+    },
+    {
+      "id": "fattech:palantyr:host",
+      "label": "Gateway Oracle depende de auditoria e acesso ao H1",
+      "type": "engineering_pattern",
+      "status": "pendente-producao",
+      "rule": "O compose do OpenClaw é separado do CRM, publica somente loopback e requer rede externa, segredos, ACL e capacidade verificadas no host antes de ativar.",
+      "por_que_importa": "Importar uma configuração não prova que o gateway subiu ou que o modelo e os canais estão disponíveis.",
+      "onde_no_fattech": "integrations/palantyr-v5/infra/h1-nucleo/openclaw; integrations/palantyr-v5/docs/08-roadmap.md"
+    }
+  ],
+  "edges": [
+    {"source": "fattech:palantyr:portao", "target": "fattech:domain:agents", "relation": "restringe"},
+    {"source": "fattech:palantyr:mcp", "target": "fattech:palantyr:portao", "relation": "usa"},
+    {"source": "fattech:palantyr:squad", "target": "fattech:palantyr:mcp", "relation": "depende"},
+    {"source": "fattech:palantyr:modelo", "target": "fattech:domain:knowledge", "relation": "consulta"},
+    {"source": "fattech:palantyr:host", "target": "fattech:infra:host", "relation": "implantado-em"}
+  ]
+}

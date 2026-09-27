@@ -1,0 +1,571 @@
+<title>Palantyr v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#06060E; --surface:#0C0E1A; --surface-2:#121628; --line:#1D2238; --line-2:#2A3150;
+  --text:#E6EAF5; --muted:#8C95B3; --faint:#5D6685;
+  --cyan:#00F0FF; --cyan-dim:#00B8C4; --magenta:#FF2D78; --magenta-dim:#C42060;
+  --ok:#3DDC97; --warn:#FFB547; --crit:#FF4D6D;
+  --t-host:#8C9BFF; --t-servico:#00D8E6; --t-agente:#FF4F8F; --t-modelo:#3DDC97; --t-cliente:#6F7896;
+  --t-risco:#FF6B5A; --t-divida:#FFB547; --t-demanda:#B592FF; --t-pessoa:#F1F3FA; --t-externo:#9AA3BF;
+  --display:"Orbitron","Rajdhani",system-ui,sans-serif;
+  --ui:"Rajdhani","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--text);font-family:var(--ui);font-size:16px;font-weight:500;line-height:1.5;padding-inline:clamp(16px,3vw,40px);padding-block:0 48px}
+a{color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto}
+
+/* ---------- header ---------- */
+header.top{display:grid;grid-template-columns:auto 1fr;gap:18px 28px;align-items:center;padding-block:28px 18px;border-bottom:1px solid var(--line)}
+.lens{width:74px;height:74px;border-radius:50%;background:
+  radial-gradient(circle at 38% 34%,rgba(0,240,255,.55),rgba(0,184,196,.12) 38%,rgba(196,32,96,.18) 62%,rgba(6,6,14,1) 72%);
+  box-shadow:0 0 0 1px var(--line-2),0 0 28px rgba(0,240,255,.18),inset 0 0 18px rgba(255,45,120,.25)}
+.brand h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,40px);letter-spacing:.08em;margin:0;line-height:1.05;text-wrap:balance}
+.brand h1 span{color:var(--cyan)}
+.brand p{margin:.35em 0 0;color:var(--muted);max-width:72ch;font-size:17px}
+.stats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.stats b{color:var(--text);font-weight:500}
+.stats .ok b{color:var(--ok)}
+
+/* ---------- tabs ---------- */
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:linear-gradient(var(--bg) 78%,rgba(6,6,14,0));display:flex;gap:4px;overflow-x:auto;padding-block:12px 14px;scrollbar-width:thin}
+nav.tabs button{font:600 15px var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:1px solid transparent;border-radius:6px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+nav.tabs button:hover{color:var(--text);border-color:var(--line-2)}
+nav.tabs button[aria-selected="true"]{color:var(--bg);background:var(--cyan);border-color:var(--cyan)}
+section.panel{padding-top:8px}
+h2{font-family:var(--ui);font-weight:700;font-size:26px;letter-spacing:.02em;margin:10px 0 6px;text-wrap:balance}
+h3{font-family:var(--ui);font-weight:700;font-size:19px;margin:22px 0 8px;color:var(--text)}
+.lede{color:var(--muted);max-width:75ch;margin:0 0 18px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan-dim)}
+
+/* ---------- map ---------- */
+.map{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}
+@media (max-width:900px){.map{grid-template-columns:1fr}}
+.stage{position:relative;background:radial-gradient(ellipse at 50% 45%,#0E1224 0%,#080914 62%,var(--bg) 100%);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-height:420px;height:min(72vh,720px)}
+.stage canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+.stage canvas.dragging{cursor:grabbing}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 8px;cursor:pointer}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip[aria-pressed="false"]{opacity:.42}
+.chip:hover{border-color:var(--line-2);color:var(--text)}
+input#busca{font:500 15px var(--ui);color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0;width:220px;max-width:100%}
+input#busca::placeholder{color:var(--faint)}
+.hint{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:11.5px;color:var(--faint);pointer-events:none}
+aside.detail{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 16px 18px;align-self:start;max-height:min(72vh,720px);overflow:auto}
+aside.detail .type{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+aside.detail h3{margin:4px 0 6px;font-size:22px}
+aside.detail p{margin:0 0 12px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-family:var(--mono);font-size:12.5px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--faint)} .kv dd{margin:0;color:var(--text)}
+.flag{display:inline-block;font:600 12px var(--ui);letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin-bottom:12px;color:var(--bg);background:var(--warn)}
+ul.links{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+ul.links li{display:flex;gap:8px;align-items:baseline;font-size:15px}
+ul.links li em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--faint);min-width:92px}
+ul.links button{font:600 15px var(--ui);color:var(--text);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+ul.links button:hover{color:var(--cyan)}
+.rank{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:700px){.rank{grid-template-columns:1fr}}
+.rank ol{margin:0;padding-left:22px;font-variant-numeric:tabular-nums}
+.rank li{margin:2px 0}
+.rank li span{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-left:6px}
+
+/* ---------- content blocks ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.box h3{margin-top:0}
+.box p{margin:.2em 0 .6em;color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 13px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+td code,p code,li code{font-family:var(--mono);font-size:.84em;color:var(--cyan);background:rgba(0,240,255,.07);padding:1px 5px;border-radius:4px}
+.pill{display:inline-block;font:700 12px var(--ui);letter-spacing:.07em;text-transform:uppercase;border-radius:4px;padding:2px 8px;white-space:nowrap}
+.p-ok{background:rgba(61,220,151,.14);color:var(--ok)} .p-warn{background:rgba(255,181,71,.15);color:var(--warn)} .p-crit{background:rgba(255,77,109,.16);color:var(--crit)} .p-info{background:rgba(0,240,255,.1);color:var(--cyan)}
+.sev{border-left:3px solid var(--line-2);padding-left:10px}
+.sev.s1{border-color:var(--crit)} .sev.s2{border-color:var(--warn)} .sev.s3{border-color:var(--line-2)}
+pre.mermaid{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;margin:0}
+pre.cmd{font-family:var(--mono);font-size:13px;line-height:1.55;background:#090B16;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0;color:#CFE9EE}
+pre.cmd .c{color:var(--faint)}
+.bars{display:grid;gap:8px;margin-top:6px}
+.bar{display:grid;grid-template-columns:170px 1fr 70px;gap:10px;align-items:center;font-size:14.5px}
+@media (max-width:520px){.bar{grid-template-columns:110px 1fr 60px}}
+.bar .track{height:12px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--cyan-dim)}
+.bar .fill.alt{background:var(--magenta-dim)}
+.bar .v{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:14.5px;color:var(--muted);border-left:2px solid var(--magenta);padding:4px 0 4px 12px;margin:14px 0;max-width:80ch}
+.steps{display:grid;gap:10px;counter-reset:onda}
+.step{display:grid;grid-template-columns:72px 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.step .n{font-family:var(--display);font-weight:800;font-size:22px;color:var(--cyan)}
+.step h3{margin:0 0 4px;font-size:18px}
+.step p{margin:0;color:var(--muted)}
+.step .crit{margin-top:6px;font-size:14.5px;color:var(--text)}
+.step .crit b{color:var(--ok);font-weight:700}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--faint);font-size:13.5px;font-family:var(--mono)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="lens" aria-hidden="true"></div>
+  <div class="brand">
+    <h1>PALANTYR <span>v5</span></h1>
+    <p>Marvin e cinco agentes operam a FAT Tech 24/7 na Oracle, pelo portão auditável do FAT Tech CRM Pro. Nemotron pensa, o n8n alcança o mundo externo, e o Ruflo constrói tudo por pull request.</p>
+  </div>
+  <div class="stats" aria-label="Resumo verificado">
+    <span>agentes <b>6</b></span>
+    <span class="ok">config OpenClaw <b>validada</b></span>
+    <span class="ok">testes da ponte MCP <b>20/20</b></span>
+    <span>modelo <b>~US$ 10–25/mês</b></span>
+    <span>portas novas na internet <b>0</b></span>
+    <span>grafo <b>73 nós · 124 arestas</b></span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Seções">
+  <button role="tab" id="t-mapa" aria-controls="mapa" aria-selected="true">Mapa</button>
+  <button role="tab" id="t-arquitetura" aria-controls="arquitetura" aria-selected="false">Arquitetura</button>
+  <button role="tab" id="t-agentes" aria-controls="agentes" aria-selected="false">Agentes</button>
+  <button role="tab" id="t-modelos" aria-controls="modelos" aria-selected="false">Modelos</button>
+  <button role="tab" id="t-seguranca" aria-controls="seguranca" aria-selected="false">Segurança</button>
+  <button role="tab" id="t-divida" aria-controls="divida" aria-selected="false">Dívida</button>
+  <button role="tab" id="t-roadmap" aria-controls="roadmap" aria-selected="false">Roadmap</button>
+  <button role="tab" id="t-execucao" aria-controls="execucao" aria-selected="false">Execução</button>
+</nav>
+
+<!-- ================= MAPA ================= -->
+<section class="panel" id="mapa" role="tabpanel" aria-labelledby="t-mapa">
+  <div class="toolbar">
+    <label for="busca" class="eyebrow" style="margin-right:4px">Buscar</label>
+    <input id="busca" type="search" placeholder="Marvin, n8n, Silva & Rocha…" autocomplete="off">
+    <div id="filtros" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div class="map">
+    <div class="stage"><canvas id="grafo" aria-label="Grafo do ecossistema Palantyr v5"></canvas><div class="hint">clique num nó · arraste para mover · roda do mouse para zoom</div></div>
+    <aside class="detail" id="detalhe" aria-live="polite"></aside>
+  </div>
+  <div class="rank">
+    <div class="box"><h3>Onde uma falha espalha</h3><p>Nós com maior centralidade de intermediação: mais caminhos do ecossistema passam por eles.</p><ol id="top"></ol></div>
+    <div class="box"><h3>Pontos de articulação</h3><p>Removidos, desconectam parte do grafo. Cada um pede redundância, runbook ou aceite explícito do risco.</p><ul id="art" style="margin:0;padding-left:20px"></ul></div>
+  </div>
+</section>
+
+<!-- ================= ARQUITETURA ================= -->
+<section class="panel" id="arquitetura" role="tabpanel" aria-labelledby="t-arquitetura" hidden>
+  <p class="eyebrow">ADR-001 · ADR-002 · ADR-003</p>
+  <h2>Núcleo decide, borda alcança</h2>
+  <p class="lede">H1 guarda o dado e a decisão (CRM + OpenClaw na mesma rede Docker). H2 fala com o mundo (Evolution, n8n, NPM). A tailnet liga os dois e o desktop. Nenhuma porta nova na internet.</p>
+  <pre class="mermaid">%%{init: {'theme':'dark','themeVariables':{'background':'#0C0E1A','primaryColor':'#121628','primaryBorderColor':'#00B8C4','primaryTextColor':'#E6EAF5','lineColor':'#8C95B3','clusterBkg':'#0A0C18','clusterBorder':'#2A3150'}}}%%
+flowchart LR
+  WAL([Wal · CEO]) -- WhatsApp dedicado --> MARVIN
+  LEAD([Leads e clientes]) -- WhatsApp 9098369 --> EVO
+  META([Meta / Google Ads]) --> N8N
+  subgraph H2[H2 · borda · 163.176.163.204]
+    EVO[Evolution API] --> N8N[n8n]
+  end
+  subgraph H1[H1 · núcleo · 64.181.178.125]
+    CRM[(FAT Tech CRM Pro<br/>Postgres RLS)]
+    OC[OpenClaw gateway<br/>Marvin + 5 agentes]
+    MARVIN((Marvin))
+    OC --- MARVIN
+  end
+  N8N -- webhook HMAC --> CRM
+  N8N -. hook: acorde .-> OC
+  OC -- portão /api/v1/agent --> CRM
+  OC -- ferramentas MCP --> N8N
+  OC -- OpenRouter ZDR --> NEMO[Nemotron Super / Lightning<br/>Sonnet fallback]
+  DESK[RTX 4060<br/>Nemotron Nano 4B] -. nó opcional .-> OC
+  RUFLO[Ruflo + Claude Code] -- PR --> GH[(GitHub)]</pre>
+
+  <h3>Uma corrida de agente, do lead ao rascunho aprovado</h3>
+  <pre class="mermaid">%%{init: {'theme':'dark','themeVariables':{'background':'#0C0E1A','actorBkg':'#121628','actorBorder':'#00B8C4','actorTextColor':'#E6EAF5','signalColor':'#8C95B3','signalTextColor':'#E6EAF5','noteBkgColor':'#1D2238','noteTextColor':'#E6EAF5'}}}%%
+sequenceDiagram
+  autonumber
+  participant E as Evolution + n8n
+  participant C as CRM
+  participant O as SDR (OpenClaw)
+  participant P as Pessoa
+  E->>C: webhook HMAC + Idempotency-Key
+  C->>C: outbox → corrida pending
+  E-->>O: hook "acorde" (sem dado)
+  O->>C: claim → planning
+  O->>C: act contacts.read (dado vem envelopado)
+  O->>C: act messages.write → approval_required
+  O->>C: finish (tokens, custo)
+  P->>C: aplica e aprova em /crm/agente</pre>
+
+  <h3>O que o desenho garante</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Propriedade</th><th>Como</th><th>Prova</th></tr></thead>
+    <tbody>
+      <tr><td>Mesmo evento nunca gera duas corridas</td><td><code>UNIQUE (tenant_id, trigger_event_id)</code></td><td>E1/E4 do CRM</td></tr>
+      <tr><td>Recusa não vira laço de retentativa</td><td><code>/act</code> devolve 200 com <code>decision</code>; a ponte nunca repete POST</td><td>teste “sem retentativa em POST”</td></tr>
+      <tr><td>Agente não opera como outro</td><td><code>agent_id</code> do ambiente; <code>tools.deny</code> das pontes alheias</td><td>teste + <code>openclaw mcp probe</code></td></tr>
+      <tr><td>Nada sai da máquina sem pessoa</td><td><code>external_sends_enabled=false</code>; <code>messages.write</code> exige aprovação</td><td>E2 do CRM</td></tr>
+      <tr><td>Gateway fora do ar não perde trabalho</td><td>o agente puxa; corridas esperam em <code>pending</code></td><td>E4 (<code>agent_dispatch.py</code>)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Memória do H1 antes e depois</h3>
+  <div class="bars" aria-label="Memória do host H1 em GB">
+    <div class="bar"><span>Hoje (71 contêineres)</span><div class="track"><div class="fill alt" style="width:84%"></div></div><span class="v">18,5 GB</span></div>
+    <div class="bar"><span>Após limpeza + OpenClaw</span><div class="track"><div class="fill" style="width:73%"></div></div><span class="v">~16 GB</span></div>
+    <div class="bar"><span>+ Supabase avulso fora</span><div class="track"><div class="fill" style="width:66%"></div></div><span class="v">~14,5 GB</span></div>
+  </div>
+  <p class="note">Escala 0–22 GB (capacidade do H1). A limpeza de walchat, medify e walhospeda é pré-requisito: sem ela o OpenClaw entra num host a 84%.</p>
+</section>
+
+<!-- ================= AGENTES ================= -->
+<section class="panel" id="agentes" role="tabpanel" aria-labelledby="t-agentes" hidden>
+  <p class="eyebrow">ADR-006 · ADR-007 · ADR-010</p>
+  <h2>Um gestor, cinco especialistas, nenhum shell</h2>
+  <p class="lede">Cada agente tem identidade própria no CRM, a própria ponte MCP e só as ferramentas da sua função. Todos nascem pausados e em modo sugestão. Quem sobe o degrau de autonomia é o Wal.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Agente</th><th>Faz</th><th>Nunca faz</th><th>Modelo</th><th>Orç./mês</th><th>Ações/h</th><th>Acorda com</th></tr></thead>
+    <tbody>
+      <tr><td><b>🛰️ Marvin</b></td><td>lê tudo, prioriza por R$, delega, entrega briefing</td><td>executar trabalho operacional</td><td>Nemotron 3 Super</td><td class="num">R$ 60</td><td class="num">60</td><td>08h · 12h · 18h · heartbeat</td></tr>
+      <tr><td><b>🎯 SDR</b></td><td>qualifica (BANT), rascunha resposta e tarefa</td><td>enviar, negociar preço, fechar</td><td>3.5 Lightning</td><td class="num">R$ 40</td><td class="num">120</td><td>hook do n8n · 30 min</td></tr>
+      <tr><td><b>📈 Tráfego</b></td><td>lê Meta/Google, cruza com CAC do CRM, recomenda</td><td>mudar orçamento ou campanha</td><td>3.5 Lightning</td><td class="num">R$ 30</td><td class="num">60</td><td>09h · 15h · alerta</td></tr>
+      <tr><td><b>✍️ Conteúdo</b></td><td>pautas, roteiros, copy em rascunho</td><td>publicar</td><td>3.5 Lightning</td><td class="num">R$ 30</td><td class="num">60</td><td>ideia nova · 10h · 16h</td></tr>
+      <tr><td><b>🧾 Cobrança</b></td><td>radar de paradas, vencimentos, travas, tarefas</td><td>cobrança formal, juros, desconto</td><td>3.5 Lightning</td><td class="num">R$ 20</td><td class="num">60</td><td>09h15 · 14h15</td></tr>
+      <tr><td><b>🛡️ Sentinela</b></td><td>sonda infra e filas, abre incidente</td><td>consertar (é do Ruflo)</td><td>3.5 Lightning</td><td class="num">R$ 8</td><td class="num">30</td><td>15 min · 1 h à noite</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Escada de autonomia</h3>
+  <div class="grid2">
+    <div class="box sev s3"><span class="pill p-info">degrau 1</span><h3>Sugestão</h3><p>Escrita vira rascunho; uma pessoa aplica. Sobe com ≥ 70% de rascunhos aplicados em 2 semanas e zero incidente.</p></div>
+    <div class="box sev s2"><span class="pill p-warn">degrau 2</span><h3>Execução interna (E3)</h3><p>Cria, move e qualifica dentro do CRM, com teto e orçamento. Depende do D-01 entregue com testes.</p></div>
+    <div class="box sev s1"><span class="pill p-crit">degrau 3</span><h3>Execução externa (E5)</h3><p>Envio a terceiro com compliance no instante do envio. Depende do WhatsApp oficial (D-03) e de decisão de negócio.</p></div>
+  </div>
+</section>
+
+<!-- ================= MODELOS ================= -->
+<section class="panel" id="modelos" role="tabpanel" aria-labelledby="t-modelos" hidden>
+  <p class="eyebrow">ADR-004</p>
+  <h2>Nemotron primeiro, escolhido pelo que o dado permite</h2>
+  <p class="lede">Lead e cliente são dado pessoal. O nível do modelo sai da privacidade exigida, e nenhum modelo assume um papel sem passar no eval PT-BR (média ≥ 4,0 e zero caso crítico reprovado).</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Nível</th><th>Onde</th><th>Modelo</th><th>Uso</th><th>US$ por 1M tokens (entrada / saída)</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill p-ok">T0</span></td><td>CRM</td><td>regra, sem modelo</td><td>compliance, pontuação, SLA, radar</td><td class="num">0</td></tr>
+      <tr><td><span class="pill p-ok">T1</span></td><td>RTX 4060 · <code>node_inference</code></td><td>Nemotron 3 Nano 4B (2,8 GB)</td><td>classificar, extrair, resumir interno</td><td class="num">0</td></tr>
+      <tr><td><span class="pill p-info">T2</span></td><td>OpenRouter · ZDR</td><td>Nemotron 3 Super 120B-A12B</td><td>Marvin</td><td class="num">0,080–0,085 / 0,40–0,45</td></tr>
+      <tr><td><span class="pill p-info">T2</span></td><td>OpenRouter · ZDR</td><td>Nemotron 3.5 Lightning 30B-A3B</td><td>squad</td><td class="num">0,065 / 0,18</td></tr>
+      <tr><td><span class="pill p-warn">T3</span></td><td>OpenRouter · ZDR</td><td>Claude Sonnet</td><td>fallback</td><td class="num">~3 / ~15</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Custo mensal estimado</h3>
+  <div class="bars" aria-label="Custo mensal estimado em dólares">
+    <div class="bar"><span>Tudo em Nemotron</span><div class="track"><div class="fill" style="width:2.2%"></div></div><span class="v">~US$ 6</span></div>
+    <div class="bar"><span>Com margem de fallback</span><div class="track"><div class="fill" style="width:9%"></div></div><span class="v">US$ 10–25</span></div>
+    <div class="bar"><span>Mesmo volume em Sonnet</span><div class="track"><div class="fill alt" style="width:92%"></div></div><span class="v">US$ 150–300</span></div>
+  </div>
+  <p class="note">Escala 0–275 US$. Premissas: Marvin ~20 turnos/dia a 25 mil tokens; SDR ~30; Sentinela ~70 rondas a 10 mil; demais ~2 cada. O custo de modelo da operação inteira fica abaixo do ticket mensal de um cliente do Ecossistema CRM (R$ 499).</p>
+
+  <h3>Três alertas que decidiram o desenho</h3>
+  <div class="grid2">
+    <div class="box sev s1"><span class="pill p-crit">bloqueado</span><h3>API grátis da NVIDIA</h3><p>Os termos da API trial proíbem produção e dado pessoal, e a NVIDIA usa o conteúdo para treino. Fica só nos evals sintéticos; o bootstrap aborta se achar a chave em produção.</p></div>
+    <div class="box sev s2"><span class="pill p-warn">a medir</span><h3>Português do Nano</h3><p>O Nemotron 3 Nano não lista português entre os idiomas. T1 começa em tarefa interna; texto para cliente só depois do eval.</p></div>
+    <div class="box sev s3"><span class="pill p-info">descartado</span><h3>Nano 30B no desktop</h3><p>24 GB não cabem em 8 GB de VRAM. O offload travaria a máquina. O 4B cabe com folga.</p></div>
+  </div>
+</section>
+
+<!-- ================= SEGURANÇA ================= -->
+<section class="panel" id="seguranca" role="tabpanel" aria-labelledby="t-seguranca" hidden>
+  <p class="eyebrow">docs/05-seguranca.md · 17 ameaças</p>
+  <h2>Menor poder que resolve</h2>
+  <p class="lede">O v5 acrescenta um gateway de agentes ao host do CRM. Em troca, remove shell, socket do Docker, acesso direto ao banco e webhook com dado de lead.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Superfície</th><th>Antes (v2)</th><th>Depois (v5)</th></tr></thead>
+    <tbody>
+      <tr><td>Porta nova na internet</td><td>—</td><td><span class="pill p-ok">nenhuma</span></td></tr>
+      <tr><td>Shell para agente</td><td><span class="pill p-crit">sim</span></td><td><span class="pill p-ok">nenhum</span></td></tr>
+      <tr><td><code>docker.sock</code> montado</td><td><span class="pill p-warn">previsto</span></td><td><span class="pill p-ok">removido</span></td></tr>
+      <tr><td>Agente com acesso ao banco</td><td><span class="pill p-warn">role RO proposta</span></td><td><span class="pill p-ok">só o portão</span></td></tr>
+      <tr><td>Chaves de agente</td><td>uma para todos</td><td><span class="pill p-ok">uma por agente</span></td></tr>
+      <tr><td>Webhook com dado de lead</td><td>sim</td><td><span class="pill p-ok">só acorda</span></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Riscos que continuam médios</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>ID</th><th>Ameaça</th><th>Controles</th><th>Residual</th></tr></thead>
+    <tbody>
+      <tr><td class="num">A7</td><td>Dado pessoal no provedor de LLM</td><td><code>data_collection: deny</code> + <code>zdr</code>; trial NVIDIA bloqueada; T1 local</td><td><span class="pill p-warn">médio</span> declarar subprocessadores</td></tr>
+      <tr><td class="num">A8/A9</td><td>WhatsApp não oficial do Marvin</td><td>chip dedicado; allowlist só do Wal; backup cifrado da credencial</td><td><span class="pill p-warn">médio</span></td></tr>
+      <tr><td class="num">A11</td><td>Vizinhos no H1 (9 projetos)</td><td>limpeza; <code>cap_drop: ALL</code>, <code>read_only</code>, sem socket</td><td><span class="pill p-warn">médio</span></td></tr>
+      <tr><td class="num">A15</td><td>Fadiga de aprovação</td><td>justificativa ao lado do rascunho; amostragem semanal</td><td><span class="pill p-warn">médio</span></td></tr>
+      <tr><td class="num">A16</td><td>Host único (CRM + agentes)</td><td>backup verificado; DR com RTO 4 h</td><td><span class="pill p-warn">médio</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= DÍVIDA ================= -->
+<section class="panel" id="divida" role="tabpanel" aria-labelledby="t-divida" hidden>
+  <p class="eyebrow">docs/06-divida-tecnica.md · 18 itens</p>
+  <h2>O que precisa ser pago, e quando</h2>
+  <p class="lede">S1 bloqueia o go-live. S2 vence em 30 dias. S3 é paga quando o gatilho acontecer.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>ID</th><th>Dívida</th><th>Sev.</th><th>Pagamento</th></tr></thead>
+    <tbody>
+      <tr><td class="num">DT-01</td><td>H1 lotado: 71 contêineres, 84% de memória, 3 projetos marcados para remoção de pé</td><td><span class="pill p-crit">S1</span></td><td>limpeza com dump verificado (Onda 0)</td></tr>
+      <tr><td class="num">DT-11</td><td>WhatsApp oficial ausente, prometido em 25 páginas do site</td><td><span class="pill p-crit">S1</span></td><td>D-03: contratar BSP</td></tr>
+      <tr><td class="num">DT-12</td><td>IDs de modelo e suporte a ferramentas nos provedores ZDR não confirmados</td><td><span class="pill p-crit">S1</span></td><td><code>openclaw models list</code> + eval (Onda 1)</td></tr>
+      <tr><td class="num">DT-13</td><td>PT-BR do Nemotron não medido</td><td><span class="pill p-crit">S1</span></td><td><code>evals/ptbr</code> antes de ativar o SDR</td></tr>
+      <tr><td class="num">DT-03</td><td>CRM e agentes no mesmo host</td><td><span class="pill p-warn">S2</span></td><td>réplica fria no H2 + restore trimestral</td></tr>
+      <tr><td class="num">DT-06</td><td>Corrida presa em planning não é reciclada</td><td><span class="pill p-warn">S2</span></td><td>D-02</td></tr>
+      <tr><td class="num">DT-10</td><td>Estágios E3 e E5 do CRM pendentes</td><td><span class="pill p-warn">S2</span></td><td>D-01, D-04</td></tr>
+      <tr><td class="num">DT-14</td><td>Gatilhos não conferidos contra o contrato de eventos</td><td><span class="pill p-warn">S2</span></td><td><code>GET /api/v1/core/contract</code></td></tr>
+      <tr><td class="num">DT-16</td><td>Se o H1 cair, quem avisa cai junto</td><td><span class="pill p-warn">S2</span></td><td>n8n no H2 sonda o H1</td></tr>
+      <tr><td class="num">DT-17</td><td>Workflows n8n de borda não exportados</td><td><span class="pill p-warn">S2</span></td><td>D-07</td></tr>
+      <tr><td class="num">DT-08</td><td>Detector de injeção é heurística local</td><td><span class="pill p-info">S3</span></td><td>D-05: aidefence com fallback</td></tr>
+      <tr><td class="num">DT-09</td><td>Sentinela acorda o modelo a cada ronda</td><td><span class="pill p-info">S3</span></td><td>condition watcher</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= ROADMAP ================= -->
+<section class="panel" id="roadmap" role="tabpanel" aria-labelledby="t-roadmap" hidden>
+  <p class="eyebrow">docs/08-roadmap.md</p>
+  <h2>Ondas com critério de saída</h2>
+  <p class="lede">Uma onda só fecha quando o critério é verificado. A seguinte não começa antes.</p>
+  <div class="steps">
+    <div class="step"><div class="n">0</div><div><h3>Terreno · ≈ 1 semana</h3><p>Auditoria do H1, limpeza verificada, Tailscale com ACL, Doppler.</p><p class="crit"><b>Critério</b> memória do H1 ≤ 75%, portas 18789/8443 livres, testes da ACL passando.</p></div></div>
+    <div class="step"><div class="n">1</div><div><h3>Cérebro em modo sombra · ≈ 1 semana</h3><p>Confirmar modelos, rodar o eval, provisionar agentes pausados, subir o gateway, parear o WhatsApp do Marvin.</p><p class="crit"><b>Critério</b> 5 dias úteis de briefings 08/12/18h com custo real por ciclo em <code>agent_runs</code>.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h3>Squad em sugestão · 2–3 semanas</h3><p>Ativar SDR → Cobrança → Tráfego → Conteúdo → Sentinela; n8n como ferramentas MCP; alerta externo do H1.</p><p class="crit"><b>Critério</b> ≥ 70% de rascunhos aplicados, zero lead quente sem retorno no dia, custo ≤ US$ 25/mês.</p></div></div>
+    <div class="step"><div class="n">3</div><div><h3>Autonomia interna · 3–4 semanas (Ruflo)</h3><p>E3, reciclagem de corridas, aidefence, testes de campanhas.</p><p class="crit"><b>Critério</b> agentes movem card e agendam tarefa sem pessoa; recusa por teto aparece como <code>refused</code>.</p></div></div>
+    <div class="step"><div class="n">4</div><div><h3>Canal oficial e execução externa</h3><p>WhatsApp Cloud API via BSP, E5, agenda.</p><p class="crit"><b>Critério</b> mensagem aprovada sai pelo outbox com compliance no instante do envio; opt-out recusado e auditado.</p></div></div>
+    <div class="step"><div class="n">5</div><div><h3>Produto</h3><p>“Funcionário digital FAT Tech” por cliente: mesmo artefato, topologia por variável de ambiente.</p><p class="crit"><b>Critério</b> primeiro cliente com SDR IA e custo de modelo abaixo de 10% do ticket.</p></div></div>
+  </div>
+</section>
+
+<!-- ================= EXECUÇÃO ================= -->
+<section class="panel" id="execucao" role="tabpanel" aria-labelledby="t-execucao" hidden>
+  <p class="eyebrow">docs/09-runbooks.md</p>
+  <h2>Do repositório ao gateway no ar</h2>
+  <p class="lede">Os comandos estão no pacote entregue. Os scripts foram checados em sintaxe e ainda não rodaram num host real; tudo que depende do host vivo está marcado como [A CONFIRMAR].</p>
+  <div class="grid2">
+    <div><h3>Onda 0 · no H1</h3><pre class="cmd"><span class="c"># somente leitura</span>
+sudo bash infra/scripts/h1-host-audit.sh
+<span class="c"># dry-run primeiro; depois --execute</span>
+sudo bash infra/scripts/h1-cleanup-plan.sh</pre></div>
+    <div><h3>Onda 1 · no H1</h3><pre class="cmd">python3 infra/scripts/provision-crm-agents.py --dry-run
+python3 infra/scripts/provision-crm-agents.py
+sudo bash infra/scripts/bootstrap-h1.sh
+bash infra/h1-nucleo/openclaw/automations.sh</pre></div>
+    <div><h3>Desktop GPU (opcional)</h3><pre class="cmd">ollama pull nemotron-3-nano:4b
+openclaw node run --host &lt;h1&gt;.&lt;tailnet&gt;.ts.net \
+  --port 8443 --tls --display-name desktop-gpu \
+  --commands ollama.models,ollama.chat</pre></div>
+    <div><h3>Antes de trocar modelo</h3><pre class="cmd">node evals/ptbr/run.mjs \
+  --model openrouter:nvidia/nemotron-3.5-lightning \
+  --judge openrouter:anthropic/claude-sonnet-4.6</pre></div>
+  </div>
+  <h3>Botão vermelho</h3>
+  <pre class="cmd"><span class="c"># agentes param; corridas esperam em pending; o CRM segue para as pessoas</span>
+docker compose -f /opt/palantyr/infra/h1-nucleo/openclaw/compose.yml stop openclaw-gateway</pre>
+</section>
+
+<footer>Palantyr v5 · FAT Tech · 27/09/2026 · OpenClaw 2026.9.6 · Ruflo 3.46.1 · fattech-crm-mcp 1.0.0</footer>
+</div>
+
+<script>
+const GRAPH = __GRAPH__;
+(() => {
+  // ---------- tabs ----------
+  const tabs = [...document.querySelectorAll('nav.tabs button')];
+  const show = (id, push) => {
+    tabs.forEach(b => b.setAttribute('aria-selected', String(b.getAttribute('aria-controls') === id)));
+    document.querySelectorAll('section.panel').forEach(s => { s.hidden = s.id !== id; });
+    if (push) { try { history.replaceState(null, '', '#' + id); } catch (e) {} }
+    try { localStorage.setItem('palantyr-tab', id); } catch (e) {}
+    if (id === 'mapa') requestAnimationFrame(resize);
+  };
+  tabs.forEach(b => b.addEventListener('click', () => show(b.getAttribute('aria-controls'), true)));
+  let start = (location.hash || '').slice(1);
+  if (!document.getElementById(start)) { try { start = localStorage.getItem('palantyr-tab') || 'mapa'; } catch (e) { start = 'mapa'; } }
+  if (!document.getElementById(start)) start = 'mapa';
+
+  // ---------- graph data ----------
+  const css = getComputedStyle(document.documentElement);
+  const TYPES = [
+    ['agente','agentes'],['servico','serviços'],['host','hosts'],['modelo','modelos'],['pessoa','pessoas'],
+    ['cliente','carteira'],['risco','riscos'],['divida','dívidas'],['demanda','demandas eng.'],['externo','externos']];
+  const color = t => css.getPropertyValue('--t-' + t).trim() || '#888';
+  const nodes = GRAPH.nos.map(n => ({ ...n }));
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const edges = GRAPH.arestas.map(e => ({ ...e, s: byId.get(e.de), t: byId.get(e.para) }));
+  const adj = new Map(nodes.map(n => [n.id, new Set()]));
+  edges.forEach(e => { adj.get(e.de).add(e.para); adj.get(e.para).add(e.de); });
+  nodes.forEach(n => { n.deg = adj.get(n.id).size; n.r = 4 + Math.sqrt(n.deg) * 2.6 + (n.tipo === 'agente' ? 3 : 0); });
+
+  // Brandes betweenness + Tarjan articulation points
+  const ids = nodes.map(n => n.id), bc = new Map(ids.map(i => [i, 0]));
+  for (const s of ids) {
+    const st = [], P = new Map(ids.map(i => [i, []])), sg = new Map(ids.map(i => [i, 0])), d = new Map(ids.map(i => [i, -1]));
+    sg.set(s, 1); d.set(s, 0); const q = [s];
+    while (q.length) { const v = q.shift(); st.push(v); for (const w of adj.get(v)) { if (d.get(w) < 0) { d.set(w, d.get(v) + 1); q.push(w); } if (d.get(w) === d.get(v) + 1) { sg.set(w, sg.get(w) + sg.get(v)); P.get(w).push(v); } } }
+    const dl = new Map(ids.map(i => [i, 0]));
+    while (st.length) { const w = st.pop(); for (const v of P.get(w)) dl.set(v, dl.get(v) + sg.get(v) / sg.get(w) * (1 + dl.get(w))); if (w !== s) bc.set(w, bc.get(w) + dl.get(w)); }
+  }
+  const N = ids.length; nodes.forEach(n => { n.bc = bc.get(n.id) / 2 / ((N - 1) * (N - 2) / 2); });
+  const disc = new Map(), low = new Map(), cut = new Set(); let tm = 0;
+  const dfs = (u, p) => { disc.set(u, ++tm); low.set(u, tm); let ch = 0; for (const v of adj.get(u)) { if (!disc.has(v)) { ch++; dfs(v, u); low.set(u, Math.min(low.get(u), low.get(v))); if (p !== null && low.get(v) >= disc.get(u)) cut.add(u); } else if (v !== p) low.set(u, Math.min(low.get(u), disc.get(v))); } if (p === null && ch > 1) cut.add(u); };
+  ids.forEach(i => { if (!disc.has(i)) dfs(i, null); });
+  nodes.forEach(n => { n.cut = cut.has(n.id); });
+
+  // ---------- deterministic force layout (settled before first paint) ----------
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const ring = { pessoa: 0.2, agente: 0.35, servico: 0.45, host: 0.55, modelo: 0.7, externo: 0.85, demanda: 0.85, divida: 0.9, risco: 0.9, cliente: 1 };
+  nodes.forEach((n, i) => { const a = rnd() * Math.PI * 2, r = 260 * (ring[n.tipo] ?? 0.8); n.x = Math.cos(a) * r; n.y = Math.sin(a) * r; n.vx = 0; n.vy = 0; });
+  const step = (alpha) => {
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j]; let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy + 0.01;
+      const f = 5400 / d2 * alpha, d = Math.sqrt(d2); dx /= d; dy /= d;
+      a.vx -= dx * f; a.vy -= dy * f; b.vx += dx * f; b.vy += dy * f;
+    }
+    edges.forEach(e => { const a = e.s, b = e.t; let dx = b.x - a.x, dy = b.y - a.y; const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const L = 92 + (a.tipo === 'cliente' || b.tipo === 'cliente' ? 30 : 0); const f = (d - L) * 0.035 * alpha * (0.6 + e.peso * 0.2);
+      dx /= d; dy /= d; a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f; });
+    nodes.forEach(n => { if (n.fixed) { n.vx = n.vy = 0; return; } n.vx -= n.x * 0.008 * alpha; n.vy -= n.y * 0.008 * alpha; n.vx *= 0.82; n.vy *= 0.82; n.x += n.vx; n.y += n.vy; });
+  };
+  for (let k = 0; k < 420; k++) step(1 - k / 480);
+
+  // ---------- canvas ----------
+  const canvas = document.getElementById('grafo'), ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = 1, scale = 1, ox = 0, oy = 0, selected = null, hover = null;
+  const hidden = new Set();
+  let query = '';
+  function fit() {
+    const vis = nodes.filter(n => !hidden.has(n.tipo)); if (!vis.length) return;
+    const xs = vis.map(n => n.x), ys = vis.map(n => n.y);
+    const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+    scale = Math.min((W - 60) / (maxx - minx || 1), (H - 60) / (maxy - miny || 1), 2.2);
+    ox = W / 2 - (minx + maxx) / 2 * scale; oy = H / 2 - (miny + maxy) / 2 * scale;
+  }
+  function resize() {
+    const r = canvas.getBoundingClientRect(); if (!r.width) return;
+    dpr = window.devicePixelRatio || 1; W = r.width; H = r.height;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    fit(); draw();
+  }
+  const neighborhood = () => selected ? new Set([selected.id, ...adj.get(selected.id)]) : null;
+  const matches = n => query && (n.label.toLowerCase().includes(query) || (n.desc || '').toLowerCase().includes(query));
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    ctx.save(); ctx.translate(ox, oy); ctx.scale(scale, scale);
+    const nb = neighborhood();
+    edges.forEach(e => {
+      if (hidden.has(e.s.tipo) || hidden.has(e.t.tipo)) return;
+      const on = nb ? (nb.has(e.de) && nb.has(e.para) && (e.de === selected.id || e.para === selected.id)) : false;
+      ctx.strokeStyle = on ? 'rgba(0,240,255,.85)' : nb ? 'rgba(140,149,179,.07)' : 'rgba(140,149,179,.22)';
+      ctx.lineWidth = (on ? 1.8 : 0.9) / scale * Math.min(scale, 1.4);
+      ctx.beginPath(); ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y); ctx.stroke();
+    });
+    nodes.forEach(n => {
+      if (hidden.has(n.tipo)) return;
+      const dim = (nb && !nb.has(n.id)) || (query && !matches(n));
+      ctx.globalAlpha = dim ? 0.18 : 1;
+      if (n === selected || matches(n)) { ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 6, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0,240,255,.16)'; ctx.fill(); }
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fillStyle = color(n.tipo); ctx.fill();
+      if (n.cut) { ctx.lineWidth = 2 / scale; ctx.strokeStyle = '#FFB547'; ctx.stroke(); }
+      ctx.globalAlpha = 1;
+    });
+    ctx.font = `600 ${12 / scale * Math.min(scale, 1.25)}px Rajdhani, system-ui, sans-serif`;
+    ctx.textBaseline = 'middle';
+    nodes.forEach(n => {
+      if (hidden.has(n.tipo)) return;
+      const show = nb ? nb.has(n.id) : (n.deg >= 7 || n.tipo === 'agente' || n.tipo === 'host' || matches(n) || n === hover);
+      if (!show) return;
+      if (query && !matches(n) && !(nb && nb.has(n.id))) return;
+      const lx = n.x + n.r + 4 / scale;
+      ctx.lineJoin = 'round'; ctx.lineWidth = 4 / scale; ctx.strokeStyle = 'rgba(6,6,14,.9)';
+      ctx.strokeText(n.label, lx, n.y);
+      ctx.fillStyle = (nb && !nb.has(n.id)) ? 'rgba(230,234,245,.25)' : '#E6EAF5';
+      ctx.fillText(n.label, lx, n.y);
+    });
+    ctx.restore();
+  }
+  const toWorld = (px, py) => [(px - ox) / scale, (py - oy) / scale];
+  const pick = (px, py) => { const [x, y] = toWorld(px, py); let best = null, bd = Infinity;
+    nodes.forEach(n => { if (hidden.has(n.tipo)) return; const d = Math.hypot(n.x - x, n.y - y); if (d < n.r + 6 / scale && d < bd) { bd = d; best = n; } }); return best; };
+
+  // ---------- detail panel ----------
+  const panel = document.getElementById('detalhe');
+  const label = t => (TYPES.find(x => x[0] === t) || [t, t])[1];
+  function renderDetail() {
+    if (!selected) {
+      panel.innerHTML = `<p class="eyebrow">Como ler</p><h3>73 peças, 124 relações</h3>
+        <p>Cada ponto é uma peça do ecossistema: host, serviço, agente, modelo, cliente, risco, dívida ou demanda de engenharia. O tamanho cresce com o número de ligações.</p>
+        <p>Anel âmbar marca ponto de articulação: se ele cair, parte do grafo fica isolada.</p>
+        <p>Clique no <b>Marvin</b> para ver o squad, no <b>H1 · núcleo</b> para ver o que depende do host, ou num risco para ver o que ele ameaça.</p>`;
+      return;
+    }
+    const n = selected, out = edges.filter(e => e.de === n.id), inc = edges.filter(e => e.para === n.id);
+    const li = (e, other) => `<li><em>${e.tipo}</em><button type="button" data-id="${other.id}">${other.label}</button></li>`;
+    panel.innerHTML = `<div class="type" style="color:${color(n.tipo)}">${label(n.tipo)}</div>
+      <h3>${n.label}</h3>${n.cut ? '<span class="flag">ponto de articulação</span>' : ''}
+      ${n.desc ? `<p>${n.desc}</p>` : ''}
+      <dl class="kv"><dt>ligações</dt><dd>${n.deg}</dd><dt>intermediação</dt><dd>${n.bc.toFixed(3)}</dd><dt>posição</dt><dd>${[...nodes].sort((a, b) => b.bc - a.bc).indexOf(n) + 1}º de ${nodes.length}</dd></dl>
+      ${out.length ? `<p class="eyebrow">sai para</p><ul class="links">${out.map(e => li(e, e.t)).join('')}</ul>` : ''}
+      ${inc.length ? `<p class="eyebrow" style="margin-top:12px">chega de</p><ul class="links">${inc.map(e => li(e, e.s)).join('')}</ul>` : ''}`;
+  }
+  panel.addEventListener('click', ev => { const b = ev.target.closest('button[data-id]'); if (b) { selected = byId.get(b.dataset.id); renderDetail(); draw(); } });
+
+  // ---------- filters, search, rankings ----------
+  const f = document.getElementById('filtros');
+  TYPES.forEach(([t, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', 'true');
+    b.innerHTML = `<i style="background:${color(t)}"></i>${name}`;
+    b.addEventListener('click', () => { hidden.has(t) ? hidden.delete(t) : hidden.add(t); b.setAttribute('aria-pressed', String(!hidden.has(t))); if (selected && hidden.has(selected.tipo)) { selected = null; renderDetail(); } fit(); draw(); });
+    f.appendChild(b);
+  });
+  document.getElementById('busca').addEventListener('input', ev => { query = ev.target.value.trim().toLowerCase(); draw(); });
+  const top = [...nodes].sort((a, b) => b.bc - a.bc).slice(0, 10);
+  const topEl = document.getElementById('top');
+  top.forEach(n => { const li = document.createElement('li'); li.innerHTML = `<button type="button" class="chip" style="text-transform:none;letter-spacing:0;font-size:15px" data-id="${n.id}"><i style="background:${color(n.tipo)}"></i>${n.label}</button><span>${n.bc.toFixed(3)}</span>`; topEl.appendChild(li); });
+  const artEl = document.getElementById('art');
+  nodes.filter(n => n.cut).sort((a, b) => b.bc - a.bc).forEach(n => { const li = document.createElement('li'); li.innerHTML = `<b>${n.label}</b> <span style="color:var(--faint)">· ${label(n.tipo)}</span>`; artEl.appendChild(li); });
+  [topEl].forEach(el => el.addEventListener('click', ev => { const b = ev.target.closest('[data-id]'); if (b) { selected = byId.get(b.dataset.id); renderDetail(); draw(); canvas.scrollIntoView({ block: 'nearest' }); } }));
+
+  // ---------- interaction ----------
+  let drag = null, pan = null, moved = false;
+  canvas.addEventListener('pointerdown', ev => {
+    const r = canvas.getBoundingClientRect(), px = ev.clientX - r.left, py = ev.clientY - r.top; moved = false;
+    const n = pick(px, py); canvas.setPointerCapture(ev.pointerId); canvas.classList.add('dragging');
+    if (n) { drag = n; n.fixed = true; } else pan = { x: px, y: py, ox, oy };
+  });
+  canvas.addEventListener('pointermove', ev => {
+    const r = canvas.getBoundingClientRect(), px = ev.clientX - r.left, py = ev.clientY - r.top;
+    if (drag) { const [x, y] = toWorld(px, py); drag.x = x; drag.y = y; moved = true; draw(); return; }
+    if (pan) { ox = pan.ox + px - pan.x; oy = pan.oy + py - pan.y; moved = true; draw(); return; }
+    const h = pick(px, py); if (h !== hover) { hover = h; canvas.style.cursor = h ? 'pointer' : 'grab'; draw(); }
+  });
+  const end = ev => {
+    canvas.classList.remove('dragging');
+    if (!moved) { const r = canvas.getBoundingClientRect(); const n = pick(ev.clientX - r.left, ev.clientY - r.top); selected = n === selected ? null : n; renderDetail(); draw(); }
+    if (drag) drag.fixed = false; drag = null; pan = null;
+  };
+  canvas.addEventListener('pointerup', end);
+  canvas.addEventListener('pointercancel', () => { drag = null; pan = null; canvas.classList.remove('dragging'); });
+  canvas.addEventListener('wheel', ev => { ev.preventDefault(); const r = canvas.getBoundingClientRect(), px = ev.clientX - r.left, py = ev.clientY - r.top;
+    const k = Math.exp(-ev.deltaY * 0.0015), ns = Math.min(Math.max(scale * k, 0.3), 5); ox = px - (px - ox) * ns / scale; oy = py - (py - oy) * ns / scale; scale = ns; draw(); }, { passive: false });
+  window.addEventListener('keydown', ev => { if (ev.key === 'Escape' && selected) { selected = null; renderDetail(); draw(); } });
+  new ResizeObserver(resize).observe(canvas);
+
+  renderDetail();
+  show(start, false);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+})();
+</script>

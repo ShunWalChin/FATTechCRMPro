@@ -6,7 +6,7 @@ Only this router can write them; generic resource CRUD cannot bypass the policie
 from datetime import timedelta
 from uuid import NAMESPACE_URL, uuid5
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import Field
 from sqlalchemy import func, select, text, update
 
@@ -22,6 +22,30 @@ RUN_KIND = "synapse_runs"
 READ_SCOPES = ("contacts:read", "deals:read", "tasks:read", "pipelines:read", "products:read",
                "agents:read", "knowledge:read", "integrations:read")
 
+# These are operational facts the assistant may quote immediately after installation. They are
+# deliberately short, reviewed and tenant-local; a knowledge graph bundled with the application is
+# useful for navigation, but it is not a tenant's commercial policy and must not be cited as one.
+SYNAPSE_KNOWLEDGE = (
+    {
+        "title": "SYNAPSE · proposta de valor",
+        "category": "synapse",
+        "content": "O SYNAPSE organiza a operação comercial da FAT Tech: captura o lead, registra a qualificação, cria a oportunidade e orienta a próxima ação da equipe. A implantação e a licença devem ser apresentadas em proposta antes de qualquer cobrança.",
+        "source": "FAT Tech · operação SYNAPSE",
+    },
+    {
+        "title": "SYNAPSE · limites de atendimento",
+        "category": "compliance",
+        "content": "O SYNAPSE nunca deve prometer envio, pagamento ou integração que não esteja configurado e aprovado. Sugestões geradas pela base são rascunhos para revisão humana. Consentimento, opt-out e regras do canal devem ser respeitados antes de qualquer contato externo.",
+        "source": "FAT Tech · política de operação",
+    },
+    {
+        "title": "SYNAPSE · qualificação comercial",
+        "category": "vendas",
+        "content": "Na qualificação, confirme contexto, objetivo, prazo, responsável pela decisão e próximo passo. Registre a evidência na conversa e na oportunidade. Quando a base não responder com segurança, crie uma tarefa de revisão humana em vez de inventar uma resposta.",
+        "source": "FAT Tech · playbook comercial",
+    },
+)
+
 
 class Setup(StrictModel):
     setup_cents: Cents = 326000
@@ -33,6 +57,7 @@ class ConfigurationChange(StrictModel):
     version: int = Field(strict=True, ge=1)
     enabled: bool
     capture_enabled: bool
+    ai_enabled: bool | None = None
     owner_id: Identifier
     sla_hours: int = Field(strict=True, ge=1, le=720)
 
@@ -64,6 +89,19 @@ def valid_owner(db, tenant_id, owner_id):
     if owner is None:
         raise HTTPException(422, "Escolha um responsável ativo da organização com permissão de operação.")
     return owner
+
+
+def ensure_knowledge(db, tenant_id, actor_id):
+    """Install the reviewed starter corpus once, returning the created record ids."""
+    created = []
+    for document in SYNAPSE_KNOWLEDGE:
+        existing = db.scalar(scoped(tenant_id, "knowledge").where(
+            Record.data["title"].as_string() == document["title"]).limit(1))
+        if existing is not None:
+            continue
+        record = create_record(db, tenant_id, actor_id, "knowledge", document)
+        created.append(record.id)
+    return created
 
 
 def require_reads(principal):
@@ -114,19 +152,32 @@ def setup(payload: Setup, principal=Depends(require_auth), db=Depends(get_db)):
                         "pipeline_id": pipeline.id, "setup_product_id": installation.id,
                         "license_product_id": license_product.id, "agent_id": agent.id,
                         "owner_id": principal.actor_id, "enabled": True, "capture_enabled": False,
+                        "ai_enabled": False,
                         "sla_hours": payload.sla_hours, "setup_cents": payload.setup_cents,
                         "monthly_cents": payload.monthly_cents,
                     })
     db.add(record)
     db.flush()
+    ensure_knowledge(db, principal.tenant_id, principal.actor_id)
     audit_event(db, principal.tenant_id, principal.actor_id, "synapse.installed", record.id,
                 {"pipeline_id": pipeline.id, "agent_id": agent.id})
     db.commit()
     return {"created": True, "configuration": serialize(record)}
 
 
+@router.post("/knowledge/bootstrap")
+def knowledge_bootstrap(principal=Depends(require_auth), db=Depends(get_db)):
+    """Make the reviewed SYNAPSE starter knowledge available to the tenant."""
+    principal.admin()
+    created = ensure_knowledge(db, principal.tenant_id, principal.actor_id)
+    audit_event(db, principal.tenant_id, principal.actor_id, "synapse.knowledge_bootstrapped",
+                stable_id(principal.tenant_id, "configuration"), {"created": len(created)})
+    db.commit()
+    return {"created": created, "count": len(created), "provider": "reviewed_seed"}
+
+
 @router.post("/settings")
-def settings(payload: ConfigurationChange, principal=Depends(require_auth), db=Depends(get_db)):
+def settings(payload: ConfigurationChange, request: Request, principal=Depends(require_auth), db=Depends(get_db)):
     principal.admin()
     lock_contacts(db, principal.tenant_id)
     lock_configuration(db, principal.tenant_id)
@@ -138,16 +189,22 @@ def settings(payload: ConfigurationChange, principal=Depends(require_auth), db=D
     valid_owner(db, principal.tenant_id, payload.owner_id)
     if payload.capture_enabled and not payload.enabled:
         raise HTTPException(422, "Ative a operação SYNAPSE antes de ativar a captura automática.")
+    if payload.ai_enabled and not payload.enabled:
+        raise HTTPException(422, "Ative a operação SYNAPSE antes de habilitar o copiloto generativo.")
+    provider = request.app.state.settings
+    if payload.ai_enabled and not provider.ai_provider_ready:
+        raise HTTPException(409, "Configure o provedor de IA no servidor antes de habilitar o copiloto.")
     if payload.enabled:
         pipeline = get_record(db, principal.tenant_id, "pipelines", record.data["pipeline_id"], share=True)
         if pipeline.data.get("status") != "active" or not any(
                 stage["outcome"] == "open" for stage in pipeline.data["stages"]):
             raise HTTPException(409, "O funil SYNAPSE precisa estar ativo e ter uma etapa aberta.")
-    record.data = {**record.data, **payload.model_dump(exclude={"version"})}
+    record.data = {**record.data, **payload.model_dump(exclude={"version"}, exclude_none=True)}
     record.version += 1
     record.updated_at = now()
     audit_event(db, principal.tenant_id, principal.actor_id, "synapse.configured", record.id,
-                {"version": record.version, "enabled": payload.enabled, "capture_enabled": payload.capture_enabled})
+                {"version": record.version, "enabled": payload.enabled, "capture_enabled": payload.capture_enabled,
+                 "ai_enabled": record.data.get("ai_enabled", False)})
     db.commit()
     return serialize(record)
 
@@ -231,6 +288,29 @@ def run_page(db, tenant_id, limit, offset):
     return {"items": [serialize(record) for record in records], "total": count(db, tenant_id, RUN_KIND)}
 
 
+def recent_activity(db, tenant_id, limit=10):
+    """Expose enrollment and inbound-assistance activity in one bounded operator feed.
+
+    Assistance bodies and citations stay on the dedicated result record; the dashboard only needs
+    the routing facts needed to open the conversation or task. This keeps the overview cheap and
+    avoids duplicating a potentially long grounded draft in every refresh.
+    """
+    records = db.scalars(select(Record).where(
+        Record.tenant_id == tenant_id, Record.kind.in_((RUN_KIND, "synapse_assists")),
+        Record.deleted.is_(False)).order_by(Record.created_at.desc(), Record.id).limit(limit))
+    items = []
+    for record in records:
+        if record.kind == RUN_KIND:
+            items.append(serialize(record))
+            continue
+        data = record.data
+        items.append({"id": record.id, "status": data.get("status"),
+                      "conversation_id": data.get("conversation_id"), "task_id": data.get("task_id"),
+                      "reason": data.get("reason"), "created_at": record.created_at.isoformat(),
+                      "updated_at": record.updated_at.isoformat()})
+    return items
+
+
 @router.get("/runs")
 def runs(limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0),
          principal=Depends(require_auth), db=Depends(get_db)):
@@ -239,7 +319,7 @@ def runs(limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0),
 
 
 @router.get("/overview")
-def overview(principal=Depends(require_auth), db=Depends(get_db)):
+def overview(request: Request, principal=Depends(require_auth), db=Depends(get_db)):
     require_reads(principal)
     tenant_id = principal.tenant_id
     config = configuration(db, tenant_id)
@@ -258,6 +338,8 @@ def overview(principal=Depends(require_auth), db=Depends(get_db)):
     connected_instagram = db.scalar(select(func.count()).select_from(InstagramAccount).where(
         InstagramAccount.tenant_id == tenant_id, InstagramAccount.status == "connected")) or 0
     has_knowledge = bool(count(db, tenant_id, "knowledge", Record.data["content"].as_string() != ""))
+    provider = request.app.state.settings
+    provider_configured = provider.ai_provider_ready
     assets = []
     if config:
         for field, kind in (("pipeline_id", "pipelines"), ("setup_product_id", "products"),
@@ -276,6 +358,12 @@ def overview(principal=Depends(require_auth), db=Depends(get_db)):
         {"key": "knowledge", "label": "Conhecimento", "status": "ready" if has_knowledge else "pending",
          "detail": "Recuperação lexical com fontes; embeddings e LLM externo dependem de integração.",
          "href": "/crm/conhecimento"},
+        {"key": "ai_copilot", "label": "Copiloto generativo", "status": "ready" if provider_configured
+         and config and config.data.get("ai_enabled") else "pending",
+         "detail": "Provedor configurado e uso autorizado nesta organização; rascunhos exigem revisão humana."
+         if provider_configured and config and config.data.get("ai_enabled") else
+         "Configure o provedor no servidor e habilite a geração no SYNAPSE desta organização.",
+         "href": "/crm/synapse"},
         {"key": "instagram", "label": "Conta Instagram", "status": "ready" if connected_instagram else "pending",
          "detail": f"{connected_instagram} conta(s) conectada(s). Conexão não comprova envio externo.",
          "href": "/crm/integracoes"},
@@ -294,4 +382,4 @@ def overview(principal=Depends(require_auth), db=Depends(get_db)):
     ]
     return {"id": "synapse", "installed": config is not None,
             "configuration": serialize(config) if config else None, "metrics": metrics,
-            "readiness": readiness, "recent_runs": run_page(db, tenant_id, 10, 0)["items"]}
+            "readiness": readiness, "recent_runs": recent_activity(db, tenant_id)}

@@ -27,6 +27,14 @@ class Settings(BaseSettings):
     login_attempts_per_ip: int = 30
     max_body_bytes: int = 1_048_576
     external_sends_enabled: bool = False
+    # Copiloto opcional. URL e modelo são definidos pelo operador do servidor;
+    # cada tenant ainda precisa habilitar o uso de IA em sua configuração SYNAPSE.
+    ai_base_url: str = ""
+    ai_model: str = ""
+    ai_api_key: str = ""
+    ai_timeout_seconds: int = 20
+    # Envio de trechos a um provedor fora do host exige decisão explícita do operador.
+    ai_remote_enabled: bool = False
     # Vazio de proposito: pedir assinatura recusa com motivo enquanto nao houver provedor.
     signature_provider: str = ""
     capture_creates_deal: bool = True
@@ -53,6 +61,13 @@ class Settings(BaseSettings):
             raise ValueError("Configuration must not contain only whitespace")
         return value
 
+    @field_validator("ai_base_url", "ai_model", "ai_api_key")
+    @classmethod
+    def validate_ai_text(cls, value: str) -> str:
+        if value and (not value.strip() or any(character in value for character in "\r\n")):
+            raise ValueError("AI configuration must not be blank or multiline")
+        return value
+
     @field_validator("credential_key")
     @classmethod
     def validate_credential_key(cls, value: str) -> str:
@@ -74,6 +89,13 @@ class Settings(BaseSettings):
     def production(self) -> bool:
         return self.env == "production"
 
+    @property
+    def ai_provider_ready(self) -> bool:
+        if not self.ai_base_url or not self.ai_model:
+            return False
+        hostname = urlsplit(self.ai_base_url).hostname
+        return hostname in {"localhost", "127.0.0.1", "host.docker.internal", "ollama", "vllm"} or self.ai_remote_enabled
+
     @model_validator(mode="after")
     def validate_production(self):
         if not 1 <= self.login_attempts_per_email <= 1000 or not 1 <= self.login_attempts_per_ip <= 3000:
@@ -86,6 +108,18 @@ class Settings(BaseSettings):
             raise ValueError("Invalid polling interval or body limit")
         if not 1 <= self.core_debounce_seconds <= self.core_max_buffer_seconds <= 300:
             raise ValueError("Core message buffer must have a debounce and maximum wait between 1 and 300 seconds")
+        if not 3 <= self.ai_timeout_seconds <= 60:
+            raise ValueError("AI timeout must be between 3 and 60 seconds")
+        if bool(self.ai_base_url) != bool(self.ai_model):
+            raise ValueError("AI base URL and model must be configured together")
+        if self.ai_base_url:
+            ai_url = urlsplit(self.ai_base_url)
+            if (ai_url.scheme not in ("http", "https") or not ai_url.hostname or ai_url.username
+                    or ai_url.password or ai_url.query or ai_url.fragment
+                    or not self.ai_base_url.rstrip("/").endswith("/v1")):
+                raise ValueError("AI base URL must be an HTTP(S) /v1 endpoint without credentials or query")
+            if self.production and ai_url.scheme != "https" and ai_url.hostname != "host.docker.internal":
+                raise ValueError("Production AI URL requires HTTPS, except the local Docker host")
         if self.n8n_outbound_url:
             url = urlsplit(self.n8n_outbound_url)
             if url.scheme not in ("http", "https") or not url.hostname or url.username or url.password:

@@ -15,6 +15,9 @@ Primeira versão operacional publicada na Oracle em 11/09/2026.
 - [Versão 0.2: avisos, importação e operação comercial ligada](docs/releases/2026-09-12-versao-0.2.md)
 - [Versão 0.2.1: relatórios com tela e quadro que funciona no celular](docs/releases/2026-09-12-versao-0.2.1.md)
 - [Versão 0.5: o site da empresa de volta e um workspace que se lê](docs/releases/2026-09-14-versao-0.5.md)
+- [Versão 0.6.0: navegação por cinco áreas e auditoria Deskcomm](docs/releases/2026-09-26-versao-0.6.0.md)
+- [Versão 0.7.0: copiloto SYNAPSE e portão Palantyr (ainda não publicada)](docs/releases/2026-09-27-versao-0.7.0.md)
+- [Integração Palantyr v5 e estado operacional](integrations/palantyr-v5/INTEGRATION_STATUS.md)
 
 O domínio `fattech.com.br` ainda serve a versão anterior. O endereço acima é a nova
 instalação isolada, com HTTPS e banco persistente, pronta para a equipe começar a operar.

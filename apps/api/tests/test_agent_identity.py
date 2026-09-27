@@ -18,7 +18,7 @@ from fattech.config import Settings
 from fattech.db import make_engine, session_factory
 from fattech.main import api_scopes, create_app
 from fattech.migrate import migrate
-from fattech.models import AgentRun, AgentStep, ApiKey, User, now
+from fattech.models import AgentRun, AgentStep, User, now
 from fattech.schemas import RESOURCES
 from fattech.seed import bootstrap
 
@@ -140,6 +140,40 @@ def test_a_chave_do_agente_so_alcanca_o_portao(sistema):
     assert agentado.post("/api/v1/contacts", json={"name": "Lead"}).status_code == 403
     assert agentado.get("/api/v1/contacts").status_code == 403
     assert agentado.get("/api/v1/agent/tools").status_code == 200
+
+
+def test_chave_de_agente_nao_opera_corridas_de_outro_agente(sistema):
+    client, _factory, _tenant, app, _settings = sistema
+    primeiro = criar_agente(client, name="Primeiro")
+    segundo = criar_agente(client, name="Segundo")
+    chave_a = cliente_do_agente(app, provisionar(client, primeiro["id"])["key"])
+    chave_b = cliente_do_agente(app, provisionar(client, segundo["id"])["key"])
+    aberta = chave_a.post("/api/v1/agent/runs", json={
+        "agent_id": primeiro["id"], "trigger_event_id": "evt-1",
+        "trigger_type": "manual", "rationale": "Teste de isolamento entre identidades",
+    })
+    assert aberta.status_code == 201, aberta.text
+    run_id = aberta.json()["id"]
+    assert chave_b.post("/api/v1/agent/runs", json={
+        "agent_id": primeiro["id"], "trigger_event_id": "evt-2",
+        "trigger_type": "manual", "rationale": "Tenta agir como outro agente",
+    }).status_code == 403
+    assert chave_b.post("/api/v1/agent/runs/claim", json={
+        "agent_id": primeiro["id"], "limit": 1,
+    }).status_code == 403
+    assert chave_b.get(f"/api/v1/agent/{primeiro['id']}/queue").status_code == 403
+    assert chave_b.get(f"/api/v1/agent/{primeiro['id']}/budget").status_code == 403
+    assert chave_b.get(f"/api/v1/agent/runs/{run_id}").status_code == 403
+    assert chave_b.post("/api/v1/agent/act", json={
+        "run_id": run_id, "tool": "contacts.read", "arguments": {},
+    }).status_code == 403
+    assert chave_b.post(f"/api/v1/agent/runs/{run_id}/finish", json={
+        "status": "done",
+    }).status_code == 403
+    assert chave_b.get("/api/v1/agent/runs").json()["total"] == 0
+    assert chave_b.get(f"/api/v1/agent/runs?agent_id={primeiro['id']}").status_code == 403
+    assert chave_b.get("/api/v1/agent/suggestions").status_code == 403
+    assert chave_a.get(f"/api/v1/agent/runs/{run_id}").status_code == 200
 
 
 def test_a_chave_do_agente_e_recusada_em_toda_operacao_administrativa(sistema):

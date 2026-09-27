@@ -1,0 +1,1263 @@
+{
+ "versao": "2026-09-27",
+ "descricao": "Grafo de conhecimento do ecossistema Palantyr v5 — nós tipados e arestas com tipo e peso.",
+ "nos": [
+  {
+   "id": "wal",
+   "label": "Wal · CEO",
+   "tipo": "pessoa",
+   "grupo": "comando",
+   "desc": "Decisor final; único humano que fala com o Marvin"
+  },
+  {
+   "id": "iasmim",
+   "label": "Iasmim · sócia",
+   "tipo": "pessoa",
+   "grupo": "comando",
+   "desc": "Social Media Strategy; vitrine januariamg"
+  },
+  {
+   "id": "deivisson",
+   "label": "Deivisson",
+   "tipo": "pessoa",
+   "grupo": "conteudo",
+   "desc": "Co-host do Resenha Barranqueira"
+  },
+  {
+   "id": "time",
+   "label": "Time humano",
+   "tipo": "pessoa",
+   "grupo": "comando",
+   "desc": "Aplica rascunhos e aprova envios"
+  },
+  {
+   "id": "h1",
+   "label": "H1 · núcleo",
+   "tipo": "host",
+   "grupo": "infra",
+   "desc": "64.181.178.125 · A1 ARM64 · 4 vCPU · 22 GB"
+  },
+  {
+   "id": "h2",
+   "label": "H2 · borda",
+   "tipo": "host",
+   "grupo": "infra",
+   "desc": "163.176.163.204 · n8n, Evolution, NPM"
+  },
+  {
+   "id": "desk",
+   "label": "Desktop RTX 4060",
+   "tipo": "host",
+   "grupo": "infra",
+   "desc": "hoth-desktop · 8 GB VRAM · 28 GB RAM · WSL"
+  },
+  {
+   "id": "crm_api",
+   "label": "CRM · API FastAPI",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "117 rotas, 21 domínios"
+  },
+  {
+   "id": "crm_web",
+   "label": "CRM · Web Next.js",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "22 telas"
+  },
+  {
+   "id": "pg",
+   "label": "Postgres 17 (RLS)",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "RLS forçada, trilha por hash"
+  },
+  {
+   "id": "outbox",
+   "label": "Outbox + Core-Engine",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "entrega ≥1×, carta morta após 8"
+  },
+  {
+   "id": "portao",
+   "label": "Portão de agente",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "/api/v1/agent/* · E1 E2 E4 prontos"
+  },
+  {
+   "id": "gw",
+   "label": "OpenClaw gateway",
+   "tipo": "servico",
+   "grupo": "runtime",
+   "desc": "2026.9.6 · 127.0.0.1:18789"
+  },
+  {
+   "id": "mcp_crm",
+   "label": "fattech-crm-mcp ×6",
+   "tipo": "servico",
+   "grupo": "runtime",
+   "desc": "ponte por agente · 8 ferramentas · 20 testes"
+  },
+  {
+   "id": "probe",
+   "label": "palantyr-probe",
+   "tipo": "servico",
+   "grupo": "runtime",
+   "desc": "sonda sem shell, lista fechada"
+  },
+  {
+   "id": "n8n",
+   "label": "n8n",
+   "tipo": "servico",
+   "grupo": "borda",
+   "desc": "braço externo · MCP Server Trigger"
+  },
+  {
+   "id": "evo",
+   "label": "Evolution API",
+   "tipo": "servico",
+   "grupo": "borda",
+   "desc": "WhatsApp 9098369 (sagrado)"
+  },
+  {
+   "id": "npm",
+   "label": "Nginx Proxy Manager",
+   "tipo": "servico",
+   "grupo": "borda",
+   "desc": "80/443 do H2"
+  },
+  {
+   "id": "nginx",
+   "label": "nginx de sistema",
+   "tipo": "servico",
+   "grupo": "crm",
+   "desc": "80/443 do H1"
+  },
+  {
+   "id": "tailnet",
+   "label": "Tailscale",
+   "tipo": "servico",
+   "grupo": "infra",
+   "desc": "ACL negar-por-padrão"
+  },
+  {
+   "id": "doppler",
+   "label": "Doppler",
+   "tipo": "servico",
+   "grupo": "infra",
+   "desc": "segredos palantyr/prd_h1"
+  },
+  {
+   "id": "ollama",
+   "label": "Ollama",
+   "tipo": "servico",
+   "grupo": "infra",
+   "desc": "só loopback no desktop"
+  },
+  {
+   "id": "brain",
+   "label": "CÓRTEX / BRAIN",
+   "tipo": "servico",
+   "grupo": "conhecimento",
+   "desc": "Git → montado só leitura"
+  },
+  {
+   "id": "ruflo",
+   "label": "Ruflo 3.46",
+   "tipo": "servico",
+   "grupo": "engenharia",
+   "desc": "meta-harness de engenharia"
+  },
+  {
+   "id": "github",
+   "label": "GitHub",
+   "tipo": "servico",
+   "grupo": "engenharia",
+   "desc": "PR, gates, release"
+  },
+  {
+   "id": "wa_marvin",
+   "label": "WhatsApp do Marvin",
+   "tipo": "servico",
+   "grupo": "canal",
+   "desc": "chip dedicado, allowlist = Wal"
+  },
+  {
+   "id": "openrouter",
+   "label": "OpenRouter (ZDR)",
+   "tipo": "servico",
+   "grupo": "modelo",
+   "desc": "data_collection deny + zdr"
+  },
+  {
+   "id": "marvin",
+   "label": "🛰️ Marvin",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "COO digital · Nemotron 3 Super"
+  },
+  {
+   "id": "sdr",
+   "label": "🎯 SDR",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "qualifica e rascunha"
+  },
+  {
+   "id": "trafego",
+   "label": "📈 Tráfego",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "lê Ads, recomenda"
+  },
+  {
+   "id": "conteudo",
+   "label": "✍️ Conteúdo",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "pautas e copy"
+  },
+  {
+   "id": "cobranca",
+   "label": "🧾 Cobrança",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "follow-up e vencimentos"
+  },
+  {
+   "id": "sentinela",
+   "label": "🛡️ Sentinela",
+   "tipo": "agente",
+   "grupo": "squad",
+   "desc": "sonda infra e filas"
+  },
+  {
+   "id": "nemo_super",
+   "label": "Nemotron 3 Super 120B-A12B",
+   "tipo": "modelo",
+   "grupo": "modelo",
+   "desc": "T2 · Marvin · US$0,085/0,40 por 1M"
+  },
+  {
+   "id": "nemo_light",
+   "label": "Nemotron 3.5 Lightning 30B-A3B",
+   "tipo": "modelo",
+   "grupo": "modelo",
+   "desc": "T2 · squad · US$0,065/0,18 por 1M"
+  },
+  {
+   "id": "nemo_nano",
+   "label": "Nemotron 3 Nano 4B",
+   "tipo": "modelo",
+   "grupo": "modelo",
+   "desc": "T1 · local · PT-BR não listado"
+  },
+  {
+   "id": "sonnet",
+   "label": "Claude Sonnet",
+   "tipo": "modelo",
+   "grupo": "modelo",
+   "desc": "T3 · fallback"
+  },
+  {
+   "id": "nvidia_trial",
+   "label": "API trial NVIDIA",
+   "tipo": "modelo",
+   "grupo": "modelo",
+   "desc": "SÓ evals · termos proíbem produção e PII"
+  },
+  {
+   "id": "evals",
+   "label": "evals/ptbr",
+   "tipo": "servico",
+   "grupo": "engenharia",
+   "desc": "gate: média ≥4 e 0 crítico"
+  },
+  {
+   "id": "meta",
+   "label": "Meta Ads",
+   "tipo": "externo",
+   "grupo": "externo",
+   "desc": ""
+  },
+  {
+   "id": "google",
+   "label": "Google Ads",
+   "tipo": "externo",
+   "grupo": "externo",
+   "desc": ""
+  },
+  {
+   "id": "schell",
+   "label": "Schellworth & Rodrigues",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "silva",
+   "label": "Silva & Rocha",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "carpes",
+   "label": "Carpes & Mathias",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "logus",
+   "label": "LOGUS Retail",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "wf",
+   "label": "Grupo WF / Wil 4.0",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "barra",
+   "label": "Barra CT",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "gata",
+   "label": "Gata Malhada",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "minas",
+   "label": "Minas Peças",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "sabor",
+   "label": "Sabor & Massa",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "avance",
+   "label": "Avance 360",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "flor",
+   "label": "Presente em Flor",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "futura",
+   "label": "Futura AI Conf",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "golden",
+   "label": "Golden Templates",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "resenha",
+   "label": "Resenha Barranqueira",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "insta",
+   "label": "@walfredonetto",
+   "tipo": "cliente",
+   "grupo": "carteira",
+   "desc": ""
+  },
+  {
+   "id": "r_inj",
+   "label": "Injeção de prompt",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A1 · residual baixo"
+  },
+  {
+   "id": "r_pii",
+   "label": "Dado pessoal no provedor",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A7 · residual médio"
+  },
+  {
+   "id": "r_viz",
+   "label": "Vizinhos no H1",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A11 · residual médio"
+  },
+  {
+   "id": "r_wa",
+   "label": "WhatsApp não oficial",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A8/A9"
+  },
+  {
+   "id": "r_spof",
+   "label": "Host único",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A16"
+  },
+  {
+   "id": "r_custo",
+   "label": "Custo descontrolado",
+   "tipo": "risco",
+   "grupo": "risco",
+   "desc": "A6"
+  },
+  {
+   "id": "dt01",
+   "label": "DT-01 H1 lotado",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "dt10",
+   "label": "DT-10 E3/E5 pendentes",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "dt11",
+   "label": "DT-11 WhatsApp oficial",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "dt12",
+   "label": "DT-12 IDs de modelo",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "dt13",
+   "label": "DT-13 PT-BR não medido",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "dt16",
+   "label": "DT-16 sem alerta externo",
+   "tipo": "divida",
+   "grupo": "divida",
+   "desc": ""
+  },
+  {
+   "id": "d01",
+   "label": "D-01 E3 interna",
+   "tipo": "demanda",
+   "grupo": "engenharia",
+   "desc": ""
+  },
+  {
+   "id": "d03",
+   "label": "D-03 WhatsApp Cloud API",
+   "tipo": "demanda",
+   "grupo": "engenharia",
+   "desc": ""
+  },
+  {
+   "id": "d04",
+   "label": "D-04 E5 externa",
+   "tipo": "demanda",
+   "grupo": "engenharia",
+   "desc": ""
+  },
+  {
+   "id": "d05",
+   "label": "D-05 aidefence",
+   "tipo": "demanda",
+   "grupo": "engenharia",
+   "desc": ""
+  },
+  {
+   "id": "d07",
+   "label": "D-07 n8n MCP",
+   "tipo": "demanda",
+   "grupo": "engenharia",
+   "desc": ""
+  }
+ ],
+ "arestas": [
+  {
+   "de": "h1",
+   "para": "crm_api",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h1",
+   "para": "crm_web",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h1",
+   "para": "pg",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h1",
+   "para": "outbox",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h1",
+   "para": "gw",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h1",
+   "para": "nginx",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h2",
+   "para": "n8n",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h2",
+   "para": "evo",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "h2",
+   "para": "npm",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "desk",
+   "para": "ollama",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "desk",
+   "para": "ruflo",
+   "tipo": "hospeda",
+   "peso": 2
+  },
+  {
+   "de": "crm_api",
+   "para": "pg",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "portao",
+   "para": "crm_api",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "outbox",
+   "para": "pg",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "crm_web",
+   "para": "crm_api",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "gw",
+   "para": "mcp_crm",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "gw",
+   "para": "probe",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "mcp_crm",
+   "para": "portao",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "gw",
+   "para": "openrouter",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "openrouter",
+   "para": "nemo_super",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "openrouter",
+   "para": "nemo_light",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "openrouter",
+   "para": "sonnet",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "gw",
+   "para": "doppler",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "n8n",
+   "para": "crm_api",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "evo",
+   "para": "n8n",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "n8n",
+   "para": "meta",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "n8n",
+   "para": "google",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "gw",
+   "para": "brain",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "probe",
+   "para": "crm_api",
+   "tipo": "depende",
+   "peso": 3
+  },
+  {
+   "de": "desk",
+   "para": "tailnet",
+   "tipo": "rede",
+   "peso": 1
+  },
+  {
+   "de": "h1",
+   "para": "tailnet",
+   "tipo": "rede",
+   "peso": 1
+  },
+  {
+   "de": "h2",
+   "para": "tailnet",
+   "tipo": "rede",
+   "peso": 1
+  },
+  {
+   "de": "n8n",
+   "para": "gw",
+   "tipo": "acorda (hook)",
+   "peso": 2
+  },
+  {
+   "de": "gw",
+   "para": "n8n",
+   "tipo": "ferramentas MCP",
+   "peso": 2
+  },
+  {
+   "de": "ollama",
+   "para": "gw",
+   "tipo": "node_inference",
+   "peso": 1
+  },
+  {
+   "de": "ollama",
+   "para": "nemo_nano",
+   "tipo": "roda",
+   "peso": 2
+  },
+  {
+   "de": "wal",
+   "para": "wa_marvin",
+   "tipo": "comanda",
+   "peso": 3
+  },
+  {
+   "de": "wa_marvin",
+   "para": "marvin",
+   "tipo": "canal",
+   "peso": 3
+  },
+  {
+   "de": "marvin",
+   "para": "wal",
+   "tipo": "briefing",
+   "peso": 3
+  },
+  {
+   "de": "marvin",
+   "para": "sdr",
+   "tipo": "delega",
+   "peso": 3
+  },
+  {
+   "de": "sdr",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "sdr",
+   "para": "nemo_light",
+   "tipo": "pensa com",
+   "peso": 1
+  },
+  {
+   "de": "marvin",
+   "para": "trafego",
+   "tipo": "delega",
+   "peso": 3
+  },
+  {
+   "de": "trafego",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "trafego",
+   "para": "nemo_light",
+   "tipo": "pensa com",
+   "peso": 1
+  },
+  {
+   "de": "marvin",
+   "para": "conteudo",
+   "tipo": "delega",
+   "peso": 3
+  },
+  {
+   "de": "conteudo",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "conteudo",
+   "para": "nemo_light",
+   "tipo": "pensa com",
+   "peso": 1
+  },
+  {
+   "de": "marvin",
+   "para": "cobranca",
+   "tipo": "delega",
+   "peso": 3
+  },
+  {
+   "de": "cobranca",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "cobranca",
+   "para": "nemo_light",
+   "tipo": "pensa com",
+   "peso": 1
+  },
+  {
+   "de": "marvin",
+   "para": "sentinela",
+   "tipo": "delega",
+   "peso": 3
+  },
+  {
+   "de": "sentinela",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "sentinela",
+   "para": "nemo_light",
+   "tipo": "pensa com",
+   "peso": 1
+  },
+  {
+   "de": "marvin",
+   "para": "mcp_crm",
+   "tipo": "opera via",
+   "peso": 2
+  },
+  {
+   "de": "marvin",
+   "para": "nemo_super",
+   "tipo": "pensa com",
+   "peso": 2
+  },
+  {
+   "de": "sentinela",
+   "para": "probe",
+   "tipo": "sonda",
+   "peso": 2
+  },
+  {
+   "de": "trafego",
+   "para": "n8n",
+   "tipo": "lê Ads",
+   "peso": 2
+  },
+  {
+   "de": "sentinela",
+   "para": "ruflo",
+   "tipo": "abre eng:ruflo",
+   "peso": 1
+  },
+  {
+   "de": "time",
+   "para": "crm_web",
+   "tipo": "aplica rascunho",
+   "peso": 2
+  },
+  {
+   "de": "wal",
+   "para": "time",
+   "tipo": "lidera",
+   "peso": 2
+  },
+  {
+   "de": "wal",
+   "para": "iasmim",
+   "tipo": "sócios",
+   "peso": 2
+  },
+  {
+   "de": "conteudo",
+   "para": "iasmim",
+   "tipo": "apoia",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "deivisson",
+   "tipo": "pauta",
+   "peso": 1
+  },
+  {
+   "de": "ruflo",
+   "para": "github",
+   "tipo": "PR",
+   "peso": 2
+  },
+  {
+   "de": "github",
+   "para": "crm_api",
+   "tipo": "release",
+   "peso": 1
+  },
+  {
+   "de": "github",
+   "para": "gw",
+   "tipo": "release",
+   "peso": 1
+  },
+  {
+   "de": "ruflo",
+   "para": "evals",
+   "tipo": "roda",
+   "peso": 1
+  },
+  {
+   "de": "evals",
+   "para": "nvidia_trial",
+   "tipo": "usa (sintético)",
+   "peso": 1
+  },
+  {
+   "de": "evals",
+   "para": "nemo_super",
+   "tipo": "avalia",
+   "peso": 1
+  },
+  {
+   "de": "evals",
+   "para": "nemo_light",
+   "tipo": "avalia",
+   "peso": 1
+  },
+  {
+   "de": "evals",
+   "para": "nemo_nano",
+   "tipo": "avalia",
+   "peso": 1
+  },
+  {
+   "de": "trafego",
+   "para": "schell",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sdr",
+   "para": "schell",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "cobranca",
+   "para": "schell",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "trafego",
+   "para": "silva",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sdr",
+   "para": "silva",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "cobranca",
+   "para": "silva",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "trafego",
+   "para": "carpes",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "trafego",
+   "para": "logus",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sdr",
+   "para": "wf",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "barra",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sentinela",
+   "para": "barra",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "gata",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sentinela",
+   "para": "gata",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sentinela",
+   "para": "minas",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "sabor",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "cobranca",
+   "para": "sabor",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "cobranca",
+   "para": "avance",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "cobranca",
+   "para": "flor",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "trafego",
+   "para": "futura",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "futura",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "sdr",
+   "para": "golden",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "golden",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "resenha",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "conteudo",
+   "para": "insta",
+   "tipo": "atende",
+   "peso": 1
+  },
+  {
+   "de": "r_inj",
+   "para": "sdr",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_inj",
+   "para": "marvin",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_pii",
+   "para": "openrouter",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_pii",
+   "para": "nvidia_trial",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_viz",
+   "para": "h1",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_wa",
+   "para": "wa_marvin",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_wa",
+   "para": "evo",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_spof",
+   "para": "h1",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_custo",
+   "para": "openrouter",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "r_custo",
+   "para": "gw",
+   "tipo": "ameaça",
+   "peso": 2
+  },
+  {
+   "de": "dt01",
+   "para": "h1",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt10",
+   "para": "portao",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt11",
+   "para": "evo",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt12",
+   "para": "openrouter",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt13",
+   "para": "nemo_nano",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt13",
+   "para": "nemo_light",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt16",
+   "para": "h1",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "dt16",
+   "para": "sentinela",
+   "tipo": "afeta",
+   "peso": 2
+  },
+  {
+   "de": "d01",
+   "para": "portao",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d01",
+   "para": "dt10",
+   "tipo": "resolve",
+   "peso": 2
+  },
+  {
+   "de": "d03",
+   "para": "dt11",
+   "tipo": "resolve",
+   "peso": 2
+  },
+  {
+   "de": "d03",
+   "para": "evo",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d04",
+   "para": "portao",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d04",
+   "para": "d03",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d05",
+   "para": "mcp_crm",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d05",
+   "para": "r_inj",
+   "tipo": "resolve",
+   "peso": 2
+  },
+  {
+   "de": "d07",
+   "para": "n8n",
+   "tipo": "altera",
+   "peso": 2
+  },
+  {
+   "de": "d07",
+   "para": "trafego",
+   "tipo": "altera",
+   "peso": 2
+  }
+ ]
+}

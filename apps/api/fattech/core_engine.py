@@ -254,6 +254,19 @@ def flush_buffers(db, tenant_id, settings, *, limit=10):
             "causation_event_ids": list(dict.fromkeys(entry.source_event_id for entry in entries)),
         }, parent=parent)
         db.flush()
+        if batch.status == "ready":
+            # Keep the first operational SYNAPSE action in the same transaction as the batch.  A
+            # crash therefore leaves neither a phantom draft nor a batch that looks unprocessed;
+            # no provider call or external send is allowed from this worker path.
+            from .synapse_assistant import prepare_assistance
+            question = "\n".join(
+                str(message.data.get("body") or "")
+                for entry in entries
+                for message in [record_in_tenant(db, tenant_id, "messages", entry.message_id)]
+                if message is not None
+            )[:500]
+            prepare_assistance(db, tenant_id, buffer.conversation_id, question,
+                               source_batch_id=batch.id)
         for entry in entries:
             entry.batch_id = batch.id
         db.flush()

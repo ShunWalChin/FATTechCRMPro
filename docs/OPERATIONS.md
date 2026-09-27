@@ -59,6 +59,13 @@ caracteres invisíveis, de modo que um espaço de largura zero entre letras não
 `FATTECH_N8N_OUTBOUND_URL` passa por checagem de faixa reservada quando é um endereço literal, e o
 worker recusa iniciar se o host resolver para rede privada ou reservada.
 
+O copiloto do SYNAPSE lê `FATTECH_AI_BASE_URL` (endpoint `/v1` compatível com Chat Completions),
+`FATTECH_AI_MODEL`, `FATTECH_AI_API_KEY` opcional e `FATTECH_AI_TIMEOUT_SECONDS`. Sem URL e modelo,
+a geração fica indisponível e a consulta extrativa continua. Para endpoint fora do host, o operador
+precisa definir `FATTECH_AI_REMOTE_ENABLED=true` após revisar subprocessador, retenção e transferência
+de dados; esse sinal é `false` por padrão. Cada organização ainda precisa habilitar `ai_enabled` na
+configuração do SYNAPSE. Nenhuma dessas chaves liga envio externo.
+
 `FATTECH_ENV` aceita somente `development`, `test` e `production`: erros de digitação
 interrompem o início em vez de remover proteções. URL do banco, origens e slug público
 explicitamente vazios são inválidos. Campos opcionais n8n vazios desabilitam a conexão.
@@ -140,3 +147,11 @@ Integrações externas e agentes não ganham credenciais por herança de outro C
 precisa ser configurada e validada, com orçamento e permissões próprios. O n8n consome APIs
 e eventos; não substitui a transação de negócio. Dados demonstrativos são exclusivos do
 desenvolvimento e não são carregados automaticamente em produção.
+
+O pacote do Palantyr v5 fica em `integrations/palantyr-v5` dentro do release, mas o gateway
+OpenClaw usa um compose independente em `/opt/palantyr`. Importar o pacote ou publicar o CRM não
+provisiona nem inicia esse gateway. Antes da instalação, seguir
+`integrations/palantyr-v5/INTEGRATION_STATUS.md`: auditar o H1 vivo, rede e portas; testar backup;
+fornecer segredos individuais; validar o modelo e o contrato do CRM; só então instalar em modo
+sombra com os agentes pausados. Os scripts de limpeza de serviços do host não fazem parte do deploy
+do CRM.

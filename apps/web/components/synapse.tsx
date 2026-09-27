@@ -12,15 +12,16 @@ import styles from './synapse.module.css';
 type Configuration = {
   id:string; version:number; pipeline_id:string; setup_product_id:string; license_product_id:string;
   agent_id:string; owner_id:string|null; enabled:boolean; capture_enabled:boolean; sla_hours:number;
+  ai_enabled?:boolean;
 };
 type Readiness = {key:string; label:string; status:'ready'|'pending'; detail:string; href:string};
-type Run = {id:string; status?:string; contact_id?:string; deal_id?:string; created_at?:string; reason?:string};
+type Run = {id:string; status?:string; contact_id?:string; deal_id?:string; conversation_id?:string; task_id?:string; created_at?:string; reason?:string};
 type Overview = {
   id:string; installed:boolean; configuration:Configuration|null;
   metrics:{leads:number; deals:number; open_deals:number; won_deals:number; pending_tasks:number};
   readiness:Readiness[]; recent_runs:Run[];
 };
-type Assistance = {id:string; status:'draft'|'handoff'; body:string; citations:{id:string; title:string}[]; sent:false; provider:'lexical'; reason?:string};
+type Assistance = {id:string; status:'draft'|'handoff'; body:string; citations:{id:string; title:string}[]; sent:false; provider:'lexical'|'openai-compatible'; model?:string; reason?:string};
 type Enrollment = {id:string; status:string; contact_id:string; deal_id:string; task_id:string; due_at:string; duplicate:boolean};
 
 function price(value:FormDataEntryValue|null):number {
@@ -58,6 +59,7 @@ export function Synapse() {
         const record=result as Enrollment;setEnrollment(record);
         setNotice(record.duplicate?'Este contato já possui uma oportunidade SYNAPSE. Abrimos a referência existente.':'Contato vinculado ao SYNAPSE com oportunidade e próxima tarefa.');
       }else if(kind==='assist')setAssistance(result as Assistance);
+      else if(kind==='knowledge/bootstrap')setNotice('Base inicial do SYNAPSE disponível para o copiloto.');
       else setNotice(kind==='setup'?'Estrutura SYNAPSE preparada. Confira a prontidão antes de operar.':'Configurações SYNAPSE salvas.');
       await reload();
     }catch(e){
@@ -74,7 +76,20 @@ export function Synapse() {
   function settings(event:React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();if(!data?.configuration)return;const form=new FormData(event.currentTarget);
     void mutate('settings',{version:data.configuration.version,enabled:form.get('enabled')==='on',capture_enabled:form.get('capture_enabled')==='on',
+      ai_enabled:form.get('ai_enabled')==='on',
       owner_id:form.get('owner_id')||null,sla_hours:Number(form.get('sla_hours'))});
+  }
+
+  async function generate() {
+    if(!assistance)return;
+    setBusy('generate');setError('');setNotice('');
+    try{
+      const result=await api<Assistance>(`/synapse/assists/${encodeURIComponent(assistance.id)}/generate`,{method:'POST'});
+      setAssistance(result);
+      setNotice('Sugestão de IA criada para revisão humana. Nenhuma mensagem foi enviada.');
+      await reload();
+    }catch(e){setError(failure(e))}
+    finally{setBusy('')}
   }
 
   const configuration=data?.configuration;
@@ -127,7 +142,9 @@ export function Synapse() {
         <ul className={styles.readiness}>{data.readiness.map(item=><li key={item.key}>
           {item.status==='ready'?<CheckCircle2 size={22} className={styles.ready} aria-hidden="true"/>:<CircleDashed size={22} aria-hidden="true"/>}
           <div><h3>{item.label}</h3><p>{item.detail}</p><span className={item.status==='ready'?styles.ready:styles.pending}>{item.status==='ready'?'Pronto':'Pendente'}</span></div>
-          <Link href={localLink(item.href)} className="panel-link" aria-label={`Revisar ${item.label}`}>Revisar<ArrowUpRight size={14}/></Link>
+          {item.key==='knowledge'&&item.status==='pending'&&admin
+            ?<Button variant="secondary" isDisabled={disabled} onPress={()=>void mutate('knowledge/bootstrap',{})}>Preparar base</Button>
+            :<Link href={localLink(item.href)} className="panel-link" aria-label={`Revisar ${item.label}`}>Revisar<ArrowUpRight size={14}/></Link>}
         </li>)}</ul>
       </Panel>
 
@@ -137,12 +154,13 @@ export function Synapse() {
             <div className={styles.switches}>
               <label><input name="enabled" type="checkbox" defaultChecked={configuration.enabled}/><span>Habilitar operação SYNAPSE</span></label>
               <label><input name="capture_enabled" type="checkbox" defaultChecked={configuration.capture_enabled}/><span>Vincular automaticamente os leads elegíveis recebidos pela captura pública</span></label>
+              <label><input name="ai_enabled" type="checkbox" defaultChecked={configuration.ai_enabled}/><span>Permitir rascunhos generativos com trechos da base desta organização</span></label>
             </div>
             <div className={styles.fields}>
               <RelationshipField field={{key:'owner_id',label:'Responsável pelos novos leads',type:'text',relationship:'team'}} initialValue={configuration.owner_id||''}/>
               <label className="select-field"><span>Prazo da primeira ação em horas</span><input name="sla_hours" type="number" min="1" max="720" defaultValue={configuration.sla_hours} required/></label>
             </div>
-            <p className="subtle-notice">A pausa interrompe novas matrículas. O histórico e as oportunidades existentes continuam disponíveis.</p>
+            <p className="subtle-notice">O copiloto envia somente a pergunta (com e-mail e telefone óbvios mascarados) e até três trechos ao provedor configurado no servidor. A sugestão precisa de revisão humana e não envia mensagens.</p>
             <Button className="fat-button" type="submit" isDisabled={disabled}>{busy==='settings'?'Salvando…':'Salvar configuração SYNAPSE'}</Button>
           </fieldset></form>
         </Panel>}
@@ -172,6 +190,9 @@ export function Synapse() {
             <p>{assistance.body}</p>
             {assistance.reason&&<p>{assistance.reason}</p>}
             {assistance.citations.length>0&&<><h4>Fontes consultadas</h4><ul>{assistance.citations.map((citation,index)=><li key={`${citation.id}-${index}`}>{citation.title}</li>)}</ul></>}
+            {assistance.status==='draft'&&assistance.provider==='lexical'&&data.readiness.some(item=>item.key==='ai_copilot'&&item.status==='ready')&&
+              <Button variant="secondary" isDisabled={disabled} onPress={()=>void generate()}><Sparkles size={16}/>{busy==='generate'?'Gerando…':'Aprimorar rascunho com IA'}</Button>}
+            {assistance.provider==='openai-compatible'&&<p className="subtle-notice">Rascunho gerado por {assistance.model}. Confira cada afirmação nas fontes antes de usar.</p>}
             <Link className="panel-link" href="/crm/conversas">Revisar no atendimento<ArrowUpRight size={14}/></Link>
           </section>}
         </Panel>}
@@ -180,7 +201,7 @@ export function Synapse() {
           {data.recent_runs.length?<ul className={styles.runs}>{data.recent_runs.map(run=><li key={run.id}>
             <div><strong>{({completed:'Concluído',enrolled:'Lead vinculado',draft:'Consulta documental',handoff:'Revisão humana',failed:'Falha',skipped:'Não executado'} as Record<string,string>)[textValue(run.status)]||'Operação registrada'}</strong>
               {run.created_at&&<small>{new Date(run.created_at).toLocaleString('pt-BR')}</small>}
-            </div>{run.deal_id&&<Link href={`/crm/pipeline/${encodeURIComponent(run.deal_id)}`} className="panel-link">Oportunidade<ArrowUpRight size={14}/></Link>}
+            </div><div className={styles.activityLinks}>{run.deal_id&&<Link href={`/crm/pipeline/${encodeURIComponent(run.deal_id)}`} className="panel-link">Oportunidade<ArrowUpRight size={14}/></Link>}{run.conversation_id&&<Link href="/crm/conversas" className="panel-link">Atendimento<ArrowUpRight size={14}/></Link>}{run.task_id&&<Link href="/crm/tarefas" className="panel-link">Tarefa<ArrowUpRight size={14}/></Link>}</div>
           </li>)}</ul>:<p className="subtle-notice">As execuções aparecerão aqui quando sua equipe começar a operar.</p>}
         </Panel>
       </>}

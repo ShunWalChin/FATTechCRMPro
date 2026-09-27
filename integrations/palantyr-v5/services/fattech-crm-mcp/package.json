@@ -1,0 +1,28 @@
+{
+  "name": "@fattech/crm-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ponte MCP entre o OpenClaw (camada de intenção) e o portão de agente do FAT Tech CRM Pro (camada de restrição). Inclui a sonda de saúde palantyr-probe.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "fattech-crm-mcp": "dist/index.js",
+    "palantyr-probe": "dist/probe.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "typescript": "7.0.2"
+  }
+}
