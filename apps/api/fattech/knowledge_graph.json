@@ -1552,6 +1552,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:infra:quatro-destinos-nao-dois",
+   "label": "A operação tem quatro destinos, não os dois do H1/H2",
+   "family": "licao",
+   "summary": "CRM e agentes em 64.181.178.125; Evolution API e NPM em 163.176.163.204; n8n em 69.6.222.167; site comercial e e-mail em 108.179.193.44.",
+   "why": "O Palantyr v5 fixa H1 núcleo e H2 borda e registra a confusão como DT-04. A dívida é maior que o registrado: o n8n está num terceiro servidor e o site num quarto, e o runbook de incidente precisa dizer qual.",
+   "status": "medido",
+   "where": "docs/audits/2026-09-27-contatos-do-site-e-origem-do-dominio.md",
+   "source": "server-inventory.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
+  },
+  {
    "id": "fattech:ordem:denominador",
    "label": "A ordem foi medida, nao estimada",
    "family": "licao",
@@ -1576,6 +1589,19 @@
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
+  },
+  {
+   "id": "fattech:dns:cname-para-a-raiz-segue-a-raiz",
+   "label": "Apontar a raiz do domínio derrubaria webmail e cPanel junto",
+   "family": "licao",
+   "summary": "cpanel, webmail, whm e ftp são CNAME para fattech.com.br. Trocar o registro raiz para o Oracle os levaria junto. A ordem correta converte os quatro para A 108.179.193.44 antes de mexer na raiz. O e-mail não é afetado: mail, autoconfig e autodiscover têm A próprio.",
+   "why": "A correção parecia ser um registro DNS. Quatro subdomínios de administração seguem a raiz em silêncio, e quebrar o webmail para consertar um link de WhatsApp trocaria um problema por um pior.",
+   "status": "medido",
+   "where": "docs/audits/2026-09-27-contatos-do-site-e-origem-do-dominio.md",
+   "source": "server-inventory.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
   },
   {
    "id": "fattech:mano:duplicacao",
@@ -1680,6 +1706,19 @@
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
+  },
+  {
+   "id": "fattech:site:origem-e-hostgator",
+   "label": "O site comercial é servido pelo HostGator, não pelo Oracle",
+   "family": "licao",
+   "summary": "fattech.com.br aponta para 108.179.193.44 (cPanel/HostGator). O Oracle publica o site corrigido em fattechcrmpro.64.181.178.125.nip.io e o nginx do H1 não tem server block para fattech.com.br. Medido em 2026-09-27: 22 CTAs no ar apontam para +1-555-909-8369, prefixo reservado para ficção nos EUA; o repositório tem 159 links corretos.",
+   "why": "Explica por que a correção dos contatos nunca chegou ao ar, e não é defeito de código nem de release: é origem. O relatório de deploy registrou 'Site: HTTP 200', o que é verdade e insuficiente — 200 mede disponibilidade, não identidade, e é por isso que o auditor compara bytes.",
+   "status": "medido",
+   "where": "docs/audits/2026-09-27-contatos-do-site-e-origem-do-dominio.md",
+   "source": "server-inventory.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 0
   },
   {
    "id": "fattech:mano:varredura-de-bytes",
@@ -2924,12 +2963,12 @@
   }
  ],
  "counts": {
-  "nodes": 165,
+  "nodes": 168,
   "edges": 122,
   "por_familia": {
    "business_rule": 59,
    "engineering_pattern": 36,
-   "licao": 16,
+   "licao": 19,
    "licao_de_debito": 6,
    "domain": 21,
    "release": 16,
