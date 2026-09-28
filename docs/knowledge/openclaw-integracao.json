@@ -311,6 +311,46 @@
    "rule": "A varredura de eventos pula o próprio arquivo.",
    "por_que_importa": "O exemplo de `audit_event(...)` citado no cabeçalho do módulo entrava no catálogo como evento real, catalogado por auto-referência. O número ficava maior e um evento inexistente passaria na validação de gatilho.",
    "onde_no_fattech": "apps/api/fattech/event_catalog.py (eventos_nomeados)"
+  },
+  {
+   "id": "fattech:medicao:host-curinga-responde-por-tudo",
+   "label": "Num host curinga, 200 nao prova servico — meca um nome inventado como controle",
+   "type": "licao",
+   "status": "aplicado",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Antes de declarar um endereco `*.nip.io` no ar, medir tambem um nome que nao deveria existir. Se os dois respondem igual, quem responde e o `server _` do nginx, nao o servico.",
+   "por_que_importa": "`claw.64.181.178.125.nip.io` devolvia 200 e eu quase registrei o gateway como ativo. O corpo estava vazio, e `inexistente-xyz.64.181.178.125.nip.io` devolvia exatamente o mesmo 200 vazio. Nao existe conteiner de gateway nenhum. E a segunda vez neste projeto que um 200 mente — a primeira foi o relatorio de deploy de 24/09 dizendo `fattech.com.br HTTP 200` sobre um site com 22 CTAs errados. 200 mede disponibilidade, nao identidade.",
+   "onde_no_fattech": "docs/audits/2026-09-28-auditoria-completa-crm-e-oracle.md"
+  },
+  {
+   "id": "fattech:motor:outbox-pendente-nao-e-fila",
+   "label": "`event_outbox.status = pending` nao e atraso: o consumo mora em `core_deliveries`",
+   "type": "engineering_pattern",
+   "status": "medido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "A linha do `event_outbox` e o log do evento e nao muda de estado ao ser consumida. O progresso e uma entrega por papel em `core_deliveries`. Medir atraso exige olhar `core_deliveries` com `available_at <= now()`, nunca o outbox.",
+   "por_que_importa": "As 301 linhas do outbox em producao estao todas em `pending`, e as 301 entregas de `bi` estao todas em `completed`. Quem medisse o outbox anunciaria 301 de fila num motor que esta zerado — e depois nao acreditaria no medidor quando houvesse fila de verdade.",
+   "onde_no_fattech": "apps/api/fattech/core_engine.py (schedule), apps/api/fattech/core_models.py (CoreDelivery)"
+  },
+  {
+   "id": "fattech:agentes:gatilho-vazio-parece-configurado",
+   "label": "Cinco dos sete agentes em producao nao tem gatilho — e parecem configurados",
+   "type": "licao_de_debito",
+   "status": "aberto",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "Um agente sem gatilho nunca acorda por evento, mesmo ativo. O validador do catalogo de eventos recusa gatilho inexistente, mas lista vazia passa — e lista vazia e o caso mais comum.",
+   "por_que_importa": "Medido em 2026-09-28: SYNAPSE (com zero ferramentas tambem), Marvin, Trafego Pago, Cobranca & Higiene e Sentinela tem `triggers: []`. O Marvin e o agente do briefing das 08h: dezesseis ferramentas e nenhum gatilho. Ativar a operacao sem preencher isso produziria um sistema que parece ligado e nao acorda — pior que um erro, porque nao da sinal.",
+   "onde_no_fattech": "apps/api/fattech/agent_dispatch.py (tipos_observados), tela /crm/agente"
+  },
+  {
+   "id": "fattech:site:declaracao-faltando-e-o-alarme-funcionando",
+   "label": "Divergencia sem declaracao e o auditor funcionando, nao falhando",
+   "type": "engineering_pattern",
+   "status": "corrigido",
+   "source_file": "docs/knowledge/openclaw-integracao.json",
+   "rule": "`scripts/audit-site.py` compara `apps/web/public` com o repositorio oficial do site e exige que toda diferenca tenha motivo escrito em `docs/site-patches.json`.",
+   "por_que_importa": "O auditor acusou `script.js`. A mudanca era certa — o formulario registra o lead em `/api/v1/public/leads` com `keepalive: true` antes de abrir o WhatsApp, e o `keepalive` e o que impede o navegador de cancelar a captura quando a aba do WhatsApp assume o foco. O que faltava era a declaracao. Uma auditoria que aceita diferenca sem motivo nao distingue correcao de regressao.",
+   "onde_no_fattech": "docs/site-patches.json, apps/web/public/script.js"
   }
  ],
  "edges": [
@@ -493,6 +533,27 @@
    "source": "fattech:medidor:nao-se-mede",
    "target": "fattech:eventos:catalogo-derivado-e-seu-limite",
    "relation": "corrige",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:medicao:host-curinga-responde-por-tudo",
+   "target": "fattech:medidor:nao-se-mede",
+   "relation": "mesma_classe",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:agentes:gatilho-vazio-parece-configurado",
+   "target": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "relation": "limite_de",
+   "confidence": "MEASURED",
+   "source_file": "docs/knowledge/openclaw-integracao.json"
+  },
+  {
+   "source": "fattech:motor:outbox-pendente-nao-e-fila",
+   "target": "fattech:openclaw:reciclar-cobre-executing",
+   "relation": "contextualiza",
    "confidence": "MEASURED",
    "source_file": "docs/knowledge/openclaw-integracao.json"
   }

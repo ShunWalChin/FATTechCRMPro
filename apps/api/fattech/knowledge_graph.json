@@ -1227,6 +1227,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:site:declaracao-faltando-e-o-alarme-funcionando",
+   "label": "Divergencia sem declaracao e o auditor funcionando, nao falhando",
+   "family": "engineering_pattern",
+   "summary": "`scripts/audit-site.py` compara `apps/web/public` com o repositorio oficial do site e exige que toda diferenca tenha motivo escrito em `docs/site-patches.json`.",
+   "why": "O auditor acusou `script.js`. A mudanca era certa — o formulario registra o lead em `/api/v1/public/leads` com `keepalive: true` antes de abrir o WhatsApp, e o `keepalive` e o que impede o navegador de cancelar a captura quando a aba do WhatsApp assume o foco. O que faltava era a declaracao. Uma auditoria que aceita diferenca sem motivo nao distingue correcao de regressao.",
+   "status": "corrigido",
+   "where": "docs/site-patches.json, apps/web/public/script.js",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 0
+  },
+  {
    "id": "fattech:mano:impressao-digital",
    "label": "Do token so se ve a impressao digital",
    "family": "engineering_pattern",
@@ -1354,7 +1367,7 @@
    "source": "openclaw-integracao.json",
    "familyLabel": "Padrão de engenharia",
    "tone": "#a855f7",
-   "degree": 2
+   "degree": 3
   },
   {
    "id": "fattech:mano:rls-assimetrica",
@@ -1552,6 +1565,19 @@
    "degree": 1
   },
   {
+   "id": "fattech:motor:outbox-pendente-nao-e-fila",
+   "label": "`event_outbox.status = pending` nao e atraso: o consumo mora em `core_deliveries`",
+   "family": "engineering_pattern",
+   "summary": "A linha do `event_outbox` e o log do evento e nao muda de estado ao ser consumida. O progresso e uma entrega por papel em `core_deliveries`. Medir atraso exige olhar `core_deliveries` com `available_at <= now()`, nunca o outbox.",
+   "why": "As 301 linhas do outbox em producao estao todas em `pending`, e as 301 entregas de `bi` estao todas em `completed`. Quem medisse o outbox anunciaria 301 de fila num motor que esta zerado — e depois nao acreditaria no medidor quando houvesse fila de verdade.",
+   "status": "medido",
+   "where": "apps/api/fattech/core_engine.py (schedule), apps/api/fattech/core_models.py (CoreDelivery)",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Padrão de engenharia",
+   "tone": "#a855f7",
+   "degree": 1
+  },
+  {
    "id": "fattech:infra:quatro-destinos-nao-dois",
    "label": "A operação tem quatro destinos, não os dois do H1/H2",
    "family": "licao",
@@ -1625,6 +1651,19 @@
    "status": "corrigido",
    "where": "apps/api/fattech/contracts.py e tests/test_contracts.py",
    "source": "ordem-principal-onda-2.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
+   "id": "fattech:medicao:host-curinga-responde-por-tudo",
+   "label": "Num host curinga, 200 nao prova servico — meca um nome inventado como controle",
+   "family": "licao",
+   "summary": "Antes de declarar um endereco `*.nip.io` no ar, medir tambem um nome que nao deveria existir. Se os dois respondem igual, quem responde e o `server _` do nginx, nao o servico.",
+   "why": "`claw.64.181.178.125.nip.io` devolvia 200 e eu quase registrei o gateway como ativo. O corpo estava vazio, e `inexistente-xyz.64.181.178.125.nip.io` devolvia exatamente o mesmo 200 vazio. Nao existe conteiner de gateway nenhum. E a segunda vez neste projeto que um 200 mente — a primeira foi o relatorio de deploy de 24/09 dizendo `fattech.com.br HTTP 200` sobre um site com 22 CTAs errados. 200 mede disponibilidade, nao identidade.",
+   "status": "aplicado",
+   "where": "docs/audits/2026-09-28-auditoria-completa-crm-e-oracle.md",
+   "source": "openclaw-integracao.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
    "degree": 1
@@ -1757,7 +1796,7 @@
    "source": "openclaw-integracao.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
-   "degree": 1
+   "degree": 2
   },
   {
    "id": "fattech:campos:redacao-no-lugar-errado",
@@ -1799,6 +1838,19 @@
    "degree": 0
   },
   {
+   "id": "fattech:agentes:gatilho-vazio-parece-configurado",
+   "label": "Cinco dos sete agentes em producao nao tem gatilho — e parecem configurados",
+   "family": "licao_de_debito",
+   "summary": "Um agente sem gatilho nunca acorda por evento, mesmo ativo. O validador do catalogo de eventos recusa gatilho inexistente, mas lista vazia passa — e lista vazia e o caso mais comum.",
+   "why": "Medido em 2026-09-28: SYNAPSE (com zero ferramentas tambem), Marvin, Trafego Pago, Cobranca & Higiene e Sentinela tem `triggers: []`. O Marvin e o agente do briefing das 08h: dezesseis ferramentas e nenhum gatilho. Ativar a operacao sem preencher isso produziria um sistema que parece ligado e nao acorda — pior que um erro, porque nao da sinal.",
+   "status": "aberto",
+   "where": "apps/api/fattech/agent_dispatch.py (tipos_observados), tela /crm/agente",
+   "source": "openclaw-integracao.json",
+   "familyLabel": "Lição",
+   "tone": "#f5c518",
+   "degree": 1
+  },
+  {
    "id": "fattech:openclaw:contencao-nao-depende-de-patente",
    "label": "Contenção de automatismo não pode depender de superar a patente do automatismo",
    "family": "licao_de_debito",
@@ -1835,7 +1887,7 @@
    "source": "openclaw-integracao.json",
    "familyLabel": "Lição",
    "tone": "#f5c518",
-   "degree": 0
+   "degree": 1
   },
   {
    "id": "fattech:openclaw:unicidade-por-agente-e-evento",
@@ -2524,6 +2576,24 @@
    "note": ""
   },
   {
+   "source": "fattech:medicao:host-curinga-responde-por-tudo",
+   "target": "fattech:medidor:nao-se-mede",
+   "relation": "mesma_classe",
+   "note": ""
+  },
+  {
+   "source": "fattech:agentes:gatilho-vazio-parece-configurado",
+   "target": "fattech:eventos:catalogo-derivado-e-seu-limite",
+   "relation": "limite_de",
+   "note": ""
+  },
+  {
+   "source": "fattech:motor:outbox-pendente-nao-e-fila",
+   "target": "fattech:openclaw:reciclar-cobre-executing",
+   "relation": "contextualiza",
+   "note": ""
+  },
+  {
    "source": "fattech:ordem:denominador",
    "target": "fattech:lead:estagio-separado-de-status",
    "relation": "orienta",
@@ -2963,13 +3033,13 @@
   }
  ],
  "counts": {
-  "nodes": 168,
-  "edges": 122,
+  "nodes": 172,
+  "edges": 125,
   "por_familia": {
    "business_rule": 59,
-   "engineering_pattern": 36,
-   "licao": 19,
-   "licao_de_debito": 6,
+   "engineering_pattern": 38,
+   "licao": 20,
+   "licao_de_debito": 7,
    "domain": 21,
    "release": 16,
    "service": 11,
