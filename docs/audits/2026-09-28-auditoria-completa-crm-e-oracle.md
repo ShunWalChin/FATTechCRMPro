@@ -211,7 +211,7 @@ A lacuna nº 1 era a única que não dependia de credencial nem de decisão sua,
 | Antes | Depois |
 |---|---|
 | `RELEASE` = `fe9bc4f` | `6f14ef6` |
-| imagem `0.5.1-20260927-agentreads` | **`0.8.0-20260928-audit`** |
+| imagem `0.5.1-20260927-agentreads` | **`0.7.0-20260928-audit`** |
 | `compliance.decidir_envio` ausente | presente |
 | `reciclar_presas` ausente | presente |
 | `event_catalog` ausente | **presente, 112 tipos em 21 domínios** |
@@ -247,3 +247,13 @@ sai sem que você ligue a trava.
 Eu documentei o catálogo de eventos como "108 tipos". São **112** — quatro `audit_event` novos
 entraram desde então. O catálogo é derivado, então o total é medição e não constante: o grafo passou
 a descrever a **fonte** e datar a medição, em vez de fixar um número que envelhece a cada commit.
+
+### Um erro meu, corrigido antes de virar armadilha
+
+Etiquetei a primeira instalação como `0.8.0-20260928-audit`. **O código declara 0.7.0** em
+`pyproject.toml`, `package.json` e `apps/web/package.json`, e `/api/v1/health` devolve `0.7.0` —
+a etiqueta prometia uma versão que a build não é, e quatro das cinco lacunas do 0.8 continuam
+abertas. Subir os três arquivos para 0.8.0 seria trocar uma mentira por outra.
+
+Reinstalei com `0.7.0-20260928-audit`. Uma etiqueta que `docker ps` mostra é a primeira coisa que
+alguém lê às três da manhã, e ela precisa concordar com o que `/health` responde.
