@@ -210,7 +210,7 @@ A lacuna nº 1 era a única que não dependia de credencial nem de decisão sua,
 
 | Antes | Depois |
 |---|---|
-| `RELEASE` = `fe9bc4f` | `6f14ef6` |
+| `RELEASE` = `fe9bc4f` | **o HEAD desta auditoria** (`234c97e`) |
 | imagem `0.5.1-20260927-agentreads` | **`0.7.0-20260928-audit`** |
 | `compliance.decidir_envio` ausente | presente |
 | `reciclar_presas` ausente | presente |
@@ -257,3 +257,10 @@ abertas. Subir os três arquivos para 0.8.0 seria trocar uma mentira por outra.
 
 Reinstalei com `0.7.0-20260928-audit`. Uma etiqueta que `docker ps` mostra é a primeira coisa que
 alguém lê às três da manhã, e ela precisa concordar com o que `/health` responde.
+
+### O documento sempre fica um commit à frente do que ele descreve
+
+Produção roda `234c97e`, que é o HEAD no momento da instalação. O commit que atualizou esta linha
+não está nela — um documento que descreve um deploy não pode estar dentro da release que ele
+descreve. Quando a diferença entre HEAD e `RELEASE` for só de documento, `install-release.sh` vai
+reportar `Removidos 0` e `divergentes: nenhum`, e é isso que significa "em dia".
