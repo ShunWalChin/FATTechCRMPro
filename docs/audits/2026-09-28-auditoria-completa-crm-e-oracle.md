@@ -177,13 +177,12 @@ a aba do WhatsApp assume o foco — ou seja, justamente no caso comum.
 
 ---
 
-## As cinco lacunas entre isto e operação real
+## As lacunas entre isto e operação real
 
-1. **Produção está dois commits atrás do HEAD.** `RELEASE` = `fe9bc4f`, HEAD = `22b39a1`. Confirmei
-   pela imagem, não pelo git: `compliance.decidir_envio`, `reciclar_presas` e `event_catalog` **não
-   importam** no contêiner de produção, e o catálogo de lá tem **45 executáveis contra 46** —
-   `messages.send` não despacha. O E5, a reciclagem e o catálogo de 108 eventos existem, passam nos
-   testes e **não estão no ar**. Custo: um `release.py` + `install-release.sh`.
+Eram cinco quando a medição começou. A primeira foi fechada.
+
+1. ~~**Produção está dois commits atrás do HEAD.**~~ **Fechada nesta sessão** — ver
+   *"O que foi fechado"* abaixo.
 2. **Seis chaves `root` ativas sem token.** Bloqueado em permissão de escrita remota.
 3. **O OpenClaw nunca subiu.** Falta a chave do OpenRouter, o bridge compilado em contêiner (o Node
    do host é v22.22.2; o bridge exige ≥ 24.16) e o server block de `claw.*`. Sem isso o núcleo de
@@ -202,3 +201,49 @@ nas dezesseis tabelas que declara forçar, roda os quatro trabalhadores com bati
 drena as 301 entregas sem uma carta morta, faz backup diário verificado por hash e serve 66 arquivos
 byte a byte iguais ao repositório. **Isso não é pouco e não é o suficiente**: é uma base sadia com
 cinco coisas por cima dela, e a primeira delas é publicar o que já passou nos testes.
+
+---
+
+## O que foi fechado: produção agora é o HEAD
+
+A lacuna nº 1 era a única que não dependia de credencial nem de decisão sua, então fechei.
+
+| Antes | Depois |
+|---|---|
+| `RELEASE` = `fe9bc4f` | `6f14ef6` |
+| imagem `0.5.1-20260927-agentreads` | **`0.8.0-20260928-audit`** |
+| `compliance.decidir_envio` ausente | presente |
+| `reciclar_presas` ausente | presente |
+| `event_catalog` ausente | **presente, 112 tipos em 21 domínios** |
+| 45 executáveis, `messages.send` fora | **46, `messages.send` despacha** |
+
+### O instalador recusou a primeira tentativa, e estava certo
+
+`install-release.sh` conferiu os 453 arquivos contra `docs/FILE_INVENTORY.csv` e parou em cinco
+divergentes — os cinco que o commit da auditoria mudou. O inventário ainda carregava os hashes de
+antes, e o instalador **poda por uma lista e verifica contra outra** se confiar num manifesto velho.
+Regerei o inventário, refiz a release e ele passou. A recusa custou dois minutos e é a razão pela
+qual um arquivo apagado numa versão não sobrevive na próxima.
+
+### O que continua travado, de propósito
+
+`external_sends_enabled=False` em produção, confirmado dentro do contêiner. O `messages.send` agora
+**despacha** e continua atravessando três camadas em série: a trava global, o compliance recalculado
+no instante, e — porque a ferramenta é declarada irreversível — a cadeia de aprovação humana. Nada
+sai sem que você ligue a trava.
+
+### Verificado depois do deploy
+
+- quatro serviços **healthy**, o Postgres intocado (up 2 semanas)
+- migrações: **10**; trilha: **301 linhas, seq até 301, 0 sem selo**
+- reconferência do encadeamento: **íntegra, 301 de 301, 0 problemas** — o deploy não mexeu num selo
+- entregas do motor: **301 completed**, 0 corridas presas
+- esquema publicado: **130 rotas**, entre elas `/agent/events/catalog` e `/agent/runs/recycle`
+- rotas autenticadas devolvendo **401** sem chave, que é o correto
+- backup tirado antes da troca: `fattech-20260928T125529Z.dump`
+
+### Uma correção de número
+
+Eu documentei o catálogo de eventos como "108 tipos". São **112** — quatro `audit_event` novos
+entraram desde então. O catálogo é derivado, então o total é medição e não constante: o grafo passou
+a descrever a **fonte** e datar a medição, em vez de fixar um número que envelhece a cada commit.

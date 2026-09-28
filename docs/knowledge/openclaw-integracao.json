@@ -298,7 +298,7 @@
    "type": "engineering_pattern",
    "status": "implementado_localmente",
    "source_file": "docs/knowledge/openclaw-integracao.json",
-   "rule": "108 tipos de evento, montados do ciclo de vida de cada domínio mais a varredura de literais em `audit_event`. Eventos de nome montado em tempo de execução são declarados à parte em DINAMICOS, e a resposta traz `observados_no_banco` junto.",
+   "rule": "O catálogo é **derivado**: o ciclo de vida de cada domínio de `RESOURCES` mais a varredura de literais em `audit_event`. O total é medição, não constante — **112 em 2026-09-28**, contra 108 quando o estágio nasceu, porque cada `audit_event` novo entra sozinho. Escrever o número como se fosse fixo envelhece a documentação a cada commit; escrever a fonte não. Eventos de nome montado em tempo de execução são declarados à parte em DINAMICOS, e a resposta traz `observados_no_banco` junto.",
    "por_que_importa": "`GET /core/contract` devolve o esquema do envelope: valida o formato do nome e não sabe dizer se o evento existe — era o DT-14 do Palantyr, impossível de cumprir com aquela rota. Um agente ativo com gatilho inexistente passa em toda validação e nunca acorda. O validador agora recusa na escrita, com o nome errado no texto. E o limite da varredura é declarado: a f-string `agent.{decisao}` não aparece nela, e precisou de linha própria.",
    "onde_no_fattech": "apps/api/fattech/event_catalog.py, GET /api/v1/agent/events/catalog"
   },
