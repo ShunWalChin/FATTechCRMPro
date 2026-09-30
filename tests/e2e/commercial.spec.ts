@@ -6,7 +6,7 @@ test('a proposal preserves prices and a seller goal can be created and updated f
  await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
  await page.getByLabel('Senha',{exact:true}).fill('Test-only-Fattech-Password-2026!');
  await page.getByRole('button',{name:'Acessar meu workspace'}).click();
- await expect(page).toHaveURL(/\/crm$/);
+ await expect(page).toHaveURL(/\/crm\/inicio$/);
  const session=await (await page.request.get('/api/v1/auth/me')).json();
  const headers={'X-CSRF-Token':session.csrf_token};
  const create=async(kind:string,data:object)=>{const response=await page.request.post(`/api/v1/${kind}`,{headers,data});expect(response.status(),await response.text()).toBe(201);return response.json()};

@@ -3,10 +3,10 @@
 import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import {ChevronDown} from 'lucide-react';
-import {CRM_NAVIGATION, navigationHref, navigationLocation} from './crm-navigation';
+import {SYNAPSE_NAVIGATION, navigationHref, navigationLocation} from './crm-navigation';
 import styles from './crm-navigation.module.css';
 
-const STORAGE_KEY = 'fattech.crm.navigation.expanded.v2';
+const STORAGE_KEY = 'synapse.navigation.expanded.v3';
 
 export function CrmNavigation({pathname, onNavigate}: {pathname: string; onNavigate: () => void}) {
   const current = navigationLocation(pathname);
@@ -34,8 +34,8 @@ export function CrmNavigation({pathname, onNavigate}: {pathname: string; onNavig
     });
   }
 
-  return <nav className={styles.navigation} aria-label="Navegação do CRM">
-    {CRM_NAVIGATION.map(group => {
+  return <nav className={styles.navigation} aria-label="Navegação do SYNAPSE">
+    {SYNAPSE_NAVIGATION.map(group => {
       // Página ativa abre por padrão; o usuário ainda pode recolher o grupo.
       const groupOpen = expanded[group.id] ?? (current?.group.id === group.id);
       const GroupIcon = group.icon;

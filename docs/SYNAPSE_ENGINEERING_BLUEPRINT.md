@@ -1,5 +1,10 @@
 # S.Y.N.A.P.S.E. — ordem de engenharia do produto
 
+> Atualização de produto em 28/09/2026: SYNAPSE é a plataforma; CRM e ERP são módulos.
+> A definição de produto, navegação e fronteiras vigente está em
+> [SYNAPSE_PLATFORM_MODEL.md](SYNAPSE_PLATFORM_MODEL.md). Este blueprint preserva o
+> histórico da engenharia comercial; suas referências a pacote/camada dentro do CRM foram superadas.
+
 ## 1. Objetivo
 
 Construir o produto que sustenta a promessa comercial da FAT Tech: uma máquina de vendas para pequenas e médias empresas brasileiras que capta leads, responde em segundos, qualifica, agenda, acompanha, propõe e mede o resultado em um único CRM. O sistema deve transformar a experiência pública do site em uma operação verificável dentro do CRM, sem prometer uma ação que o backend não consiga provar.

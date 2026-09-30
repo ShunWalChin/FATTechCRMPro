@@ -43,20 +43,20 @@ async function synapseApi(page:Page,{installed=false,admin=true}:{installed?:boo
 test('SYNAPSE prepares the workspace, enrolls a contact once and exposes cited assistance without sending',async({page})=>{
   const calls=await synapseApi(page);
   await page.goto('/crm/synapse');
-  await expect(page.getByRole('navigation',{name:'Navegação do CRM'}).getByRole('link',{name:'SYNAPSE',exact:true})).toHaveAttribute('aria-current','page');
+  await expect(page.getByRole('navigation',{name:'Navegação do SYNAPSE'}).getByRole('link',{name:'Implantação comercial',exact:true})).toHaveAttribute('aria-current','page');
   await page.getByLabel('Implantação em reais').fill('3990.90');
   await page.getByLabel('Licença mensal em reais').fill('590.50');
-  await page.getByRole('button',{name:'Preparar operação SYNAPSE'}).click();
+  await page.getByRole('button',{name:'Preparar operação comercial'}).click();
   await expect(page.getByRole('heading',{name:'Operação habilitada'})).toBeVisible();
   expect(calls.find(call=>call.path==='/synapse/setup')?.body).toEqual({setup_cents:399090,monthly_cents:59050,sla_hours:24});
   await expect(page.getByText('Canal externo ainda não habilitado.')).toBeVisible();
 
-  await page.getByRole('combobox',{name:'Contato para o SYNAPSE'}).selectOption('contact-1');
-  await page.getByRole('button',{name:'Vincular ao SYNAPSE',exact:true}).click();
+  await page.getByRole('combobox',{name:'Contato para a operação comercial'}).selectOption('contact-1');
+  await page.getByRole('button',{name:'Vincular à operação comercial',exact:true}).click();
   await expect(page.getByRole('link',{name:'Abrir oportunidade',exact:true})).toHaveAttribute('href','/crm/pipeline/deal-1');
   await expect(page.locator('.metric-card',{hasText:'Leads vinculados'}).locator('strong')).toHaveText('1');
-  await page.getByRole('button',{name:'Vincular ao SYNAPSE',exact:true}).click();
-  await expect(page.getByRole('status').filter({hasText:'Este contato já possui uma oportunidade SYNAPSE.'})).toBeVisible();
+  await page.getByRole('button',{name:'Vincular à operação comercial',exact:true}).click();
+  await expect(page.getByRole('status').filter({hasText:'Este contato já possui uma oportunidade nesta operação comercial.'})).toBeVisible();
   await expect(page.locator('.metric-card',{hasText:'Leads vinculados'}).locator('strong')).toHaveText('1');
 
   await page.getByRole('combobox',{name:'Conversa para consultar'}).selectOption('conversation-1');
@@ -68,10 +68,10 @@ test('SYNAPSE prepares the workspace, enrolls a contact once and exposes cited a
   expect(calls.find(call=>call.path==='/synapse/assist')?.body).toEqual({conversation_id:'conversation-1',question:'O que está incluído na implantação?'});
   expect(calls.some(call=>/messages|send/.test(call.path))).toBe(false);
 
-  await page.getByLabel('Habilitar operação SYNAPSE',{exact:true}).uncheck();
-  await page.getByRole('button',{name:'Salvar configuração SYNAPSE'}).click();
+  await page.getByLabel('Habilitar operação comercial',{exact:true}).uncheck();
+  await page.getByRole('button',{name:'Salvar configuração comercial'}).click();
   await expect(page.getByRole('heading',{name:'Operação pausada'})).toBeVisible();
-  await expect(page.getByRole('button',{name:'Vincular ao SYNAPSE',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Vincular à operação comercial',exact:true})).toBeDisabled();
   expect(calls.find(call=>call.path==='/synapse/settings')?.body).toMatchObject({version:1,enabled:false,capture_enabled:false,owner_id:'operator',sla_hours:24});
 });
 
@@ -80,8 +80,8 @@ test('SYNAPSE keeps a viewer in read-only operation and fits a narrow viewport',
   await page.setViewportSize({width:390,height:844});
   await page.goto('/crm/synapse');
   await expect(page.getByRole('heading',{name:'Operação habilitada'})).toBeVisible();
-  await expect(page.getByRole('button',{name:'Salvar configuração SYNAPSE'})).toHaveCount(0);
-  await expect(page.getByRole('button',{name:'Vincular ao SYNAPSE',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Salvar configuração comercial'})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Vincular à operação comercial',exact:true})).toHaveCount(0);
   await expect(page.getByRole('button',{name:'Consultar base',exact:true})).toHaveCount(0);
   const dimensions=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:window.innerWidth}));
   expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport);
@@ -93,10 +93,10 @@ test('SYNAPSE rejects an invalid setup response and preserves the submitted valu
   await page.route('**/api/v1/synapse/setup',route=>route.fulfill({status:200,contentType:'application/json',body:'{"created":true}'}));
   await page.goto('/crm/synapse');
   await page.getByLabel('Implantação em reais').fill('3550.75');
-  await page.getByRole('button',{name:'Preparar operação SYNAPSE'}).click();
+  await page.getByRole('button',{name:'Preparar operação comercial'}).click();
   await expect(page.getByRole('alert').filter({hasText:'Resposta inválida do servidor.'})).toBeVisible();
   await expect(page.getByLabel('Implantação em reais')).toHaveValue('3550.75');
-  await expect(page.getByRole('button',{name:'Preparar operação SYNAPSE'})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Preparar operação comercial'})).toBeEnabled();
 });
 
 test('SYNAPSE persists a commercial journey through the real API',async({page})=>{
@@ -111,8 +111,8 @@ test('SYNAPSE persists a commercial journey through the real API',async({page})=
   const lead=await contact.json();
   await page.goto('/crm/synapse');
   await expect(page.getByRole('heading',{name:'Operação habilitada'})).toBeVisible();
-  await page.getByRole('combobox',{name:'Contato para o SYNAPSE'}).selectOption(lead.id);
-  await page.getByRole('button',{name:'Vincular ao SYNAPSE',exact:true}).click();
+  await page.getByRole('combobox',{name:'Contato para a operação comercial'}).selectOption(lead.id);
+  await page.getByRole('button',{name:'Vincular à operação comercial',exact:true}).click();
   const link=page.getByRole('link',{name:'Abrir oportunidade',exact:true});
   await expect(link).toBeVisible();
   const runs=await (await page.request.get('/api/v1/synapse/runs')).json();

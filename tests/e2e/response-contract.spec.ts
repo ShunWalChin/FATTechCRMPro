@@ -8,7 +8,7 @@ async function login(page:Page){
   await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
   await page.getByLabel('Senha',{exact:true}).fill('Test-only-Fattech-Password-2026!');
   await page.getByRole('button',{name:'Acessar meu workspace'}).click();
-  await expect(page.locator('.dashboard-welcome')).toBeVisible();
+  await expect(page.getByRole('heading', {name: 'Sua empresa, conectada.'})).toBeVisible();
 }
 
 test('invalid successful responses keep a record editor open and preserve its fields',async({page})=>{
@@ -57,7 +57,7 @@ test('login requires a JSON session contract before navigating',async({page})=>{
   }
   await page.unroute('**/api/v1/auth/login');
   await page.getByRole('button',{name:'Acessar meu workspace'}).click();
-  await expect(page.locator('.dashboard-welcome')).toBeVisible();
+  await expect(page.getByRole('heading', {name: 'Sua empresa, conectada.'})).toBeVisible();
 });
 
 // The browser test for the public lead form was removed with the form itself: the company's own site

@@ -8,7 +8,7 @@ async function signIn(page: Page) {
   await page.getByLabel('E-mail da equipe').fill(email);
   await page.getByLabel('Senha', {exact: true}).fill(password);
   await page.getByRole('button', {name: 'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
   const session = await (await page.request.get('/api/v1/auth/me')).json();
   const write = async (path: string, data: Record<string, unknown>) => {
     const response = await page.request.post(`/api/v1/${path}`, {headers: {'X-CSRF-Token': session.csrf_token}, data});

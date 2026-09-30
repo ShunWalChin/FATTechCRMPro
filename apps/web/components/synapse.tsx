@@ -57,10 +57,10 @@ export function Synapse() {
       const result=await api<unknown>(`/synapse/${kind}`,{method:'POST',body:JSON.stringify(body)});
       if(kind==='enroll') {
         const record=result as Enrollment;setEnrollment(record);
-        setNotice(record.duplicate?'Este contato já possui uma oportunidade SYNAPSE. Abrimos a referência existente.':'Contato vinculado ao SYNAPSE com oportunidade e próxima tarefa.');
+        setNotice(record.duplicate?'Este contato já possui uma oportunidade nesta operação comercial. Abrimos a referência existente.':'Contato vinculado à operação comercial com oportunidade e próxima tarefa.');
       }else if(kind==='assist')setAssistance(result as Assistance);
-      else if(kind==='knowledge/bootstrap')setNotice('Base inicial do SYNAPSE disponível para o copiloto.');
-      else setNotice(kind==='setup'?'Estrutura SYNAPSE preparada. Confira a prontidão antes de operar.':'Configurações SYNAPSE salvas.');
+      else if(kind==='knowledge/bootstrap')setNotice('Base inicial da operação comercial disponível para o copiloto.');
+      else setNotice(kind==='setup'?'Estrutura comercial preparada. Confira a prontidão antes de operar.':'Configurações da operação comercial salvas.');
       await reload();
     }catch(e){
       setError(failure(e));
@@ -95,7 +95,7 @@ export function Synapse() {
   const configuration=data?.configuration;
   const disabled=Boolean(busy)||loading;
   return <>
-    <PageHeader eyebrow="OPERAÇÃO SYNAPSE" title="SYNAPSE" description="Da entrada do lead à próxima ação: uma operação comercial conectada ao seu conhecimento."
+    <PageHeader eyebrow="CONFIGURAÇÕES · MODELO COMERCIAL" title="Implantação comercial" description="Da entrada do lead à próxima ação: uma operação comercial conectada ao seu conhecimento."
       action={<Button variant="secondary" isDisabled={disabled} onPress={()=>void reload()}><RefreshCw size={16}/>Atualizar operação</Button>}/>
     {notice&&<p className="success-alert" role="status">{notice}</p>}
     {error&&<p className="error-alert" role="alert">{error}</p>}
@@ -103,12 +103,12 @@ export function Synapse() {
     {data&&!loadError&&<div className={styles.workspace} aria-busy={Boolean(busy)}>
       <div className={styles.banner}>
         <div><span className="eyebrow">{data.installed?'SUA ESTRUTURA COMERCIAL':'PREPARE A OPERAÇÃO'}</span>
-          <h2>{data.installed?(configuration?.enabled?'Operação habilitada':'Operação pausada'):'Ative o SYNAPSE neste workspace'}</h2>
+          <h2>{data.installed?(configuration?.enabled?'Operação habilitada':'Operação pausada'):'Prepare a operação comercial'}</h2>
           <p>{data.installed?'Acompanhe o funil, os responsáveis e o conhecimento usado no atendimento.':'Prepare o funil de vendas, os produtos de implantação e licença e o cadastro do agente em uma única etapa.'}</p></div>
         <Sparkles size={36} aria-hidden="true"/>
       </div>
 
-      {!data.installed&&<Panel title="Preparar SYNAPSE" subtitle="Os preços abaixo configuram os itens do catálogo para propostas comerciais.">
+      {!data.installed&&<Panel title="Preparar operação comercial" subtitle="Os preços abaixo configuram os itens do catálogo para propostas comerciais.">
         {admin?<form onSubmit={setup} className="commercial-form"><fieldset disabled={disabled}>
           <div className={styles.fields}>
             <label className="select-field"><span>Implantação em reais</span><input name="setup_price" type="number" min="0" step="0.01" max="1000000000" defaultValue="3260.00" required/></label>
@@ -116,8 +116,8 @@ export function Synapse() {
             <label className="select-field"><span>Prazo da primeira ação em horas</span><input name="sla_hours" type="number" min="1" max="720" defaultValue="24" required/></label>
           </div>
           <p className="subtle-notice">A implantação organiza o CRM. As conexões de canais e a execução autônoma são acompanhadas na lista de prontidão abaixo.</p>
-          <Button className="fat-button" type="submit" isDisabled={disabled}>{busy==='setup'?'Preparando…':'Preparar operação SYNAPSE'}</Button>
-        </fieldset></form>:<p>Um administrador com permissão de gerenciar integrações pode preparar o SYNAPSE.</p>}
+          <Button className="fat-button" type="submit" isDisabled={disabled}>{busy==='setup'?'Preparando…':'Preparar operação comercial'}</Button>
+        </fieldset></form>:<p>Um administrador com permissão de gerenciar integrações pode preparar a operação comercial.</p>}
       </Panel>}
 
       {data.installed&&<>
@@ -127,9 +127,9 @@ export function Synapse() {
             {label:'Oportunidades abertas',value:data.metrics.open_deals,href:'/crm/pipeline'},
             {label:'Oportunidades ganhas',value:data.metrics.won_deals,href:'/crm/pipeline'},
             {label:'Tarefas pendentes',value:data.metrics.pending_tasks,href:'/crm/tarefas'},
-          ].map(metric=><Link className="metric-card" key={metric.label} href={metric.href}><div className="metric-top"><span>{metric.label}</span></div><strong>{metric.value}</strong><div className="metric-bottom"><small>Operação SYNAPSE</small><ArrowUpRight size={15}/></div></Link>)}
+          ].map(metric=><Link className="metric-card" key={metric.label} href={metric.href}><div className="metric-top"><span>{metric.label}</span></div><strong>{metric.value}</strong><div className="metric-bottom"><small>Operação comercial</small><ArrowUpRight size={15}/></div></Link>)}
         </div>
-        <nav className={styles.links} aria-label="Atalhos SYNAPSE">
+        <nav className={styles.links} aria-label="Atalhos da operação comercial">
           {[
             ['Pipeline comercial','/crm/pipeline'],['Produtos e serviços','/crm/produtos'],['Propostas','/crm/propostas'],
             ['Agentes','/crm/ia'],['Conversas','/crm/conversas'],['Conhecimento','/crm/conhecimento'],
@@ -152,7 +152,7 @@ export function Synapse() {
         {admin&&<Panel title="Configuração da operação" subtitle="Defina quem recebe os leads e o prazo para a primeira ação.">
           <form key={configuration.version} onSubmit={settings} className="commercial-form"><fieldset disabled={disabled}>
             <div className={styles.switches}>
-              <label><input name="enabled" type="checkbox" defaultChecked={configuration.enabled}/><span>Habilitar operação SYNAPSE</span></label>
+              <label><input name="enabled" type="checkbox" defaultChecked={configuration.enabled}/><span>Habilitar operação comercial</span></label>
               <label><input name="capture_enabled" type="checkbox" defaultChecked={configuration.capture_enabled}/><span>Vincular automaticamente os leads elegíveis recebidos pela captura pública</span></label>
               <label><input name="ai_enabled" type="checkbox" defaultChecked={configuration.ai_enabled}/><span>Permitir rascunhos generativos com trechos da base desta organização</span></label>
             </div>
@@ -161,15 +161,15 @@ export function Synapse() {
               <label className="select-field"><span>Prazo da primeira ação em horas</span><input name="sla_hours" type="number" min="1" max="720" defaultValue={configuration.sla_hours} required/></label>
             </div>
             <p className="subtle-notice">O copiloto envia somente a pergunta (com e-mail e telefone óbvios mascarados) e até três trechos ao provedor configurado no servidor. A sugestão precisa de revisão humana e não envia mensagens.</p>
-            <Button className="fat-button" type="submit" isDisabled={disabled}>{busy==='settings'?'Salvando…':'Salvar configuração SYNAPSE'}</Button>
+            <Button className="fat-button" type="submit" isDisabled={disabled}>{busy==='settings'?'Salvando…':'Salvar configuração comercial'}</Button>
           </fieldset></form>
         </Panel>}
 
         {canWrite&&<Panel title="Vincular um lead" subtitle="Crie a oportunidade e a próxima tarefa a partir de um contato existente.">
           <form className="commercial-form" onSubmit={event=>{event.preventDefault();setEnrollment(null);void mutate('enroll',{contact_id:new FormData(event.currentTarget).get('contact_id')})}}>
             <fieldset disabled={disabled||!configuration.enabled}>
-              <RelationshipField field={{key:'contact_id',label:'Contato para o SYNAPSE',type:'text',relationship:'contacts',required:true}} initialValue=""/>
-              <Button className="fat-button" type="submit" isDisabled={disabled||!configuration.enabled}>{busy==='enroll'?'Vinculando…':'Vincular ao SYNAPSE'}</Button>
+              <RelationshipField field={{key:'contact_id',label:'Contato para a operação comercial',type:'text',relationship:'contacts',required:true}} initialValue=""/>
+              <Button className="fat-button" type="submit" isDisabled={disabled||!configuration.enabled}>{busy==='enroll'?'Vinculando…':'Vincular à operação comercial'}</Button>
             </fieldset>
           </form>
           {!configuration.enabled&&<p className="subtle-notice">Habilite a operação para vincular novos contatos.</p>}
@@ -197,7 +197,7 @@ export function Synapse() {
           </section>}
         </Panel>}
 
-        <Panel title="Atividade recente" subtitle="Últimos registros de execução da operação SYNAPSE.">
+        <Panel title="Atividade recente" subtitle="Últimos registros de execução da operação comercial.">
           {data.recent_runs.length?<ul className={styles.runs}>{data.recent_runs.map(run=><li key={run.id}>
             <div><strong>{({completed:'Concluído',enrolled:'Lead vinculado',draft:'Consulta documental',handoff:'Revisão humana',failed:'Falha',skipped:'Não executado'} as Record<string,string>)[textValue(run.status)]||'Operação registrada'}</strong>
               {run.created_at&&<small>{new Date(run.created_at).toLocaleString('pt-BR')}</small>}

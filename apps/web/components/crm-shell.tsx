@@ -70,13 +70,13 @@ export function CrmShell({children}: {children: React.ReactNode}) {
         <header className="crm-topbar">
           <div className="breadcrumb">
             <Button isIconOnly variant="tertiary" className="mobile-menu" aria-label="Abrir navegação" onPress={() => setMobile(true)}><Menu size={20}/></Button>
-            <span>{location?.group.label ?? 'Workspace'}</span><span>/</span><strong>{location?.item.label ?? 'FAT Tech'}</strong>
+            <span>{location?.group.label ?? 'SYNAPSE'}</span><span>/</span><strong>{location?.item.label ?? 'Plataforma'}</strong>
           </div>
           <div className="topbar-actions"><GlobalSearch/><Notifications/><span className="workspace-live"><span className="status-dot"/> Conectado</span><span className="avatar top-avatar">{user.name[0]}</span></div>
         </header>
         {error && <div className="error-alert" role="alert">{error}</div>}
         <main id="main" className="crm-main">{children}</main>
-        <footer className="crm-footer"><span>FAT Tech CRM Pro</span><span>Inteligência em cada conexão.</span></footer>
+        <footer className="crm-footer"><span>SYNAPSE · by FAT Tech</span><span>Inteligência em cada conexão.</span></footer>
       </div>
     </div>
   </AuthContext.Provider>;

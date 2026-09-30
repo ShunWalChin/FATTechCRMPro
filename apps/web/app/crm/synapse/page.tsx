@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
 import {Synapse} from '@/components/synapse';
 
-export const metadata:Metadata={title:'SYNAPSE · FAT Tech CRM'};
+export const metadata:Metadata={title:'Implantação comercial'};
 export default function Page(){return <Synapse/>}

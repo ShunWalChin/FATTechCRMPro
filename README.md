@@ -1,6 +1,11 @@
-# FAT Tech CRM Pro
+# SYNAPSE — plataforma da FAT Tech
 
-Site público e CRM interno da FAT Tech, reescritos em React/TypeScript e Python.
+Plataforma de gestão e inteligência em React/TypeScript e Python. CRM, ERP, Comunicação
+e Inteligência são módulos do SYNAPSE. FAT Tech é a empresa responsável pelo produto.
+
+[Modelo da plataforma, menus e plano de evolução](docs/SYNAPSE_PLATFORM_MODEL.md).
+
+Os marcos abaixo são históricos; a reorganização da plataforma está descrita no documento acima.
 Primeira versão operacional publicada na Oracle em 11/09/2026.
 
 - [Site publicado](https://fattechcrmpro.64.181.178.125.nip.io)

@@ -199,7 +199,7 @@
 .brand-light .logo-bracket{color:var(--fat-cyan)}
 .brand-light .logo-fat{color:#eef6f8}
 .brand-light .logo-tech{color:var(--fat-pink)}
-.brand-context{font-family:var(--fat-display);font-size:9px;letter-spacing:2px;color:#7c8f9c;margin-left:8px;align-self:center}
+.brand .brand-context{font-family:var(--fat-display);font-size:9px;letter-spacing:2px;color:#7c8f9c;margin-left:8px;align-self:center}
 .brand-light .brand-context{color:#5d7486}
 /* Títulos na tipografia do site; dados continuam em Inter, que é o que se lê em tabela. */
 .crm-page-header h1,.dashboard-welcome h2,.login-content h2,.login-story h2{font-family:var(--fat-display);letter-spacing:-.5px;font-weight:700}
@@ -267,3 +267,10 @@
 .agent-confirm>div{background:#fff;border:1px solid #cddbe3;border-radius:14px;padding:24px;max-width:540px;width:100%;box-shadow:0 12px 40px #15334622}
 .agent-confirm h3{margin:0 0 8px;letter-spacing:-.4px}
 .agent-confirm>div>p{margin:0 0 14px;color:#4a5b68}
+
+/* A marca da plataforma e os caminhos longos devem caber também no celular. */
+.sidebar-brand .brand{display:grid;grid-template-columns:auto auto auto;column-gap:0}
+.sidebar-brand .brand-context{grid-column:1/-1;margin:7px 0 0;color:#9aafbc;letter-spacing:1px}
+.breadcrumb{min-width:0;flex:1}.breadcrumb strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-actions{flex-shrink:0}
+@media(max-width:600px){.breadcrumb>span{display:none}}

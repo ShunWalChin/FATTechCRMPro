@@ -94,7 +94,7 @@ export function CoreOperations() {
   return <>
     <PageHeader eyebrow="OPERAÇÃO SYNAPSE" title="Eventos e filas"
       description="Acompanhe o processamento interno e recupere entregas que precisam de atenção."
-      action={<><Link className="button-link secondary" href="/crm/synapse"><ArrowLeft size={16}/>SYNAPSE</Link>
+      action={<><Link className="button-link secondary" href="/crm/synapse"><ArrowLeft size={16}/>Implantação comercial</Link>
         {authorized&&<Button variant="secondary" isDisabled={loading||Boolean(busy)} onPress={()=>void reload()}><RefreshCw size={16}/>Atualizar filas</Button>}</>}/>
 
     {!authorized?<Panel title="Acesso restrito"><p className="subtle-notice">Somente quem pode gerenciar integrações tem acesso à operação de eventos.</p></Panel>:<>

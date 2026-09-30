@@ -7,8 +7,9 @@ async function login(page: Page) {
   await page.getByLabel('E-mail da equipe').fill(email);
   await page.getByLabel('Senha', {exact: true}).fill(password);
   await page.getByRole('button', {name: 'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
   await expect(page.getByRole('heading', {level: 1})).toBeVisible();
+  await page.goto('/crm');
   await expect(page.locator('.dashboard-welcome')).toBeVisible();
 }
 

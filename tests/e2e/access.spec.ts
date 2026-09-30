@@ -5,7 +5,7 @@ test('administrator manages a subordinate and can change their own password',asy
   await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
   await page.getByLabel('Senha',{exact:true}).fill('Test-only-Fattech-Password-2026!');
   await page.getByRole('button',{name:'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
   const {csrf_token}=await (await page.request.get('/api/v1/auth/me')).json();
   const password='Browser-check-only-Password-2026!';
   const email=`access-${Date.now()}@example.com`;
@@ -28,7 +28,7 @@ test('administrator manages a subordinate and can change their own password',asy
   await page.getByLabel('E-mail da equipe').fill(email);
   await page.getByLabel('Senha',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
   await page.goto('/crm/configuracoes');
   await page.getByLabel('Senha atual',{exact:true}).fill(password);
   await page.getByLabel('Nova senha (mínimo 12 caracteres)',{exact:true}).fill(password+'changed');

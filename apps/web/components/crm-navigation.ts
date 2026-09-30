@@ -9,15 +9,21 @@ import {
 
 export type NavigationItem = {route: string; label: string; icon: LucideIcon};
 export type NavigationSection = {id: string; label: string; items: readonly NavigationItem[]};
-export type NavigationGroup = {id: string; label: string; icon: LucideIcon; sections: readonly NavigationSection[]};
+export type NavigationGroup = {id: string; label: string; description: string; icon: LucideIcon; sections: readonly NavigationSection[]};
 
 // Fonte única dos destinos da navegação. As rotas antigas permanecem estáveis,
 // inclusive os links externos e as fichas de registro que apontam para elas.
-export const CRM_NAVIGATION: readonly NavigationGroup[] = [
-  {id: 'crm', label: 'CRM', icon: PanelsTopLeft, sections: [
+export const SYNAPSE_NAVIGATION: readonly NavigationGroup[] = [
+  {id: 'inicio', label: 'Início', description: 'Seu ponto de partida na plataforma.', icon: LayoutDashboard, sections: [
+    {id: 'workspace', label: 'Meu trabalho', items: [
+      {route: 'inicio', label: 'Visão da plataforma', icon: LayoutDashboard},
+      {route: 'tarefas', label: 'Tarefas', icon: CircleCheck},
+      {route: 'aprovacoes', label: 'Aprovações', icon: ShieldCheck},
+    ]},
+  ]},
+  {id: 'crm', label: 'CRM', description: 'Relacionamentos, oportunidades e vendas.', icon: PanelsTopLeft, sections: [
     {id: 'visao', label: 'Visão e estratégia', items: [
-      {route: '', label: 'Visão geral', icon: LayoutDashboard},
-      {route: 'synapse', label: 'SYNAPSE', icon: Sparkles},
+      {route: '', label: 'Painel comercial', icon: LayoutDashboard},
       {route: 'radar', label: 'Radar', icon: Radar},
       {route: 'relatorios', label: 'Relatórios', icon: BarChart3},
     ]},
@@ -32,45 +38,46 @@ export const CRM_NAVIGATION: readonly NavigationGroup[] = [
       {route: 'importar', label: 'Importar contatos', icon: Upload},
       {route: 'duplicatas', label: 'Duplicatas', icon: CopyCheck},
     ]},
-    {id: 'relacionamento', label: 'Relacionamento', items: [
-      {route: 'conversas', label: 'Conversas', icon: MessagesSquare},
-      {route: 'campanhas', label: 'Campanhas', icon: Megaphone},
-      {route: 'automacoes', label: 'Automações', icon: Workflow},
-    ]},
   ]},
-  {id: 'erp', label: 'ERP', icon: FolderKanban, sections: [
+  {id: 'erp', label: 'ERP', description: 'Projetos, catálogo e controle financeiro interno.', icon: FolderKanban, sections: [
     {id: 'operacao', label: 'Operação', items: [
-      {route: 'tarefas', label: 'Tarefas', icon: CircleCheck},
       {route: 'projetos', label: 'Projetos', icon: FolderKanban},
-      {route: 'aprovacoes', label: 'Aprovações', icon: ShieldCheck},
     ]},
     {id: 'gestao', label: 'Gestão', items: [
       {route: 'financeiro', label: 'Financeiro', icon: Wallet},
       {route: 'produtos', label: 'Produtos e serviços', icon: Package},
     ]},
-    {id: 'conteudo', label: 'Conteúdo', items: [
+  ]},
+  {id: 'comunicacao', label: 'Comunicação', description: 'Conversas, campanhas e produção de conteúdo.', icon: MessagesSquare, sections: [
+    {id: 'atendimento', label: 'Atendimento', items: [
+      {route: 'conversas', label: 'Conversas', icon: MessagesSquare},
+    ]},
+    {id: 'marketing', label: 'Marketing e conteúdo', items: [
+      {route: 'campanhas', label: 'Campanhas', icon: Megaphone},
       {route: 'apuracao-de-conteudo', label: 'Apuração do mês', icon: Gauge},
-      {route: 'calendario-de-conteudo', label: 'Calendário', icon: CalendarDays},
+      {route: 'calendario-de-conteudo', label: 'Calendário editorial', icon: CalendarDays},
       {route: 'pautas', label: 'Banco de pautas', icon: Lightbulb},
       {route: 'contas-de-conteudo', label: 'Contas', icon: AtSign},
     ]},
   ]},
-  {id: 'inteligencia', label: 'Inteligência', icon: Sparkles, sections: [
+  {id: 'inteligencia', label: 'Inteligência', description: 'Agentes, conhecimento e desenho de automações.', icon: Sparkles, sections: [
     {id: 'conhecimento', label: 'Dados e grafo', items: [
       {route: 'conhecimento', label: 'Base de conhecimento e grafo', icon: BookOpen},
     ]},
     {id: 'agentes', label: 'IA e agentes', items: [
       {route: 'ia', label: 'Central de IA', icon: Sparkles},
       {route: 'agente', label: 'Operação do agente', icon: Bot},
+      {route: 'automacoes', label: 'Automações', icon: Workflow},
     ]},
   ]},
-  {id: 'equipes', label: 'Equipes/usuários', icon: Users, sections: [
+  {id: 'equipes', label: 'Equipes', description: 'Pessoas, responsabilidades e permissões.', icon: Users, sections: [
     {id: 'pessoas', label: 'Pessoas e acesso', items: [
       {route: 'equipe', label: 'Equipe e permissões', icon: Users},
     ]},
   ]},
-  {id: 'configuracoes', label: 'Configurações', icon: Settings2, sections: [
+  {id: 'configuracoes', label: 'Configurações', description: 'Regras, integrações e configuração da organização.', icon: Settings2, sections: [
     {id: 'modelo-comercial', label: 'Modelo comercial', items: [
+      {route: 'synapse', label: 'Implantação comercial', icon: Sparkles},
       {route: 'funis', label: 'Funis', icon: Layers3},
       {route: 'modelos', label: 'Modelos de contrato', icon: FileText},
       {route: 'campos', label: 'Campos personalizados', icon: SlidersHorizontal},
@@ -87,7 +94,7 @@ export function navigationHref(route: string): string {
 }
 
 export function navigationLocation(pathname: string) {
-  for (const group of CRM_NAVIGATION) {
+  for (const group of SYNAPSE_NAVIGATION) {
     for (const section of group.sections) {
       for (const item of section.items) {
         const href = navigationHref(item.route);

@@ -9,7 +9,7 @@ async function login(page: Page) {
   await page.getByLabel('E-mail da equipe').fill(email);
   await page.getByLabel('Senha', {exact: true}).fill(password);
   await page.getByRole('button', {name: 'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
 }
 
 /** Monta agente + identidade e devolve a chave. O cenário nasce pela API porque o que este teste

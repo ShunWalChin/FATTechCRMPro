@@ -5,7 +5,7 @@ async function session(page:Page){
  await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
  await page.getByLabel('Senha',{exact:true}).fill('Test-only-Fattech-Password-2026!');
  await page.getByRole('button',{name:'Acessar meu workspace'}).click();
- await expect(page).toHaveURL(/\/crm$/);
+ await expect(page).toHaveURL(/\/crm\/inicio$/);
  const auth=await (await page.request.get('/api/v1/auth/me')).json();
  const write=async(path:string,data:object)=>{const result=await page.request.post(`/api/v1/${path}`,{headers:{'X-CSRF-Token':auth.csrf_token},data});expect(result.ok(),await result.text()).toBeTruthy();return result.json()};
  return {auth,write};

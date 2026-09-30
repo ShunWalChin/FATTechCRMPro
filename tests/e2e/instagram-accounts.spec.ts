@@ -11,7 +11,7 @@ async function login(page: Page) {
   await page.getByLabel('E-mail da equipe').fill(email);
   await page.getByLabel('Senha', {exact: true}).fill(password);
   await page.getByRole('button', {name: 'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
 }
 
 test('connecting an Instagram account shows a fingerprint and never the token', async ({page}) => {

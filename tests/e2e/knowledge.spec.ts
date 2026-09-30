@@ -5,7 +5,7 @@ async function signIn(page: Page) {
   await page.getByLabel('E-mail da equipe').fill('e2e@fattech.com.br');
   await page.getByLabel('Senha', {exact: true}).fill('Test-only-Fattech-Password-2026!');
   await page.getByRole('button', {name: 'Acessar meu workspace'}).click();
-  await expect(page).toHaveURL(/\/crm$/);
+  await expect(page).toHaveURL(/\/crm\/inicio$/);
 }
 
 test('the knowledge base draws the graph and answers a click', async ({page}) => {
